@@ -15,11 +15,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ className, icon
       <input
         ref={ref}
         className={cn(
-          "h-11 w-full rounded-xl border bg-white px-3.5 text-sm text-ink-900 placeholder:text-ink-400",
+          "h-12 w-full rounded-full border bg-white px-5 text-sm text-ink-900 placeholder:text-ink-400",
           "transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/40",
-          "dark:bg-ink-900 dark:text-white dark:placeholder:text-ink-500",
+          "dark:bg-ink-950 dark:text-white dark:placeholder:text-ink-500",
           error ? "border-rose-400 focus:ring-rose-400/40" : "border-ink-200 focus:border-brand-500 dark:border-ink-700",
-          icon && "pl-10",
+          icon && "pl-11",
           className
         )}
         {...props}
