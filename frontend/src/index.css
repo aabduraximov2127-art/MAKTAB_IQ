@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Lexend", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f2f1ff;
+  --color-brand-100: #e6e4ff;
+  --color-brand-200: #d0ccff;
+  --color-brand-300: #aca4ff;
+  --color-brand-400: #8b7bff;
+  --color-brand-500: #6f56fd;
+  --color-brand-600: #6035f0;
+  --color-brand-700: #5227d4;
+  --color-brand-800: #4423ab;
+  --color-brand-900: #392087;
+  --color-brand-950: #221252;
+
+  --color-accent-50: #fff8ed;
+  --color-accent-100: #ffefd3;
+  --color-accent-200: #ffdba5;
+  --color-accent-300: #ffc06d;
+  --color-accent-400: #ff9d33;
+  --color-accent-500: #ff800c;
+  --color-accent-600: #f26302;
+  --color-accent-700: #c74a05;
+  --color-accent-800: #9e3a0c;
+  --color-accent-900: #7f310d;
+
+  --color-ink-50: #f6f7f9;
+  --color-ink-100: #ebedf1;
+  --color-ink-200: #d3d8e0;
+  --color-ink-300: #aab2c0;
+  --color-ink-400: #7a869b;
+  --color-ink-500: #5a6680;
+  --color-ink-600: #444f68;
+  --color-ink-700: #353e54;
+  --color-ink-800: #232a3c;
+  --color-ink-900: #161b28;
+  --color-ink-950: #0c0f18;
+
+  --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -6px rgba(16, 24, 40, 0.08);
+  --shadow-soft-lg: 0 4px 12px rgba(16, 24, 40, 0.06), 0 16px 40px -8px rgba(16, 24, 40, 0.14);
+
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-slide-up: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-scale-in: scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-shimmer: shimmer 1.8s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+}
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  @apply bg-ink-50 text-ink-900 antialiased dark:bg-ink-950 dark:text-ink-100;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-300) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-ink-300);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--color-ink-700);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-ink-200) 37%, var(--color-ink-100) 63%);
+  background-size: 400px 100%;
+  animation: var(--animate-shimmer);
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, var(--color-ink-800) 25%, var(--color-ink-700) 37%, var(--color-ink-800) 63%);
+  background-size: 400px 100%;
+}
+
+.bg-mesh {
+  background-image:
+    radial-gradient(at 20% 10%, color-mix(in srgb, var(--color-brand-500) 22%, transparent) 0px, transparent 50%),
+    radial-gradient(at 85% 0%, color-mix(in srgb, var(--color-accent-400) 20%, transparent) 0px, transparent 50%),
+    radial-gradient(at 100% 90%, color-mix(in srgb, var(--color-brand-400) 18%, transparent) 0px, transparent 50%);
+}
