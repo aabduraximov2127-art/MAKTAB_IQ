@@ -18,6 +18,11 @@ from .models import (
 
 
 class UserSerializer(serializers.ModelSerializer):
+    telegram_linked = serializers.SerializerMethodField()
+
+    def get_telegram_linked(self, obj):
+        return bool(obj.telegram_chat_id)
+
     class Meta:
         model = User
         fields = (
@@ -32,8 +37,9 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "is_deactivated",
             "date_joined",
+            "telegram_linked",
         )
-        read_only_fields = ("id", "role", "is_deactivated", "date_joined")
+        read_only_fields = ("id", "role", "is_deactivated", "date_joined", "telegram_linked")
 
 
 class RegisterStudentSerializer(serializers.ModelSerializer):

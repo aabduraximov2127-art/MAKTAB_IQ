@@ -175,19 +175,36 @@ class MeView(APIView):
 
 
 class TelegramLinkCodeView(APIView):
-    """Generates a short-lived code the user sends to the Telegram bot as `/link <code>`
-    to bind their Telegram account for notifications."""
+    """Issues a short-lived code the user sends to the Telegram bot (``/link <code>``, or just
+    the code) to bind their Telegram account for notifications."""
 
     serializer_class = EmptySerializer
 
     def post(self, request):
-        import random
+        from .telegram_link import CODE_TTL, issue_code
 
-        from django.core.cache import cache
+        code = issue_code(request.user)
+        return Response({"success": True, "code": code, "expires_in": CODE_TTL})
 
-        code = f"{random.randint(0, 999999):06d}"
-        cache.set(f"telegram_link:{code}", request.user.id, timeout=600)
-        return Response({"success": True, "code": code, "expires_in": 600})
+
+class TelegramStatusView(APIView):
+    """Whether the current user's account is connected to Telegram (polled by the website
+    while it waits for the user to send the code to the bot)."""
+
+    serializer_class = EmptySerializer
+
+    def get(self, request):
+        return Response({"linked": bool(request.user.telegram_chat_id)})
+
+
+class TelegramUnlinkView(APIView):
+    serializer_class = EmptySerializer
+
+    def post(self, request):
+        from .telegram_link import unlink_user
+
+        unlink_user(request.user)
+        return Response({"success": True, "linked": False})
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):

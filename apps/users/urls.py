@@ -10,6 +10,8 @@ from .views import (
     StudentViewSet,
     TeacherViewSet,
     TelegramLinkCodeView,
+    TelegramStatusView,
+    TelegramUnlinkView,
     UserViewSet,
 )
 
@@ -31,6 +33,8 @@ parents_router.register("", ParentViewSet, basename="parent")
 urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
     path("me/telegram-link-code/", TelegramLinkCodeView.as_view(), name="telegram-link-code"),
+    path("me/telegram-status/", TelegramStatusView.as_view(), name="telegram-status"),
+    path("me/telegram-unlink/", TelegramUnlinkView.as_view(), name="telegram-unlink"),
 ] + users_router.urls
 students_urlpatterns = students_router.urls
 teachers_urlpatterns = teachers_router.urls
