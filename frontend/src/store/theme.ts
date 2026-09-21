@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-type Theme = "light" | "dark"
+type Theme = "dark"
 
 interface ThemeState {
   theme: Theme
@@ -17,15 +17,13 @@ function applyTheme(theme: Theme) {
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set, get) => ({
-      // Default to light regardless of OS preference — most users find an
-      // auto-selected dark mode here too gloomy for a school dashboard. The
-      // toggle in the topbar still switches to dark on request.
-      theme: "light",
+    (set) => ({
+      // The Dala-style design is a dark stage only (pure black void), so the
+      // theme is fixed. The store keeps its shape for sidebar state.
+      theme: "dark",
       toggle: () => {
-        const next = get().theme === "dark" ? "light" : "dark"
-        applyTheme(next)
-        set({ theme: next })
+        applyTheme("dark")
+        set({ theme: "dark" })
       },
       set: (theme) => {
         applyTheme(theme)
@@ -35,7 +33,7 @@ export const useThemeStore = create<ThemeState>()(
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
     }),
     {
-      name: "maktabiq-theme",
+      name: "maktabiq-theme-v2",
       onRehydrateStorage: () => (state) => {
         if (state) applyTheme(state.theme)
       },

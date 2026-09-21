@@ -1,9 +1,8 @@
 import { useState } from "react"
-import { Copy, LogOut, Moon, Send, ShieldCheck, Sun } from "lucide-react"
+import { Copy, LogOut, Send, ShieldCheck } from "lucide-react"
 import toast from "react-hot-toast"
 import { api, getErrorMessage } from "../lib/api"
 import { useAuthStore } from "../store/auth"
-import { useThemeStore } from "../store/theme"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
@@ -14,8 +13,6 @@ import { ROLE_LABELS, fullName } from "../lib/format"
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
-  const theme = useThemeStore((s) => s.theme)
-  const toggleTheme = useThemeStore((s) => s.toggle)
 
   const [code, setCode] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -70,15 +67,6 @@ export default function ProfilePage() {
             <CardTitle>Sozlamalar</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <button
-              onClick={toggleTheme}
-              className="flex w-full items-center justify-between rounded-xl border border-ink-100 p-3.5 text-sm dark:border-ink-800"
-            >
-              <span className="flex items-center gap-2 text-ink-700 dark:text-ink-200">
-                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />} Ko'rinish
-              </span>
-              <span className="text-ink-400">{theme === "dark" ? "Tungi" : "Kunduzgi"}</span>
-            </button>
             <Button variant="outline" className="w-full" onClick={logout}>
               <LogOut className="h-4 w-4" /> Tizimdan chiqish
             </Button>
