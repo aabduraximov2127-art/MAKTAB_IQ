@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom"
 import { motion } from "framer-motion"
-import { ChevronLeft, ChevronRight, GraduationCap, LogOut, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, LogOut, X } from "lucide-react"
 import { useAuthStore } from "../../store/auth"
+import { Logo } from "../shared/Logo"
 import { useThemeStore } from "../../store/theme"
 import { navForRole } from "../../lib/nav"
 import { ROLE_LABELS, fullName, initials } from "../../lib/format"
@@ -31,12 +32,7 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col bg-white dark:bg-ink-900">
       <div className={cn("flex items-center gap-2 px-5 py-5", collapsed ? "justify-center px-3" : "justify-between")}>
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-soft">
-            <GraduationCap className="h-5 w-5" />
-          </div>
-          {!collapsed && <span className="font-display text-lg font-bold text-ink-900 dark:text-white">MaktabIQ</span>}
-        </div>
+        <Logo showWord={!collapsed} />
         {onCloseMobile && (
           <button onClick={onCloseMobile} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 dark:hover:bg-ink-800 lg:hidden">
             <X className="h-5 w-5" />
@@ -48,7 +44,7 @@ function SidebarContent({
         {sections.map((section) => (
           <div key={section}>
             {!collapsed && (
-              <p className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-400 dark:text-ink-500">
+              <p className="px-3 pb-1.5 eyebrow text-[11px] text-ink-400 dark:text-ink-500">
                 {section}
               </p>
             )}
