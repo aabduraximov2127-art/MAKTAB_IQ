@@ -8,6 +8,7 @@ from common.realtime import push_message_to_chat
 
 from .models import ChatMember, ChatRoom, Message
 from .permissions import CanCreateChatRoom, IsChatMember
+from .services import moderate_message
 from .serializers import ChatMemberSerializer, ChatRoomSerializer, MessageSerializer
 
 
@@ -111,3 +112,4 @@ class MessageViewSet(viewsets.ModelViewSet):
                 "created_at": message.created_at.isoformat(),
             },
         )
+        moderate_message(message)

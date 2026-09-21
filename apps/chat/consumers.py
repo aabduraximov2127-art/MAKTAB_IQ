@@ -4,6 +4,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .models import ChatRoom, Message
+from .services import moderate_message
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -56,4 +57,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _create_message(self, text):
-        return Message.objects.create(chat_room_id=self.room_id, sender=self.scope["user"], text=text)
+        message = Message.objects.create(chat_room_id=self.room_id, sender=self.scope["user"], text=text)
+        moderate_message(message)
+        return message

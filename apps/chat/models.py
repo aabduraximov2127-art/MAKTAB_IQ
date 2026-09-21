@@ -47,3 +47,19 @@ class Message(TimeStampedModel):
 
     def __str__(self):
         return f"{self.sender}: {self.text[:30]}"
+
+
+class ModerationIncident(TimeStampedModel):
+    """A chat message flagged for swearing / insults; teachers are notified about it."""
+
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="incidents")
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="incidents")
+    sender = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, related_name="+")
+    matched_words = models.JSONField(default=list)
+    notified = models.ManyToManyField("users.User", blank=True, related_name="+")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Incident #{self.pk}: {self.sender} in {self.chat_room}"
