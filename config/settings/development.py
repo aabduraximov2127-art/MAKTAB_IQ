@@ -29,3 +29,8 @@ if os.getenv("USE_REDIS", "0") != "1":
             "LOCATION": "django_cache",
         }
     }
+
+# Antivirus HTTPS scanning (Avast etc.) breaks certifi-based TLS to api.telegram.org; use the OS trust store.
+from common.system_certs import use_system_trust_store  # noqa: E402
+
+use_system_trust_store()

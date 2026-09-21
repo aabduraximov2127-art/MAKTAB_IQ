@@ -15,6 +15,10 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
 django.setup()
 
+from common.system_certs import use_system_trust_store  # noqa: E402
+
+use_system_trust_store()
+
 import logging  # noqa: E402
 
 from asgiref.sync import sync_to_async  # noqa: E402
