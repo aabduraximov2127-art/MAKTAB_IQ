@@ -1,0 +1,226 @@
+/* Telegram injects --tg-theme-* live and flips them when the user changes their Telegram
+   theme — every color below reads one of those variables (with a sane fallback for the
+   dev-mode plain-browser preview) instead of hard-coding light/dark palettes ourselves. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  background: var(--tg-theme-secondary-bg-color, #f0f0f3);
+  color: var(--tg-theme-text-color, #111111);
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
+  padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+.center-screen {
+  min-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--tg-theme-hint-color, #8e8e93);
+  border-top-color: transparent;
+  opacity: 0.55;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hint {
+  color: var(--tg-theme-hint-color, #8e8e93);
+  font-size: 13px;
+}
+
+/* ---- header ---- */
+
+.app-header {
+  padding: 6px 4px 14px;
+}
+.app-header .greeting {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.app-header .subtitle {
+  margin-top: 2px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  font-size: 14px;
+}
+.role-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--tg-theme-button-color, #2481cc);
+  color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+/* ---- sections (Telegram's grouped-list look) ---- */
+
+.section {
+  margin-bottom: 16px;
+}
+.section-title {
+  padding: 0 14px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--tg-theme-hint-color, #8e8e93);
+}
+.section-body {
+  background: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #ffffff));
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--tg-theme-hint-color, #8e8e93) 16%, transparent);
+}
+.row:last-child {
+  border-bottom: none;
+}
+.row-main {
+  min-width: 0;
+}
+.row-title {
+  font-size: 15px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.row-sub {
+  margin-top: 1px;
+  font-size: 13px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+}
+.row-value {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.empty-row {
+  padding: 16px 14px;
+  text-align: center;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  font-size: 14px;
+}
+
+/* ---- stat grid ---- */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.stat-tile {
+  background: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #ffffff));
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.stat-tile .stat-label {
+  font-size: 12.5px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+}
+.stat-tile .stat-value {
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* ---- unread dot ---- */
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tg-theme-destructive-text-color, #e0245e);
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* ---- form ---- */
+
+.field {
+  margin-bottom: 12px;
+}
+.field label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+}
+.field input {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--tg-theme-hint-color, #8e8e93) 30%, transparent);
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #111111);
+  font-size: 15px;
+  outline: none;
+}
+.field input:focus {
+  border-color: var(--tg-theme-link-color, #2481cc);
+}
+
+.error-text {
+  color: var(--tg-theme-destructive-text-color, #e0245e);
+  font-size: 13.5px;
+  margin: 4px 0 10px;
+}
+
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  color: var(--tg-theme-link-color, #2481cc);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 4px 2px;
+}
