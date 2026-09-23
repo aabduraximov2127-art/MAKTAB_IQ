@@ -6,6 +6,8 @@ frontend.
 - **Backend:** `/` (shu papka) — quyida hujjatlashtirilgan
 - **Frontend:** [`frontend/`](frontend/README.md) — React + Vite + Tailwind, barcha 5 rol
   (SUPERADMIN/ADMIN/TEACHER/STUDENT/PARENT) uchun moslashuvchan UI
+- **Telegram Mini App:** [`telegram-app/`](telegram-app/README.md) — Telegram ichida ochiladigan
+  yengil ilova (parolsiz kirish, bugungi darslar/baholar/bildirishnomalar)
 
 ## Backend
 
@@ -109,6 +111,8 @@ tomonidan (`common/permissions.py` va har bir app'ning `permissions.py`) tekshir
 Barcha endpointlar `/api/v1/` ostida (to'liq ro'yxat uchun Swagger'ga qarang):
 
 - `POST /api/v1/auth/login/`, `/refresh/`, `/logout/`
+- `POST /api/v1/auth/telegram/` — Telegram Mini App uchun parolsiz kirish (initData orqali)
+- `POST /api/v1/auth/telegram/login/` — Mini App'da birinchi marta bog'lash (initData + parol)
 - `POST /api/v1/auth/register/student/`
 - `GET /api/v1/students/?search=Az`
 - `POST /api/v1/students/{id}/transfer/`
