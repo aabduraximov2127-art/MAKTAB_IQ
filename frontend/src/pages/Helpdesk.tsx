@@ -14,8 +14,10 @@ import { Drawer } from "../components/ui/Drawer"
 import { Badge } from "../components/ui/Badge"
 import { DataTable, type Column } from "../components/ui/Table"
 import { ContactInfo } from "../components/shared/ContactInfo"
+import { TelegramLinkCard } from "../components/shared/TelegramLinkCard"
 import { formatDate } from "../lib/format"
 import type { HelpDeskTicket, Paginated } from "../types"
+import { t } from "../i18n"
 
 const STATUS_TONE: Record<HelpDeskTicket["status"], "info" | "warning" | "success" | "neutral"> = {
   OPEN: "info",
@@ -25,13 +27,13 @@ const STATUS_TONE: Record<HelpDeskTicket["status"], "info" | "warning" | "succes
 }
 
 const STATUS_LABELS: Record<HelpDeskTicket["status"], string> = {
-  OPEN: "Ochiq",
-  IN_PROGRESS: "Jarayonda",
-  RESOLVED: "Yechilgan",
-  CLOSED: "Yopilgan",
+  OPEN: t("Ochiq"),
+  IN_PROGRESS: t("Jarayonda"),
+  RESOLVED: t("Yechilgan"),
+  CLOSED: t("Yopilgan"),
 }
 
-const PRIORITY_LABELS: Record<HelpDeskTicket["priority"], string> = { LOW: "Past", MEDIUM: "O'rtacha", HIGH: "Yuqori" }
+const PRIORITY_LABELS: Record<HelpDeskTicket["priority"], string> = { LOW: t("Past"), MEDIUM: t("O'rtacha"), HIGH: t("Yuqori") }
 
 export default function HelpdeskPage() {
   const user = useAuthStore((s) => s.user)
@@ -42,18 +44,18 @@ export default function HelpdeskPage() {
   const { data, loading, refetch } = useFetch<Paginated<HelpDeskTicket>>("/helpdesk/?ordering=-created_at&page_size=50")
 
   const columns: Column<HelpDeskTicket>[] = [
-    { key: "title", header: "Sarlavha", render: (r) => <p className="font-medium text-ink-800 dark:text-ink-100">{r.title}</p> },
-    { key: "category", header: "Kategoriya", render: (r) => r.category, hideOnMobile: true },
-    { key: "priority", header: "Muhimlik", render: (r) => PRIORITY_LABELS[r.priority], hideOnMobile: true },
-    { key: "status", header: "Status", render: (r) => <Badge tone={STATUS_TONE[r.status]}>{STATUS_LABELS[r.status]}</Badge> },
-    { key: "date", header: "Sana", render: (r) => formatDate(r.created_at), hideOnMobile: true },
+    { key: "title", header: t("Sarlavha"), render: (r) => <p className="font-medium text-ink-800 dark:text-ink-100">{r.title}</p> },
+    { key: "category", header: t("Kategoriya"), render: (r) => r.category, hideOnMobile: true },
+    { key: "priority", header: t("Muhimlik"), render: (r) => PRIORITY_LABELS[r.priority], hideOnMobile: true },
+    { key: "status", header: t("Status"), render: (r) => <Badge tone={STATUS_TONE[r.status]}>{STATUS_LABELS[r.status]}</Badge> },
+    { key: "date", header: t("Sana"), render: (r) => formatDate(r.created_at), hideOnMobile: true },
   ]
 
   return (
     <div>
       <PageHeader
-        title="Yordam"
-        description={isAdmin ? "Foydalanuvchilar murojaatlari" : "Muammo yoki savolingiz bo'yicha murojaat qiling"}
+        title={t("Yordam")}
+        description={isAdmin ? t("Foydalanuvchilar murojaatlari") : t("Muammo yoki savolingiz bo'yicha murojaat qiling")}
         actions={
           <Button onClick={() => setAddOpen(true)}>
             <Plus className="h-4 w-4" /> Yangi murojaat
@@ -65,7 +67,7 @@ export default function HelpdeskPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Headset className="h-4 w-4 text-brand-500" />
-            <CardTitle>Tezkor yordam kerakmi?</CardTitle>
+            <CardTitle>{t("Tezkor yordam kerakmi?")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -73,12 +75,14 @@ export default function HelpdeskPage() {
         </CardContent>
       </Card>
 
+      <TelegramLinkCard className="mb-5" />
+
       <DataTable
         columns={columns}
         rows={data?.results ?? []}
         keyField={(r) => r.id}
         loading={loading}
-        emptyTitle="Murojaat topilmadi"
+        emptyTitle={t("Murojaat topilmadi")}
         onRowClick={setSelected}
       />
 
@@ -105,7 +109,7 @@ function TicketDrawer({
     if (!ticket) return
     try {
       await api.patch(`/helpdesk/${ticket.id}/`, { status: newStatus })
-      toast.success("Status yangilandi")
+      toast.success(t("Status yangilandi"))
       onUpdated()
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -123,7 +127,7 @@ function TicketDrawer({
             <Badge tone={STATUS_TONE[ticket.status]}>{STATUS_LABELS[ticket.status]}</Badge>
           </div>
           {isAdmin && (
-            <Field label="Statusni o'zgartirish">
+            <Field label={t("Statusni o'zgartirish")}>
               <Select value={status || ticket.status} onChange={(e) => { setStatus(e.target.value as HelpDeskTicket["status"]); updateStatus(e.target.value) }}>
                 {Object.entries(STATUS_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>
@@ -148,7 +152,7 @@ function AddTicketModal({ open, onClose, onDone }: { open: boolean; onClose: () 
     setLoading(true)
     try {
       await api.post("/helpdesk/", form)
-      toast.success("Murojaat yuborildi")
+      toast.success(t("Murojaat yuborildi"))
       setForm({ title: "", description: "", category: "OTHER", priority: "MEDIUM" })
       onDone()
     } catch (err) {
@@ -159,12 +163,12 @@ function AddTicketModal({ open, onClose, onDone }: { open: boolean; onClose: () 
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi murojaat">
+    <Modal open={open} onClose={onClose} title={t("Yangi murojaat")}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Sarlavha">
+        <Field label={t("Sarlavha")}>
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
         </Field>
-        <Field label="Tavsif">
+        <Field label={t("Tavsif")}>
           <textarea
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -174,24 +178,24 @@ function AddTicketModal({ open, onClose, onDone }: { open: boolean; onClose: () 
           />
         </Field>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Kategoriya">
+          <Field label={t("Kategoriya")}>
             <Select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
-              <option value="TECHNICAL">Texnik</option>
-              <option value="ACADEMIC">O'quv</option>
-              <option value="ACCOUNT">Hisob</option>
-              <option value="OTHER">Boshqa</option>
+              <option value="TECHNICAL">{t("Texnik")}</option>
+              <option value="ACADEMIC">{t("O'quv")}</option>
+              <option value="ACCOUNT">{t("Hisob")}</option>
+              <option value="OTHER">{t("Boshqa")}</option>
             </Select>
           </Field>
-          <Field label="Muhimlik">
+          <Field label={t("Muhimlik")}>
             <Select value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}>
-              <option value="LOW">Past</option>
-              <option value="MEDIUM">O'rtacha</option>
-              <option value="HIGH">Yuqori</option>
+              <option value="LOW">{t("Past")}</option>
+              <option value="MEDIUM">{t("O'rtacha")}</option>
+              <option value="HIGH">{t("Yuqori")}</option>
             </Select>
           </Field>
         </div>
         <Button type="submit" className="w-full" loading={loading}>
-          Yuborish
+          {t("Yuborish")}
         </Button>
       </form>
     </Modal>

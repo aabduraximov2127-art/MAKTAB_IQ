@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { api, getErrorMessage } from "../lib/api"
+import { t } from "../i18n"
 
 interface UseFetchState<T> {
   data: T | null
@@ -22,7 +23,7 @@ export function useFetch<T>(url: string | null, deps: unknown[] = []) {
       }
     } catch (err) {
       if (id === requestId.current) {
-        setState({ data: null, loading: false, error: getErrorMessage(err, "Ma'lumotlarni yuklab bo'lmadi") })
+        setState({ data: null, loading: false, error: getErrorMessage(err, t("Ma'lumotlarni yuklab bo'lmadi")) })
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

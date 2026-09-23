@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import { Compass } from "lucide-react"
 import { Button } from "../components/ui/Button"
+import { t } from "../i18n"
 
 export default function NotFoundPage() {
   return (
@@ -9,9 +10,9 @@ export default function NotFoundPage() {
         <Compass className="h-8 w-8" />
       </div>
       <h1 className="font-display text-3xl font-bold text-ink-900 dark:text-white">404</h1>
-      <p className="text-ink-500 dark:text-ink-400">Bu sahifa topilmadi.</p>
+      <p className="text-ink-500 dark:text-ink-400">{t("Bu sahifa topilmadi.")}</p>
       <Link to="/">
-        <Button>Bosh sahifaga qaytish</Button>
+        <Button>{t("Bosh sahifaga qaytish")}</Button>
       </Link>
     </div>
   )

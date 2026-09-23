@@ -1,13 +1,16 @@
 import { Menu } from "lucide-react"
+import { ThemeToggle } from "../ui/ThemeToggle"
+import { LanguageSwitcher } from "../ui/LanguageSwitcher"
 import { NotificationBell } from "./NotificationBell"
 import { UserMenu } from "./UserMenu"
+import { t } from "../../i18n"
 
 function greeting() {
   const hour = new Date().getHours()
-  if (hour < 6) return "Xayrli tun"
-  if (hour < 12) return "Xayrli tong"
-  if (hour < 17) return "Xayrli kun"
-  return "Xayrli kech"
+  if (hour < 6) return t("Xayrli tun")
+  if (hour < 12) return t("Xayrli tong")
+  if (hour < 17) return t("Xayrli kun")
+  return t("Xayrli kech")
 }
 
 export function Topbar({ onMenuClick, firstName }: { onMenuClick: () => void; firstName?: string }) {
@@ -29,6 +32,8 @@ export function Topbar({ onMenuClick, firstName }: { onMenuClick: () => void; fi
       </div>
 
       <div className="flex items-center gap-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
         <NotificationBell />
         <div className="mx-1 hidden h-6 w-px bg-ink-200 dark:bg-ink-800 sm:block" />
         <UserMenu />

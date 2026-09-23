@@ -45,6 +45,7 @@ import type {
   Paginated,
   StudentProgress,
 } from "../types"
+import { t } from "../i18n"
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
@@ -68,9 +69,9 @@ function AdminDashboard() {
     () =>
       data
         ? [
-            { name: "Davomat", value: data.attendance_percentage },
-            { name: "Uy vazifasi", value: data.homework_completion },
-            { name: "Test", value: data.quiz_average },
+            { name: t("Davomat"), value: data.attendance_percentage },
+            { name: t("Uy vazifasi"), value: data.homework_completion },
+            { name: t("Test"), value: data.quiz_average },
           ]
         : [],
     [data]
@@ -78,18 +79,18 @@ function AdminDashboard() {
 
   return (
     <div>
-      <PageHeader title="Boshqaruv paneli" description="Maktabingizning umumiy holati bir qarashda" />
+      <PageHeader title={t("Boshqaruv paneli")} description={t("Maktabingizning umumiy holati bir qarashda")} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {loading || !data ? (
           Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
         ) : (
           <>
-            <StatCard label="Jami o'quvchilar" value={data.total_students} icon={Users} tone="brand" delay={0} />
-            <StatCard label="Jami o'qituvchilar" value={data.total_teachers} icon={UsersRound} tone="accent" delay={0.05} />
-            <StatCard label="Sinflar" value={data.total_classes} icon={School} tone="sky" delay={0.1} />
+            <StatCard label={t("Jami o'quvchilar")} value={data.total_students} icon={Users} tone="brand" delay={0} />
+            <StatCard label={t("Jami o'qituvchilar")} value={data.total_teachers} icon={UsersRound} tone="accent" delay={0.05} />
+            <StatCard label={t("Sinflar")} value={data.total_classes} icon={School} tone="sky" delay={0.1} />
             <StatCard
-              label="Faol foydalanuvchilar"
+              label={t("Faol foydalanuvchilar")}
               value={data.active_users}
               icon={Sparkles}
               tone="emerald"
@@ -102,7 +103,7 @@ function AdminDashboard() {
       <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Umumiy ko'rsatkichlar</CardTitle>
+            <CardTitle>{t("Umumiy ko'rsatkichlar")}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading || !data ? (
@@ -115,7 +116,7 @@ function AdminDashboard() {
                   <YAxis tick={{ fontSize: 12, fill: "var(--color-ink-400)" }} axisLine={false} tickLine={false} unit="%" />
                   <Tooltip
                     contentStyle={{ borderRadius: 12, border: "none", boxShadow: "var(--shadow-soft-lg)" }}
-                    formatter={(v) => [`${v}%`, "Qiymat"]}
+                    formatter={(v) => [`${v}%`, t("Qiymat")]}
                   />
                   <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="var(--color-brand-500)" maxBarSize={56} />
                 </BarChart>
@@ -126,26 +127,26 @@ function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>So'nggi e'lonlar</CardTitle>
+            <CardTitle>{t("So'nggi e'lonlar")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {!announcements ? (
               <Skeleton className="h-40 w-full" />
             ) : announcements.results.length === 0 ? (
-              <EmptyState title="E'lonlar yo'q" />
+              <EmptyState title={t("E'lonlar yo'q")} />
             ) : (
               announcements.results.map((a) => (
                 <div key={a.id} className="rounded-xl border border-ink-100 p-3 dark:border-ink-800">
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate text-sm font-semibold text-ink-800 dark:text-ink-100">{a.title}</p>
-                    {a.priority === "HIGH" && <Badge tone="danger">Muhim</Badge>}
+                    {a.priority === "HIGH" && <Badge tone="danger">{t("Muhim")}</Badge>}
                   </div>
                   <p className="mt-1 line-clamp-2 text-xs text-ink-500 dark:text-ink-400">{a.content}</p>
                 </div>
               ))
             )}
             <Link to="/announcements" className="block text-center text-sm font-medium text-brand-600 dark:text-brand-400">
-              Barchasini ko'rish →
+              {t("Barchasini ko'rish →")}
             </Link>
           </CardContent>
         </Card>
@@ -153,11 +154,11 @@ function AdminDashboard() {
 
       {data && (
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-5">
-          <MiniStat label="O'rtacha baho" value={`${data.average_grades} / 10`} tone="brand" />
-          <MiniStat label="Bugun kelmagan" value={data.absent_students} tone="rose" />
-          <MiniStat label="O'qituvchi davomati" value={`${data.teacher_attendance_percentage}%`} tone="sky" />
-          <MiniStat label="Uy vazifa bajarilishi" value={`${data.homework_completion}%`} tone="emerald" />
-          <MiniStat label="Test o'rtachasi" value={`${data.quiz_average}%`} tone="brand" />
+          <MiniStat label={t("O'rtacha baho")} value={`${data.average_grades} / 10`} tone="brand" />
+          <MiniStat label={t("Bugun kelmagan")} value={data.absent_students} tone="rose" />
+          <MiniStat label={t("O'qituvchi davomati")} value={`${data.teacher_attendance_percentage}%`} tone="sky" />
+          <MiniStat label={t("Uy vazifa bajarilishi")} value={`${data.homework_completion}%`} tone="emerald" />
+          <MiniStat label={t("Test o'rtachasi")} value={`${data.quiz_average}%`} tone="brand" />
         </div>
       )}
     </div>
@@ -191,15 +192,15 @@ function TeacherDashboard() {
   return (
     <div>
       <PageHeader
-        title="Xush kelibsiz 👋"
-        description={`Bugun ${weekdayUz(todayISO())}, ${formatDate(todayISO())}`}
+        title={t("Xush kelibsiz")}
+        description={t("Bugun {day}, {date}", { day: weekdayUz(todayISO()), date: formatDate(todayISO()) })}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Bugungi darslar" value={lessons?.count ?? "—"} icon={CalendarDays} tone="brand" />
-        <StatCard label="Mening sinflarim" value={classes?.count ?? "—"} icon={School} tone="accent" />
+        <StatCard label={t("Bugungi darslar")} value={lessons?.count ?? "—"} icon={CalendarDays} tone="brand" />
+        <StatCard label={t("Mening sinflarim")} value={classes?.count ?? "—"} icon={School} tone="accent" />
         <StatCard
-          label="Jami o'quvchilar"
+          label={t("Jami o'quvchilar")}
           value={classes?.results.reduce((sum, c) => sum + (c.student_count ?? 0), 0) ?? "—"}
           icon={Users}
           tone="emerald"
@@ -209,13 +210,13 @@ function TeacherDashboard() {
       <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Bugungi dars jadvali</CardTitle>
+            <CardTitle>{t("Bugungi dars jadvali")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5">
             {lessonsLoading ? (
               Array.from({ length: 3 }).map((_, i) => <LessonRowSkeleton key={i} />)
             ) : !lessons || lessons.results.length === 0 ? (
-              <EmptyState icon={CalendarDays} title="Bugun darsingiz yo'q" description="Yaxshi dam oling!" />
+              <EmptyState icon={CalendarDays} title={t("Bugun darsingiz yo'q")} description={t("Yaxshi dam oling!")} />
             ) : (
               lessons.results.map((l) => <LessonRow key={l.id} lesson={l} />)
             )}
@@ -224,7 +225,7 @@ function TeacherDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Sinflarim</CardTitle>
+            <CardTitle>{t("Sinflarim")}</CardTitle>
           </CardHeader>
           <CardContent>
             {!classes ? (
@@ -261,10 +262,10 @@ function StudentDashboard() {
         ? [
             // average_grade is 0-10 — scaled x10 here only so it shares the same
             // 0-100 axis as the percentage metrics; the tooltip below un-scales it.
-            { metric: "Baho", value: progress.average_grade * 10, raw: progress.average_grade },
-            { metric: "Davomat", value: progress.attendance_percentage, raw: progress.attendance_percentage },
-            { metric: "Uy vazifa", value: progress.homework_completion, raw: progress.homework_completion },
-            { metric: "Test", value: progress.quiz_average, raw: progress.quiz_average },
+            { metric: t("Baho"), value: progress.average_grade * 10, raw: progress.average_grade },
+            { metric: t("Davomat"), value: progress.attendance_percentage, raw: progress.attendance_percentage },
+            { metric: t("Uy vazifa"), value: progress.homework_completion, raw: progress.homework_completion },
+            { metric: t("Test"), value: progress.quiz_average, raw: progress.quiz_average },
           ]
         : [],
     [progress]
@@ -272,17 +273,17 @@ function StudentDashboard() {
 
   return (
     <div>
-      <PageHeader title="Xush kelibsiz 👋" description="Bugungi jadval va progressingiz" />
+      <PageHeader title={t("Xush kelibsiz")} description={t("Bugungi jadval va progressingiz")} />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {progressLoading || !progress ? (
           Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
         ) : (
           <>
-            <StatCard label="O'rtacha baho" value={progress.average_grade} icon={GraduationCap} tone="brand" />
-            <StatCard label="Davomat" value={`${progress.attendance_percentage}%`} icon={ClipboardCheck} tone="emerald" />
-            <StatCard label="Uy vazifa" value={`${progress.homework_completion}%`} icon={BookOpenCheck} tone="accent" />
-            <StatCard label="Test o'rtachasi" value={`${progress.quiz_average}%`} icon={BadgeCheck} tone="sky" />
+            <StatCard label={t("O'rtacha baho")} value={progress.average_grade} icon={GraduationCap} tone="brand" />
+            <StatCard label={t("Davomat")} value={`${progress.attendance_percentage}%`} icon={ClipboardCheck} tone="emerald" />
+            <StatCard label={t("Uy vazifa")} value={`${progress.homework_completion}%`} icon={BookOpenCheck} tone="accent" />
+            <StatCard label={t("Test o'rtachasi")} value={`${progress.quiz_average}%`} icon={BadgeCheck} tone="sky" />
           </>
         )}
       </div>
@@ -290,7 +291,7 @@ function StudentDashboard() {
       <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Umumiy progress</CardTitle>
+            <CardTitle>{t("Umumiy progress")}</CardTitle>
           </CardHeader>
           <CardContent>
             {!progress ? (
@@ -305,7 +306,7 @@ function StudentDashboard() {
                     contentStyle={{ borderRadius: 12, border: "none", boxShadow: "var(--shadow-soft-lg)" }}
                     formatter={(_value, name, props) => {
                       const point = props.payload as { metric: string; raw: number }
-                      return [`${point.raw}${point.metric === "Baho" ? "/10" : "%"}`, name]
+                      return [`${point.raw}${point.metric === t("Baho") ? "/10" : "%"}`, name]
                     }}
                   />
                 </RadarChart>
@@ -316,13 +317,13 @@ function StudentDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Bugungi darslar</CardTitle>
+            <CardTitle>{t("Bugungi darslar")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5">
             {lessonsLoading ? (
               Array.from({ length: 3 }).map((_, i) => <LessonRowSkeleton key={i} />)
             ) : !lessons || lessons.results.length === 0 ? (
-              <EmptyState icon={CalendarDays} title="Bugun darsingiz yo'q" />
+              <EmptyState icon={CalendarDays} title={t("Bugun darsingiz yo'q")} />
             ) : (
               lessons.results.map((l) => <LessonRow key={l.id} lesson={l} />)
             )}
@@ -331,13 +332,13 @@ function StudentDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>So'nggi baholar</CardTitle>
+            <CardTitle>{t("So'nggi baholar")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {!grades ? (
               <Skeleton className="h-56 w-full" />
             ) : grades.results.length === 0 ? (
-              <EmptyState title="Hali baho yo'q" />
+              <EmptyState title={t("Hali baho yo'q")} />
             ) : (
               grades.results.map((g) => (
                 <div key={g.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-3.5 py-2.5 dark:border-ink-800">
@@ -365,7 +366,7 @@ function ParentDashboard() {
 
   return (
     <div>
-      <PageHeader title="Xush kelibsiz 👋" description="Farzandlaringiz progressi" />
+      <PageHeader title={t("Xush kelibsiz")} description={t("Farzandlaringiz progressi")} />
 
       {loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -374,7 +375,7 @@ function ParentDashboard() {
           ))}
         </div>
       ) : !students || students.results.length === 0 ? (
-        <EmptyState icon={UserRound} title="Farzand topilmadi" description="Admin bilan bog'laning" />
+        <EmptyState icon={UserRound} title={t("Farzand topilmadi")} description={t("Admin bilan bog'laning")} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {students.results.map((child) => (
@@ -394,10 +395,10 @@ function ChildProgressCard({ childId, name, className }: { childId: number; name
       <CardHeader>
         <div>
           <CardTitle>{name}</CardTitle>
-          <p className="text-xs text-ink-400">{className ?? "Sinf biriktirilmagan"}</p>
+          <p className="text-xs text-ink-400">{className ?? t("Sinf biriktirilmagan")}</p>
         </div>
         <Link to="/grades" className="text-xs font-medium text-brand-600 dark:text-brand-400">
-          Batafsil →
+          {t("Batafsil →")}
         </Link>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -405,10 +406,10 @@ function ChildProgressCard({ childId, name, className }: { childId: number; name
           <Skeleton className="h-32 w-full" />
         ) : (
           <>
-            <ProgressBar label="O'rtacha baho" value={progress.average_grade} suffix="" max={10} />
-            <ProgressBar label="Davomat" value={progress.attendance_percentage} suffix="%" max={100} />
-            <ProgressBar label="Uy vazifa" value={progress.homework_completion} suffix="%" max={100} />
-            <ProgressBar label="Test" value={progress.quiz_average} suffix="%" max={100} />
+            <ProgressBar label={t("O'rtacha baho")} value={progress.average_grade} suffix="" max={10} />
+            <ProgressBar label={t("Davomat")} value={progress.attendance_percentage} suffix="%" max={100} />
+            <ProgressBar label={t("Uy vazifa")} value={progress.homework_completion} suffix="%" max={100} />
+            <ProgressBar label={t("Test")} value={progress.quiz_average} suffix="%" max={100} />
           </>
         )}
       </CardContent>

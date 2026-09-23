@@ -14,6 +14,7 @@ import { labelFor } from "../hooks/useNotificationSocket"
 import { formatRelative } from "../lib/format"
 import { cn } from "../lib/cn"
 import type { Notification, Paginated } from "../types"
+import { t } from "../i18n"
 
 const PAGE_SIZE = 15
 
@@ -36,7 +37,7 @@ export default function NotificationsPage() {
   async function markAllRead() {
     try {
       await api.post("/notifications/mark_all_read/")
-      toast.success("Barchasi o'qilgan deb belgilandi")
+      toast.success(t("Barchasi o'qilgan deb belgilandi"))
       refetch()
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -46,8 +47,8 @@ export default function NotificationsPage() {
   return (
     <div>
       <PageHeader
-        title="Bildirishnomalar"
-        description="Barcha bildirishnomalaringiz"
+        title={t("Bildirishnomalar")}
+        description={t("Barcha bildirishnomalaringiz")}
         actions={
           <Button variant="outline" onClick={markAllRead}>
             <CheckCheck className="h-4 w-4" /> Hammasini o'qish
@@ -62,7 +63,7 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : !data || data.results.length === 0 ? (
-        <EmptyState icon={Bell} title="Bildirishnoma yo'q" />
+        <EmptyState icon={Bell} title={t("Bildirishnoma yo'q")} />
       ) : (
         <div className="space-y-2.5">
           {data.results.map((n, i) => (

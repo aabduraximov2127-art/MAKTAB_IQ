@@ -13,6 +13,7 @@ import { Modal } from "../components/ui/Modal"
 import { EmptyState } from "../components/ui/EmptyState"
 import { CardSkeleton } from "../components/ui/Skeleton"
 import type { Paginated, Subject } from "../types"
+import { t } from "../i18n"
 
 const GRADIENTS = [
   "from-brand-500 to-brand-700",
@@ -32,8 +33,8 @@ export default function SubjectsPage() {
   return (
     <div>
       <PageHeader
-        title="Fanlar"
-        description="Maktabda o'qitiladigan fanlar ro'yxati"
+        title={t("Fanlar")}
+        description={t("Maktabda o'qitiladigan fanlar ro'yxati")}
         actions={
           isAdmin && (
             <Button onClick={() => setAddOpen(true)}>
@@ -50,7 +51,7 @@ export default function SubjectsPage() {
           ))}
         </div>
       ) : !data || data.results.length === 0 ? (
-        <EmptyState icon={BookOpen} title="Fan topilmadi" />
+        <EmptyState icon={BookOpen} title={t("Fan topilmadi")} />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {data.results.map((s, i) => (
@@ -85,7 +86,7 @@ function AddSubjectModal({ open, onClose, onDone }: { open: boolean; onClose: ()
     setLoading(true)
     try {
       await api.post("/subjects/", form)
-      toast.success("Fan qo'shildi")
+      toast.success(t("Fan qo'shildi"))
       setForm({ name: "", description: "", icon: "" })
       onDone()
     } catch (err) {
@@ -96,19 +97,19 @@ function AddSubjectModal({ open, onClose, onDone }: { open: boolean; onClose: ()
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi fan qo'shish">
+    <Modal open={open} onClose={onClose} title={t("Yangi fan qo'shish")}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Nomi">
+        <Field label={t("Nomi")}>
           <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
         </Field>
-        <Field label="Icon (emoji)">
+        <Field label={t("Icon (emoji)")}>
           <Input value={form.icon} onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))} placeholder="📐" />
         </Field>
-        <Field label="Tavsif">
+        <Field label={t("Tavsif")}>
           <Input value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
         </Field>
         <Button type="submit" className="w-full" loading={loading}>
-          Qo'shish
+          {t("Qo'shish")}
         </Button>
       </form>
     </Modal>

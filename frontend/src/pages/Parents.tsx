@@ -10,6 +10,7 @@ import { Avatar } from "../components/ui/Avatar"
 import { Badge } from "../components/ui/Badge"
 import { fullName } from "../lib/format"
 import type { ParentProfile, Paginated } from "../types"
+import { t } from "../i18n"
 
 const PAGE_SIZE = 10
 
@@ -26,7 +27,7 @@ export default function ParentsPage() {
   const columns: Column<ParentProfile>[] = [
     {
       key: "name",
-      header: "Ota-ona",
+      header: t("Ota-ona"),
       render: (row) => (
         <div className="flex items-center gap-3">
           <Avatar name={fullName(row.user)} size="sm" />
@@ -36,7 +37,7 @@ export default function ParentsPage() {
     },
     {
       key: "children",
-      header: "Farzandlar",
+      header: t("Farzandlar"),
       render: (row) => (
         <div className="flex flex-wrap gap-1">
           {row.children.length === 0 ? (
@@ -47,17 +48,17 @@ export default function ParentsPage() {
         </div>
       ),
     },
-    { key: "phone", header: "Telefon", render: (row) => row.user.phone || "—", hideOnMobile: true },
+    { key: "phone", header: t("Telefon"), render: (row) => row.user.phone || "—", hideOnMobile: true },
   ]
 
   return (
     <div>
-      <PageHeader title="Ota-onalar" description="Tizimga ulangan ota-onalar ro'yxati" />
+      <PageHeader title={t("Ota-onalar")} description={t("Tizimga ulangan ota-onalar ro'yxati")} />
 
       <div className="mb-4 max-w-xs">
         <Input
           icon={<Search className="h-4 w-4" />}
-          placeholder="Qidirish..."
+          placeholder={t("Qidirish...")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
@@ -71,7 +72,7 @@ export default function ParentsPage() {
         rows={data?.results ?? []}
         keyField={(r) => r.id}
         loading={loading}
-        emptyTitle="Ota-ona topilmadi"
+        emptyTitle={t("Ota-ona topilmadi")}
         onRowClick={setSelected}
       />
 
@@ -80,16 +81,16 @@ export default function ParentsPage() {
       <Drawer open={!!selected} onClose={() => setSelected(null)} title={selected ? fullName(selected.user) : ""}>
         {selected && (
           <div className="space-y-4">
-            <p className="text-sm font-medium text-ink-500 dark:text-ink-400">Farzandlari</p>
+            <p className="text-sm font-medium text-ink-500 dark:text-ink-400">{t("Farzandlari")}</p>
             {selected.children.length === 0 ? (
-              <p className="text-sm text-ink-400">Farzand biriktirilmagan</p>
+              <p className="text-sm text-ink-400">{t("Farzand biriktirilmagan")}</p>
             ) : (
               selected.children.map((c) => (
                 <div key={c.id} className="flex items-center gap-3 rounded-xl border border-ink-100 p-3 dark:border-ink-800">
                   <Avatar name={fullName(c.user)} src={c.photo} size="sm" />
                   <div>
                     <p className="text-sm font-medium text-ink-800 dark:text-ink-100">{fullName(c.user)}</p>
-                    <p className="text-xs text-ink-400">{c.class_room_name ?? "Sinf biriktirilmagan"}</p>
+                    <p className="text-xs text-ink-400">{c.class_room_name ?? t("Sinf biriktirilmagan")}</p>
                   </div>
                 </div>
               ))

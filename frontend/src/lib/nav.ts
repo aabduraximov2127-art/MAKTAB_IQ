@@ -19,6 +19,7 @@ import {
   UsersRound,
 } from "lucide-react"
 import type { Role } from "../types"
+import { t } from "../i18n"
 
 export interface NavItem {
   to: string
@@ -38,27 +39,27 @@ const NOT_SUPERADMIN: Role[] = ["ADMIN", "TEACHER", "STUDENT", "PARENT"]
 const NOT_STUDENT: Role[] = ["SUPERADMIN", "ADMIN", "TEACHER", "PARENT"]
 
 export const NAV_ITEMS: NavItem[] = [
-  { to: "/", label: "Bosh sahifa", icon: LayoutGrid, roles: ALL, section: "Umumiy" },
-  { to: "/schedule", label: "Dars jadvali", icon: CalendarDays, roles: ALL, section: "Umumiy" },
-  { to: "/grades", label: "Baholar", icon: GraduationCap, roles: ALL, section: "Umumiy" },
-  { to: "/attendance", label: "Davomat", icon: ClipboardCheck, roles: NOT_SUPERADMIN, section: "Umumiy" },
-  { to: "/homework", label: "Uy vazifalari", icon: ListChecks, roles: NOT_SUPERADMIN, section: "Umumiy" },
-  { to: "/quizzes", label: "Testlar", icon: BookOpen, roles: NOT_SUPERADMIN, section: "Umumiy" },
-  { to: "/library", label: "Kutubxona", icon: LibraryBig, roles: ALL, section: "Umumiy" },
-  { to: "/ai", label: "AI Yordamchi", icon: Bot, roles: ["STUDENT"], section: "Umumiy" },
+  { to: "/", label: t("Bosh sahifa"), icon: LayoutGrid, roles: ALL, section: t("Umumiy") },
+  { to: "/schedule", label: t("Dars jadvali"), icon: CalendarDays, roles: ALL, section: t("Umumiy") },
+  { to: "/grades", label: t("Baholar"), icon: GraduationCap, roles: ALL, section: t("Umumiy") },
+  { to: "/attendance", label: t("Davomat"), icon: ClipboardCheck, roles: NOT_SUPERADMIN, section: t("Umumiy") },
+  { to: "/homework", label: t("Uy vazifalari"), icon: ListChecks, roles: NOT_SUPERADMIN, section: t("Umumiy") },
+  { to: "/quizzes", label: t("Testlar"), icon: BookOpen, roles: NOT_SUPERADMIN, section: t("Umumiy") },
+  { to: "/library", label: t("Kutubxona"), icon: LibraryBig, roles: ALL, section: t("Umumiy") },
+  { to: "/ai", label: t("AI Yordamchi"), icon: Bot, roles: ["STUDENT"], section: t("Umumiy") },
 
-  { to: "/students", label: "O'quvchilar", icon: Users, roles: [...STAFF, "TEACHER", "PARENT"], section: "Boshqaruv" },
-  { to: "/teachers", label: "O'qituvchilar", icon: UsersRound, roles: STAFF, section: "Boshqaruv" },
-  { to: "/parents", label: "Ota-onalar", icon: UsersRound, roles: STAFF, section: "Boshqaruv" },
-  { to: "/classes", label: "Sinflar", icon: School, roles: NOT_SUPERADMIN, section: "Boshqaruv" },
-  { to: "/subjects", label: "Fanlar", icon: BookOpen, roles: NOT_STUDENT, section: "Boshqaruv" },
-  { to: "/analytics", label: "Statistika", icon: LineChart, roles: STAFF, section: "Boshqaruv" },
+  { to: "/students", label: t("O'quvchilar"), icon: Users, roles: [...STAFF, "TEACHER", "PARENT"], section: t("Boshqaruv") },
+  { to: "/teachers", label: t("O'qituvchilar"), icon: UsersRound, roles: STAFF, section: t("Boshqaruv") },
+  { to: "/parents", label: t("Ota-onalar"), icon: UsersRound, roles: STAFF, section: t("Boshqaruv") },
+  { to: "/classes", label: t("Sinflar"), icon: School, roles: NOT_SUPERADMIN, section: t("Boshqaruv") },
+  { to: "/subjects", label: t("Fanlar"), icon: BookOpen, roles: NOT_STUDENT, section: t("Boshqaruv") },
+  { to: "/analytics", label: t("Statistika"), icon: LineChart, roles: STAFF, section: t("Boshqaruv") },
 
-  { to: "/chat", label: "Chat", icon: MessagesSquare, roles: ALL, section: "Aloqa" },
-  { to: "/announcements", label: "E'lonlar", icon: Megaphone, roles: NOT_STUDENT, section: "Aloqa" },
-  { to: "/notifications", label: "Bildirishnomalar", icon: Bell, roles: NOT_STUDENT, section: "Aloqa" },
-  { to: "/helpdesk", label: "Yordam", icon: Ticket, roles: ALL, section: "Aloqa" },
-  { to: "/profile", label: "Profil", icon: User, roles: ALL, section: "Aloqa" },
+  { to: "/chat", label: t("Chat"), icon: MessagesSquare, roles: ALL, section: t("Aloqa") },
+  { to: "/announcements", label: t("E'lonlar"), icon: Megaphone, roles: NOT_STUDENT, section: t("Aloqa") },
+  { to: "/notifications", label: t("Bildirishnomalar"), icon: Bell, roles: NOT_STUDENT, section: t("Aloqa") },
+  { to: "/helpdesk", label: t("Yordam"), icon: Ticket, roles: ALL, section: t("Aloqa") },
+  { to: "/profile", label: t("Profil"), icon: User, roles: ALL, section: t("Aloqa") },
 ]
 
 export function navForRole(role: Role) {

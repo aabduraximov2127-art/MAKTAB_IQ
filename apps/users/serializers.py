@@ -4,6 +4,7 @@ from rest_framework import serializers
 from apps.classes.models import ClassRoom
 from apps.schools.models import School
 from common.permissions import user_role
+from common.validators import normalize_uz_phone
 
 from .models import (
     ParentProfile,
@@ -17,7 +18,19 @@ from .models import (
 )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class PhoneValidationMixin:
+    """Stores phone numbers in the canonical +998XXXXXXXXX form."""
+
+    def validate_phone(self, value):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        try:
+            return normalize_uz_phone(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.messages)
+
+
+class UserSerializer(PhoneValidationMixin, serializers.ModelSerializer):
     telegram_linked = serializers.SerializerMethodField()
 
     def get_telegram_linked(self, obj):
@@ -42,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "role", "is_deactivated", "date_joined", "telegram_linked")
 
 
-class RegisterStudentSerializer(serializers.ModelSerializer):
+class RegisterStudentSerializer(PhoneValidationMixin, serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[password_validation.validate_password])
     age = serializers.IntegerField(write_only=True, required=False)
     passport_number = serializers.CharField(write_only=True, required=False, allow_blank=True)
@@ -124,7 +137,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         return data
 
 
-class StudentProfileUpdateSerializer(serializers.ModelSerializer):
+class StudentProfileUpdateSerializer(PhoneValidationMixin, serializers.ModelSerializer):
     """Used for PATCH/PUT by ADMIN/SUPERADMIN/TEACHER/PARENT (see CanEditStudentProfile).
     Deliberately excludes school/class_room/student_code/passport_number — class changes
     only ever happen through the `transfer` action, and identifiers stay admin-managed."""

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { TableSkeleton } from "./Skeleton"
 import { EmptyState } from "./EmptyState"
+import { t } from "../../i18n"
 
 export interface Column<T> {
   key: string
@@ -25,7 +26,7 @@ export function DataTable<T>({
   rows,
   keyField,
   loading,
-  emptyTitle = "Hech narsa topilmadi",
+  emptyTitle = t("Hech narsa topilmadi"),
   emptyDescription,
   onRowClick,
 }: DataTableProps<T>) {

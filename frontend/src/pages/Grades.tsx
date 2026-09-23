@@ -25,6 +25,7 @@ import type {
   StudentProfile,
   Subject,
 } from "../types"
+import { t } from "../i18n"
 
 export default function GradesPage() {
   const user = useAuthStore((s) => s.user)
@@ -44,7 +45,7 @@ function MyGradesView() {
 
   return (
     <div>
-      <PageHeader title="Baholar" description="Fanlar bo'yicha baholar va yillik natijalar" />
+      <PageHeader title={t("Baholar")} description={t("Fanlar bo'yicha baholar va yillik natijalar")} />
 
       {children.length > 1 && (
         <div className="mb-4">
@@ -82,40 +83,40 @@ function StudentGradeDetail({ studentId }: { studentId: number }) {
   )
 
   const columns: Column<Grade>[] = [
-    { key: "subject", header: "Fan", render: (r) => r.subject_name },
-    { key: "quarter", header: "Chorak", render: (r) => `${r.quarter}-chorak` },
-    { key: "type", header: "Turi", render: (r) => r.grade_type, hideOnMobile: true },
+    { key: "subject", header: t("Fan"), render: (r) => r.subject_name },
+    { key: "quarter", header: t("Chorak"), render: (r) => t("{q}-chorak", { q: r.quarter }) },
+    { key: "type", header: t("Turi"), render: (r) => r.grade_type, hideOnMobile: true },
     {
       key: "value",
-      header: "Baho",
+      header: t("Baho"),
       render: (r) => <span className={`font-display text-base font-bold ${gradeColor(r.value)}`}>{r.value}</span>,
     },
-    { key: "date", header: "Sana", render: (r) => formatDate(r.created_at), hideOnMobile: true },
+    { key: "date", header: t("Sana"), render: (r) => formatDate(r.created_at), hideOnMobile: true },
   ]
 
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Choraklik baholar</CardTitle>
+          <CardTitle>{t("Choraklik baholar")}</CardTitle>
         </CardHeader>
         <CardContent>
           {annualLoading ? (
             <Skeleton className="h-56 w-full" />
           ) : !annual || annual.results.length === 0 ? (
-            <EmptyState icon={GraduationCap} title="Hali baho yo'q" />
+            <EmptyState icon={GraduationCap} title={t("Hali baho yo'q")} />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[480px] border-separate border-spacing-1.5 text-sm">
                 <thead>
                   <tr>
-                    <th className="px-2 pb-1 text-left text-xs font-semibold uppercase tracking-wide text-ink-400">Fan</th>
+                    <th className="px-2 pb-1 text-left text-xs font-semibold uppercase tracking-wide text-ink-400">{t("Fan")}</th>
                     {[1, 2, 3, 4].map((q) => (
                       <th key={q} className="pb-1 text-center text-xs font-semibold uppercase tracking-wide text-ink-400">
-                        {q}-chorak
+                        {t("{q}-chorak", { q })}
                       </th>
                     ))}
-                    <th className="pb-1 text-center text-xs font-semibold uppercase tracking-wide text-brand-500">Natija</th>
+                    <th className="pb-1 text-center text-xs font-semibold uppercase tracking-wide text-brand-500">{t("Natija")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -148,10 +149,10 @@ function StudentGradeDetail({ studentId }: { studentId: number }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>So'nggi baholar</CardTitle>
+          <CardTitle>{t("So'nggi baholar")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} rows={recent?.results ?? []} keyField={(r) => r.id} loading={recentLoading} emptyTitle="Baho yo'q" />
+          <DataTable columns={columns} rows={recent?.results ?? []} keyField={(r) => r.id} loading={recentLoading} emptyTitle={t("Baho yo'q")} />
         </CardContent>
       </Card>
     </div>
@@ -172,23 +173,23 @@ function ManageGradesView() {
   const { data: grades, loading, refetch } = useFetch<Paginated<Grade>>(`/grades/?${query.toString()}`, [subjectFilter])
 
   const columns: Column<Grade>[] = [
-    { key: "student", header: "O'quvchi", render: (r) => r.student_name },
-    { key: "subject", header: "Fan", render: (r) => r.subject_name },
-    { key: "quarter", header: "Chorak", render: (r) => `${r.quarter}-chorak`, hideOnMobile: true },
-    { key: "type", header: "Turi", render: (r) => r.grade_type, hideOnMobile: true },
+    { key: "student", header: t("O'quvchi"), render: (r) => r.student_name },
+    { key: "subject", header: t("Fan"), render: (r) => r.subject_name },
+    { key: "quarter", header: t("Chorak"), render: (r) => t("{q}-chorak", { q: r.quarter }), hideOnMobile: true },
+    { key: "type", header: t("Turi"), render: (r) => r.grade_type, hideOnMobile: true },
     {
       key: "value",
-      header: "Baho",
+      header: t("Baho"),
       render: (r) => <span className={`font-display text-base font-bold ${gradeColor(r.value)}`}>{r.value}</span>,
     },
-    { key: "date", header: "Sana", render: (r) => formatDate(r.created_at), hideOnMobile: true },
+    { key: "date", header: t("Sana"), render: (r) => formatDate(r.created_at), hideOnMobile: true },
   ]
 
   return (
     <div>
       <PageHeader
-        title="Baholar"
-        description="O'quvchilarga baho qo'yish va nazorat qilish"
+        title={t("Baholar")}
+        description={t("O'quvchilarga baho qo'yish va nazorat qilish")}
         actions={
           tab === "table" && (
             <Button onClick={() => setAddOpen(true)}>
@@ -201,8 +202,8 @@ function ManageGradesView() {
       <div className="mb-4">
         <Tabs
           tabs={[
-            { key: "table", label: "Jadval" },
-            { key: "browse", label: "Sinf bo'yicha ko'rish" },
+            { key: "table", label: t("Jadval") },
+            { key: "browse", label: t("Sinf bo'yicha ko'rish") },
           ]}
           active={tab}
           onChange={(k) => setTab(k as "table" | "browse")}
@@ -213,7 +214,7 @@ function ManageGradesView() {
         <>
           <div className="mb-4 max-w-xs">
             <Select value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
-              <option value="">Barcha fanlar</option>
+              <option value="">{t("Barcha fanlar")}</option>
               {subjects?.results.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -222,7 +223,7 @@ function ManageGradesView() {
             </Select>
           </div>
 
-          <DataTable columns={columns} rows={grades?.results ?? []} keyField={(r) => r.id} loading={loading} emptyTitle="Baho topilmadi" />
+          <DataTable columns={columns} rows={grades?.results ?? []} keyField={(r) => r.id} loading={loading} emptyTitle={t("Baho topilmadi")} />
 
           <AddGradeModal open={addOpen} onClose={() => setAddOpen(false)} onDone={() => { setAddOpen(false); refetch() }} />
         </>
@@ -252,26 +253,26 @@ function DrillDownGradesView({ embedded = false }: { embedded?: boolean }) {
 
   return (
     <div>
-      {!embedded && <PageHeader title="Baholar" description="Sinf, o'quvchi va fanni tanlab bahoni ko'ring" />}
+      {!embedded && <PageHeader title={t("Baholar")} description={t("Sinf, o'quvchi va fanni tanlab bahoni ko'ring")} />}
 
       <div className="mb-4 flex flex-wrap items-center gap-1.5 text-sm">
-        <Crumb label="Sinf" value={selectedClass?.name} onClick={() => { setSelectedClass(null); setSelectedStudent(null); setSelectedSubject(null) }} active={!selectedClass} />
+        <Crumb label={t("Sinf")} value={selectedClass?.name} onClick={() => { setSelectedClass(null); setSelectedStudent(null); setSelectedSubject(null) }} active={!selectedClass} />
         {selectedClass && (
           <>
             <ChevronRight className="h-3.5 w-3.5 text-ink-300" />
-            <Crumb label="O'quvchi" value={selectedStudent ? fullName(selectedStudent.user) : undefined} onClick={() => { setSelectedStudent(null); setSelectedSubject(null) }} active={!selectedStudent} />
+            <Crumb label={t("O'quvchi")} value={selectedStudent ? fullName(selectedStudent.user) : undefined} onClick={() => { setSelectedStudent(null); setSelectedSubject(null) }} active={!selectedStudent} />
           </>
         )}
         {selectedStudent && (
           <>
             <ChevronRight className="h-3.5 w-3.5 text-ink-300" />
-            <Crumb label="Fan" value={selectedSubject?.name} onClick={() => setSelectedSubject(null)} active={!selectedSubject} />
+            <Crumb label={t("Fan")} value={selectedSubject?.name} onClick={() => setSelectedSubject(null)} active={!selectedSubject} />
           </>
         )}
       </div>
 
       {!selectedClass ? (
-        <PickerGrid loading={classesLoading} empty={!classes?.results.length} emptyTitle="Sinf topilmadi">
+        <PickerGrid loading={classesLoading} empty={!classes?.results.length} emptyTitle={t("Sinf topilmadi")}>
           {classes?.results.map((c) => (
             <PickerCard key={c.id} onClick={() => setSelectedClass(c)}>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 font-display text-sm font-bold text-white">
@@ -285,7 +286,7 @@ function DrillDownGradesView({ embedded = false }: { embedded?: boolean }) {
           ))}
         </PickerGrid>
       ) : !selectedStudent ? (
-        <PickerGrid loading={studentsLoading} empty={!students?.results.length} emptyTitle="Bu sinfda o'quvchi yo'q">
+        <PickerGrid loading={studentsLoading} empty={!students?.results.length} emptyTitle={t("Bu sinfda o'quvchi yo'q")}>
           {students?.results.map((s) => (
             <PickerCard key={s.id} onClick={() => setSelectedStudent(s)}>
               <Avatar name={fullName(s.user)} src={s.photo} size="sm" />
@@ -297,7 +298,7 @@ function DrillDownGradesView({ embedded = false }: { embedded?: boolean }) {
           ))}
         </PickerGrid>
       ) : !selectedSubject ? (
-        <PickerGrid loading={subjectsLoading} empty={!subjects?.results.length} emptyTitle="Fan topilmadi">
+        <PickerGrid loading={subjectsLoading} empty={!subjects?.results.length} emptyTitle={t("Fan topilmadi")}>
           {subjects?.results.map((s) => (
             <PickerCard key={s.id} onClick={() => setSelectedSubject(s)}>
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-lg dark:bg-brand-500/10">
@@ -383,7 +384,7 @@ function SubjectGradeView({ studentId, subject }: { studentId: number; subject: 
           {annualLoading ? (
             <Skeleton className="h-20 w-full" />
           ) : !row ? (
-            <EmptyState icon={GraduationCap} title="Bu fandan hali baho yo'q" />
+            <EmptyState icon={GraduationCap} title={t("Bu fandan hali baho yo'q")} />
           ) : (
             <div className="flex flex-wrap items-center gap-3">
               {[1, 2, 3, 4].map((q) => {
@@ -401,7 +402,7 @@ function SubjectGradeView({ studentId, subject }: { studentId: number; subject: 
                 <div className={`flex h-14 w-16 items-center justify-center rounded-xl font-display text-lg font-bold ring-2 ring-brand-400/40 ${gradeCellClasses(row.annual_average)}`}>
                   {row.annual_average}
                 </div>
-                <p className="mt-1 text-xs font-semibold text-brand-500">Natija</p>
+                <p className="mt-1 text-xs font-semibold text-brand-500">{t("Natija")}</p>
               </div>
             </div>
           )}
@@ -410,19 +411,19 @@ function SubjectGradeView({ studentId, subject }: { studentId: number; subject: 
 
       <Card>
         <CardHeader>
-          <CardTitle>Barcha baholar tarixi</CardTitle>
+          <CardTitle>{t("Barcha baholar tarixi")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {historyLoading ? (
             <Skeleton className="h-32 w-full" />
           ) : !history || history.results.length === 0 ? (
-            <EmptyState title="Baho topilmadi" />
+            <EmptyState title={t("Baho topilmadi")} />
           ) : (
             history.results.map((g) => (
               <div key={g.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-3.5 py-2.5 dark:border-ink-800">
                 <div>
                   <p className="text-sm font-medium text-ink-800 dark:text-ink-100">
-                    {g.quarter}-chorak · {g.grade_type}
+                    {t("{q}-chorak", { q: g.quarter })} · {g.grade_type}
                   </p>
                   <p className="text-xs text-ink-400">{formatDate(g.created_at)}</p>
                 </div>
@@ -454,7 +455,7 @@ function AddGradeModal({ open, onClose, onDone }: { open: boolean; onClose: () =
     setLoading(true)
     try {
       await api.post("/grades/", { ...form, academic_year: academicYear })
-      toast.success("Baho qo'yildi")
+      toast.success(t("Baho qo'yildi"))
       setForm({ student: "", subject: "", quarter: "", value: "", grade_type: "DAILY", comment: "" })
       onDone()
     } catch (err) {
@@ -465,11 +466,11 @@ function AddGradeModal({ open, onClose, onDone }: { open: boolean; onClose: () =
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Baho qo'yish" size="lg">
+    <Modal open={open} onClose={onClose} title={t("Baho qo'yish")} size="lg">
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Sinf">
+        <Field label={t("Sinf")}>
           <Select value={classRoom} onChange={(e) => setClassRoom(e.target.value)} required>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {classes?.results.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -477,9 +478,9 @@ function AddGradeModal({ open, onClose, onDone }: { open: boolean; onClose: () =
             ))}
           </Select>
         </Field>
-        <Field label="O'quvchi">
+        <Field label={t("O'quvchi")}>
           <Select value={form.student} onChange={(e) => setForm((f) => ({ ...f, student: e.target.value }))} required disabled={!classRoom}>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {students?.results.map((s) => (
               <option key={s.id} value={s.id}>
                 {fullName(s.user)}
@@ -487,9 +488,9 @@ function AddGradeModal({ open, onClose, onDone }: { open: boolean; onClose: () =
             ))}
           </Select>
         </Field>
-        <Field label="Fan">
+        <Field label={t("Fan")}>
           <Select value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} required>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {subjects?.results.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -497,9 +498,9 @@ function AddGradeModal({ open, onClose, onDone }: { open: boolean; onClose: () =
             ))}
           </Select>
         </Field>
-        <Field label="O'quv yili">
+        <Field label={t("O'quv yili")}>
           <Select value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} required>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {years?.results.map((y) => (
               <option key={y.id} value={y.id}>
                 {y.name}
@@ -507,33 +508,33 @@ function AddGradeModal({ open, onClose, onDone }: { open: boolean; onClose: () =
             ))}
           </Select>
         </Field>
-        <Field label="Chorak">
+        <Field label={t("Chorak")}>
           <Select value={form.quarter} onChange={(e) => setForm((f) => ({ ...f, quarter: e.target.value }))} required disabled={!academicYear}>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {quarters?.results.map((q) => (
               <option key={q.id} value={q.id}>
-                {q.number}-chorak
+                {t("{q}-chorak", { q: q.number })}
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Baho turi">
+        <Field label={t("Baho turi")}>
           <Select value={form.grade_type} onChange={(e) => setForm((f) => ({ ...f, grade_type: e.target.value }))}>
-            <option value="DAILY">Kundalik</option>
-            <option value="HOMEWORK">Uy vazifasi</option>
-            <option value="QUIZ">Test</option>
-            <option value="QUARTER">Chorak</option>
-            <option value="EXAM">Imtihon</option>
+            <option value="DAILY">{t("Kundalik")}</option>
+            <option value="HOMEWORK">{t("Uy vazifasi")}</option>
+            <option value="QUIZ">{t("Test")}</option>
+            <option value="QUARTER">{t("Chorak")}</option>
+            <option value="EXAM">{t("Imtihon")}</option>
           </Select>
         </Field>
-        <Field label="Baho (0-10)">
+        <Field label={t("Baho (0-10)")}>
           <Input type="number" min={0} max={10} value={form.value} onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))} required />
         </Field>
-        <Field label="Izoh">
+        <Field label={t("Izoh")}>
           <Input value={form.comment} onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))} />
         </Field>
         <Button type="submit" className="sm:col-span-2" loading={loading}>
-          Saqlash
+          {t("Saqlash")}
         </Button>
       </form>
     </Modal>

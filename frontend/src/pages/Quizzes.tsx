@@ -16,6 +16,7 @@ import { EmptyState } from "../components/ui/EmptyState"
 import { CardSkeleton, Skeleton } from "../components/ui/Skeleton"
 import { formatDateTime } from "../lib/format"
 import type { ClassRoom, Paginated, Quiz, QuizAttempt, Subject } from "../types"
+import { t } from "../i18n"
 
 export default function QuizzesPage() {
   const user = useAuthStore((s) => s.user)
@@ -31,8 +32,8 @@ export default function QuizzesPage() {
   return (
     <div>
       <PageHeader
-        title="Testlar"
-        description={isStudent ? "Sizga tayinlangan testlar" : "Yaratilgan testlar ro'yxati"}
+        title={t("Testlar")}
+        description={isStudent ? t("Sizga tayinlangan testlar") : t("Yaratilgan testlar ro'yxati")}
         actions={
           isTeacher && (
             <Button onClick={() => setAddOpen(true)}>
@@ -49,7 +50,7 @@ export default function QuizzesPage() {
           ))}
         </div>
       ) : !data || data.results.length === 0 ? (
-        <EmptyState icon={BookOpen} title="Test topilmadi" />
+        <EmptyState icon={BookOpen} title={t("Test topilmadi")} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.results.map((q, i) => (
@@ -66,11 +67,11 @@ export default function QuizzesPage() {
                     </span>
                     <span>{q.total_points} ball</span>
                   </div>
-                  <p className="mt-1 text-xs text-ink-400">Muddat: {formatDateTime(q.deadline)}</p>
+                  <p className="mt-1 text-xs text-ink-400">{t("Muddat: {date}", { date: formatDateTime(q.deadline) })}</p>
                   <div className="mt-auto pt-4">
                     {isStudent ? (
                       <Button className="w-full" onClick={() => setTakeQuiz(q)}>
-                        Testni boshlash
+                        {t("Testni boshlash")}
                       </Button>
                     ) : (
                       <Button variant="outline" className="w-full" onClick={() => setResultsQuiz(q)}>
@@ -123,7 +124,7 @@ function TakeQuizModal({
     try {
       const { data } = await api.post(`/quizzes/${quiz.id}/submit/`, { answers })
       setResult(data)
-      toast.success("Test yakunlandi!")
+      toast.success(t("Test yakunlandi!"))
     } catch (err) {
       toast.error(getErrorMessage(err))
     } finally {
@@ -148,10 +149,10 @@ function TakeQuizModal({
             <p className="font-display text-2xl font-bold text-ink-900 dark:text-white">
               {result.score} / {result.max_score}
             </p>
-            <p className="text-sm text-ink-500 dark:text-ink-400">Natijangiz muvaffaqiyatli saqlandi</p>
+            <p className="text-sm text-ink-500 dark:text-ink-400">{t("Natijangiz muvaffaqiyatli saqlandi")}</p>
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleClose}>
-                Yopish
+                {t("Yopish")}
               </Button>
               {nextQuiz && (
                 <Button
@@ -193,7 +194,7 @@ function TakeQuizModal({
               </div>
             ))}
             <Button className="w-full" onClick={handleSubmit} loading={loading} disabled={Object.keys(answers).length < quiz.questions.length}>
-              Yakunlash va topshirish
+              {t("Yakunlash va topshirish")}
             </Button>
           </div>
         ))}
@@ -205,11 +206,11 @@ function ResultsModal({ quiz, onClose }: { quiz: Quiz | null; onClose: () => voi
   const { data, loading } = useFetch<Paginated<QuizAttempt>>(quiz ? `/quizzes/attempts/?quiz=${quiz.id}` : null)
 
   return (
-    <Modal open={!!quiz} onClose={onClose} title={quiz ? `${quiz.title} — natijalar` : ""}>
+    <Modal open={!!quiz} onClose={onClose} title={quiz ? t("{title} — natijalar", { title: quiz.title }) : ""}>
       {loading ? (
         <Skeleton className="h-40 w-full" />
       ) : !data || data.results.length === 0 ? (
-        <EmptyState title="Hali hech kim topshirmagan" />
+        <EmptyState title={t("Hali hech kim topshirmagan")} />
       ) : (
         <div className="space-y-2">
           {data.results
@@ -268,7 +269,7 @@ function CreateQuizModal({ open, onClose, onDone }: { open: boolean; onClose: ()
       for (const q of questions) {
         await api.post("/quizzes/questions/", { ...q, quiz: quiz.id })
       }
-      toast.success("Test yaratildi")
+      toast.success(t("Test yaratildi"))
       setForm({ title: "", subject: "", class_room: "", deadline: "", time_limit_minutes: "30" })
       setQuestions([{ question: "", options: ["", ""], correct_answer: 0, points: 1 }])
       onDone()
@@ -280,15 +281,15 @@ function CreateQuizModal({ open, onClose, onDone }: { open: boolean; onClose: ()
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi test yaratish" size="lg">
+    <Modal open={open} onClose={onClose} title={t("Yangi test yaratish")} size="lg">
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Sarlavha" className="sm:col-span-2">
+          <Field label={t("Sarlavha")} className="sm:col-span-2">
             <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
           </Field>
-          <Field label="Fan">
+          <Field label={t("Fan")}>
             <Select value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} required>
-              <option value="">Tanlang...</option>
+              <option value="">{t("Tanlang...")}</option>
               {subjects?.results.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -296,9 +297,9 @@ function CreateQuizModal({ open, onClose, onDone }: { open: boolean; onClose: ()
               ))}
             </Select>
           </Field>
-          <Field label="Sinf">
+          <Field label={t("Sinf")}>
             <Select value={form.class_room} onChange={(e) => setForm((f) => ({ ...f, class_room: e.target.value }))} required>
-              <option value="">Tanlang...</option>
+              <option value="">{t("Tanlang...")}</option>
               {classes?.results.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -306,10 +307,10 @@ function CreateQuizModal({ open, onClose, onDone }: { open: boolean; onClose: ()
               ))}
             </Select>
           </Field>
-          <Field label="Muddat">
+          <Field label={t("Muddat")}>
             <Input type="datetime-local" value={form.deadline} onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))} required />
           </Field>
-          <Field label="Vaqt limiti (daqiqa)">
+          <Field label={t("Vaqt limiti (daqiqa)")}>
             <Input
               type="number"
               min={1}
@@ -320,12 +321,12 @@ function CreateQuizModal({ open, onClose, onDone }: { open: boolean; onClose: ()
         </div>
 
         <div className="space-y-4">
-          <p className="text-sm font-semibold text-ink-700 dark:text-ink-200">Savollar</p>
+          <p className="text-sm font-semibold text-ink-700 dark:text-ink-200">{t("Savollar")}</p>
           {questions.map((q, qi) => (
             <div key={qi} className="space-y-2.5 rounded-xl border border-ink-100 p-3.5 dark:border-ink-800">
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder={`Savol ${qi + 1}`}
+                  placeholder={t("Savol {n}", { n: qi + 1 })}
                   value={q.question}
                   onChange={(e) => updateQuestion(qi, { question: e.target.value })}
                   required
@@ -348,7 +349,7 @@ function CreateQuizModal({ open, onClose, onDone }: { open: boolean; onClose: ()
                     onChange={() => updateQuestion(qi, { correct_answer: oi })}
                     className="accent-brand-600"
                   />
-                  <Input placeholder={`Variant ${oi + 1}`} value={opt} onChange={(e) => updateOption(qi, oi, e.target.value)} required />
+                  <Input placeholder={t("Variant {n}", { n: oi + 1 })} value={opt} onChange={(e) => updateOption(qi, oi, e.target.value)} required />
                 </div>
               ))}
               <div className="flex items-center justify-between pl-2">
@@ -360,7 +361,7 @@ function CreateQuizModal({ open, onClose, onDone }: { open: boolean; onClose: ()
                   + Variant qo'shish
                 </button>
                 <div className="flex items-center gap-1.5 text-xs text-ink-500">
-                  Ball:
+                  {t("Ball:")}
                   <input
                     type="number"
                     min={1}

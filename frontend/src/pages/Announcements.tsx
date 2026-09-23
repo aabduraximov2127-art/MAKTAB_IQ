@@ -17,13 +17,14 @@ import { Tabs } from "../components/ui/Tabs"
 import { CardSkeleton } from "../components/ui/Skeleton"
 import { formatRelative } from "../lib/format"
 import type { Announcement, ClassRoom, Paginated } from "../types"
+import { t } from "../i18n"
 
 const TARGET_LABELS: Record<Announcement["target"], string> = {
-  ALL: "Barcha maktab",
-  TEACHERS: "O'qituvchilar",
-  STUDENTS: "O'quvchilar",
-  PARENTS: "Ota-onalar",
-  CLASS: "Ma'lum sinf",
+  ALL: t("Barcha maktab"),
+  TEACHERS: t("O'qituvchilar"),
+  STUDENTS: t("O'quvchilar"),
+  PARENTS: t("Ota-onalar"),
+  CLASS: t("Ma'lum sinf"),
 }
 
 export default function AnnouncementsPage() {
@@ -41,8 +42,8 @@ export default function AnnouncementsPage() {
   return (
     <div>
       <PageHeader
-        title="E'lonlar"
-        description="Maktab bo'ylab e'lonlar va muhim xabarlar"
+        title={t("E'lonlar")}
+        description={t("Maktab bo'ylab e'lonlar va muhim xabarlar")}
         actions={
           isAdmin && (
             <div className="flex gap-2">
@@ -63,8 +64,8 @@ export default function AnnouncementsPage() {
       <div className="mb-4">
         <Tabs
           tabs={[
-            { key: "normal", label: "Oddiy e'lonlar", count: data?.count },
-            { key: "emergency", label: "Favqulodda", count: emergencies?.count },
+            { key: "normal", label: t("Oddiy e'lonlar"), count: data?.count },
+            { key: "emergency", label: t("Favqulodda"), count: emergencies?.count },
           ]}
           active={tab}
           onChange={(k) => setTab(k as "normal" | "emergency")}
@@ -79,7 +80,7 @@ export default function AnnouncementsPage() {
             ))}
           </div>
         ) : !data || data.results.length === 0 ? (
-          <EmptyState icon={Megaphone} title="E'lon yo'q" />
+          <EmptyState icon={Megaphone} title={t("E'lon yo'q")} />
         ) : (
           <div className="space-y-3">
             {data.results.map((a, i) => (
@@ -96,7 +97,7 @@ export default function AnnouncementsPage() {
                           <p className="mt-1 text-sm text-ink-600 dark:text-ink-300">{a.content}</p>
                           <div className="mt-2 flex items-center gap-2 text-xs text-ink-400">
                             <Badge tone="neutral">{TARGET_LABELS[a.target]}</Badge>
-                            {a.priority === "HIGH" && <Badge tone="danger">Muhim</Badge>}
+                            {a.priority === "HIGH" && <Badge tone="danger">{t("Muhim")}</Badge>}
                             <span>{formatRelative(a.created_at)}</span>
                           </div>
                         </div>
@@ -115,7 +116,7 @@ export default function AnnouncementsPage() {
           ))}
         </div>
       ) : !emergencies || emergencies.results.length === 0 ? (
-        <EmptyState icon={Siren} title="Favqulodda xabar yo'q" />
+        <EmptyState icon={Siren} title={t("Favqulodda xabar yo'q")} />
       ) : (
         <div className="space-y-3">
           {emergencies.results.map((e, i) => (
@@ -159,7 +160,7 @@ function AddEmergencyModal({ open, onClose, onDone }: { open: boolean; onClose: 
     setLoading(true)
     try {
       await api.post("/notifications/emergency-announcements/", form)
-      toast.success("Favqulodda xabar yuborildi")
+      toast.success(t("Favqulodda xabar yuborildi"))
       setForm({ title: "", content: "" })
       onDone()
     } catch (err) {
@@ -170,15 +171,15 @@ function AddEmergencyModal({ open, onClose, onDone }: { open: boolean; onClose: 
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Favqulodda xabar yuborish">
+    <Modal open={open} onClose={onClose} title={t("Favqulodda xabar yuborish")}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
-          Bu xabar Web va Telegram orqali barcha foydalanuvchilarga darhol yuboriladi.
+          {t("Bu xabar Web va Telegram orqali barcha foydalanuvchilarga darhol yuboriladi.")}
         </p>
-        <Field label="Sarlavha">
+        <Field label={t("Sarlavha")}>
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
         </Field>
-        <Field label="Matn">
+        <Field label={t("Matn")}>
           <textarea
             value={form.content}
             onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
@@ -188,7 +189,7 @@ function AddEmergencyModal({ open, onClose, onDone }: { open: boolean; onClose: 
           />
         </Field>
         <Button type="submit" variant="danger" className="w-full" loading={loading}>
-          Yuborish
+          {t("Yuborish")}
         </Button>
       </form>
     </Modal>
@@ -205,7 +206,7 @@ function AddAnnouncementModal({ open, onClose, onDone }: { open: boolean; onClos
     setLoading(true)
     try {
       await api.post("/notifications/announcements/", { ...form, target_class: form.target === "CLASS" ? form.target_class : null })
-      toast.success("E'lon yuborildi")
+      toast.success(t("E'lon yuborildi"))
       setForm({ title: "", content: "", priority: "NORMAL", target: "ALL", target_class: "" })
       onDone()
     } catch (err) {
@@ -216,12 +217,12 @@ function AddAnnouncementModal({ open, onClose, onDone }: { open: boolean; onClos
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi e'lon">
+    <Modal open={open} onClose={onClose} title={t("Yangi e'lon")}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Sarlavha">
+        <Field label={t("Sarlavha")}>
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
         </Field>
-        <Field label="Matn">
+        <Field label={t("Matn")}>
           <textarea
             value={form.content}
             onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
@@ -231,7 +232,7 @@ function AddAnnouncementModal({ open, onClose, onDone }: { open: boolean; onClos
           />
         </Field>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Kimga">
+          <Field label={t("Kimga")}>
             <Select value={form.target} onChange={(e) => setForm((f) => ({ ...f, target: e.target.value }))}>
               {Object.entries(TARGET_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>
@@ -240,18 +241,18 @@ function AddAnnouncementModal({ open, onClose, onDone }: { open: boolean; onClos
               ))}
             </Select>
           </Field>
-          <Field label="Muhimlik">
+          <Field label={t("Muhimlik")}>
             <Select value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}>
-              <option value="LOW">Past</option>
-              <option value="NORMAL">O'rtacha</option>
-              <option value="HIGH">Yuqori</option>
+              <option value="LOW">{t("Past")}</option>
+              <option value="NORMAL">{t("O'rtacha")}</option>
+              <option value="HIGH">{t("Yuqori")}</option>
             </Select>
           </Field>
         </div>
         {form.target === "CLASS" && (
-          <Field label="Sinf">
+          <Field label={t("Sinf")}>
             <Select value={form.target_class} onChange={(e) => setForm((f) => ({ ...f, target_class: e.target.value }))} required>
-              <option value="">Tanlang...</option>
+              <option value="">{t("Tanlang...")}</option>
               {classes?.results.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -261,7 +262,7 @@ function AddAnnouncementModal({ open, onClose, onDone }: { open: boolean; onClos
           </Field>
         )}
         <Button type="submit" className="w-full" loading={loading}>
-          Yuborish
+          {t("Yuborish")}
         </Button>
       </form>
     </Modal>

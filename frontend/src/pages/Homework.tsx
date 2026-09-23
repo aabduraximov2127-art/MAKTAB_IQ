@@ -18,6 +18,7 @@ import { CardSkeleton } from "../components/ui/Skeleton"
 import { formatDateTime } from "../lib/format"
 import { cn } from "../lib/cn"
 import type { Assignment, AssignmentSubmission, Lesson, Paginated } from "../types"
+import { t } from "../i18n"
 
 export default function HomeworkPage() {
   const user = useAuthStore((s) => s.user)
@@ -32,8 +33,8 @@ export default function HomeworkPage() {
   return (
     <div>
       <PageHeader
-        title="Uy vazifalari"
-        description={isStudent ? "Sizga berilgan vazifalar" : "Berilgan uy vazifalari ro'yxati"}
+        title={t("Uy vazifalari")}
+        description={isStudent ? t("Sizga berilgan vazifalar") : t("Berilgan uy vazifalari ro'yxati")}
         actions={
           isTeacher && (
             <Button onClick={() => setAddOpen(true)}>
@@ -50,7 +51,7 @@ export default function HomeworkPage() {
           ))}
         </div>
       ) : !data || data.results.length === 0 ? (
-        <EmptyState icon={ListChecks} title="Uy vazifasi yo'q" />
+        <EmptyState icon={ListChecks} title={t("Uy vazifasi yo'q")} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.results.map((a, i) => {
@@ -64,9 +65,9 @@ export default function HomeworkPage() {
                   <CardContent className="flex h-full flex-col">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-display font-semibold text-ink-800 dark:text-ink-100">{a.title}</p>
-                      <Badge tone={overdue ? "danger" : "warning"}>{overdue ? "Muddat o'tgan" : "Faol"}</Badge>
+                      <Badge tone={overdue ? "danger" : "warning"}>{overdue ? t("Muddat o'tgan") : t("Faol")}</Badge>
                     </div>
-                    <p className="mt-2 line-clamp-2 flex-1 text-sm text-ink-500 dark:text-ink-400">{a.description || "Tavsif kiritilmagan"}</p>
+                    <p className="mt-2 line-clamp-2 flex-1 text-sm text-ink-500 dark:text-ink-400">{a.description || t("Tavsif kiritilmagan")}</p>
                     <div className="mt-3 flex items-center gap-1.5 text-xs text-ink-400">
                       <CalendarClock className="h-3.5 w-3.5" /> {formatDateTime(a.deadline)}
                     </div>
@@ -90,10 +91,10 @@ function AssignmentDrawer({ assignment, onClose }: { assignment: Assignment | nu
   const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN" || user?.role === "SUPERADMIN"
 
   return (
-    <Drawer open={!!assignment} onClose={onClose} title={assignment?.title} subtitle={assignment ? `Muddat: ${formatDateTime(assignment.deadline)}` : ""}>
+    <Drawer open={!!assignment} onClose={onClose} title={assignment?.title} subtitle={assignment ? t("Muddat: {date}", { date: formatDateTime(assignment.deadline) }) : ""}>
       {assignment && (
         <div className="space-y-5">
-          <p className="text-sm text-ink-600 dark:text-ink-300">{assignment.description || "Tavsif kiritilmagan"}</p>
+          <p className="text-sm text-ink-600 dark:text-ink-300">{assignment.description || t("Tavsif kiritilmagan")}</p>
           {assignment.attachment && (
             <a
               href={assignment.attachment}
@@ -123,7 +124,7 @@ function SubmitForm({ assignment }: { assignment: Assignment }) {
     try {
       await api.post(`/assignments/${assignment.id}/submit/`, { answer })
       setSubmitted(true)
-      toast.success("Javobingiz yuborildi")
+      toast.success(t("Javobingiz yuborildi"))
     } catch (err) {
       toast.error(getErrorMessage(err))
     } finally {
@@ -141,14 +142,14 @@ function SubmitForm({ assignment }: { assignment: Assignment }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 border-t border-ink-100 pt-4 dark:border-ink-800">
-      <Field label="Javobingiz">
+      <Field label={t("Javobingiz")}>
         <textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           rows={4}
           required
           className="w-full rounded-xl border border-ink-200 bg-white p-3 text-sm text-ink-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 dark:border-ink-700 dark:bg-ink-900 dark:text-white"
-          placeholder="Javobingizni shu yerga yozing..."
+          placeholder={t("Javobingizni shu yerga yozing...")}
         />
       </Field>
       <Button type="submit" className="w-full" loading={loading}>
@@ -166,7 +167,7 @@ function SubmissionsList({ assignment }: { assignment: Assignment }) {
   async function handleGrade(id: number) {
     try {
       await api.post(`/submissions/${id}/grade/`, { score: Number(score) })
-      toast.success("Baholandi")
+      toast.success(t("Baholandi"))
       setScoring(null)
       setScore("")
       refetch()
@@ -177,11 +178,11 @@ function SubmissionsList({ assignment }: { assignment: Assignment }) {
 
   return (
     <div className="border-t border-ink-100 pt-4 dark:border-ink-800">
-      <p className="mb-3 text-sm font-semibold text-ink-700 dark:text-ink-200">Topshirilgan javoblar</p>
+      <p className="mb-3 text-sm font-semibold text-ink-700 dark:text-ink-200">{t("Topshirilgan javoblar")}</p>
       {loading ? (
         <div className="h-24 animate-pulse rounded-xl bg-ink-100 dark:bg-ink-800" />
       ) : !data || data.results.length === 0 ? (
-        <EmptyState title="Hali hech kim topshirmagan" />
+        <EmptyState title={t("Hali hech kim topshirmagan")} />
       ) : (
         <div className="space-y-2.5">
           {data.results.map((s) => (
@@ -197,12 +198,12 @@ function SubmissionsList({ assignment }: { assignment: Assignment }) {
                 <div className="mt-2 flex gap-2">
                   <Input type="number" min={0} max={100} value={score} onChange={(e) => setScore(e.target.value)} className="h-9" />
                   <Button size="sm" onClick={() => handleGrade(s.id)}>
-                    Saqlash
+                    {t("Saqlash")}
                   </Button>
                 </div>
               ) : (
                 <button onClick={() => setScoring(s.id)} className="mt-2 text-xs font-medium text-brand-600 dark:text-brand-400">
-                  Baholash
+                  {t("Baholash")}
                 </button>
               )}
             </div>
@@ -223,7 +224,7 @@ function AddAssignmentModal({ open, onClose, onDone }: { open: boolean; onClose:
     setLoading(true)
     try {
       await api.post("/assignments/", form)
-      toast.success("Uy vazifasi yaratildi")
+      toast.success(t("Uy vazifasi yaratildi"))
       setForm({ lesson: "", title: "", description: "", deadline: "" })
       onDone()
     } catch (err) {
@@ -234,11 +235,11 @@ function AddAssignmentModal({ open, onClose, onDone }: { open: boolean; onClose:
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi uy vazifasi" size="lg">
+    <Modal open={open} onClose={onClose} title={t("Yangi uy vazifasi")} size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Dars">
+        <Field label={t("Dars")}>
           <Select value={form.lesson} onChange={(e) => setForm((f) => ({ ...f, lesson: e.target.value }))} required>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {lessons?.results.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.class_room_name} • {l.subject_name} • {l.date}
@@ -246,10 +247,10 @@ function AddAssignmentModal({ open, onClose, onDone }: { open: boolean; onClose:
             ))}
           </Select>
         </Field>
-        <Field label="Sarlavha">
+        <Field label={t("Sarlavha")}>
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
         </Field>
-        <Field label="Tavsif">
+        <Field label={t("Tavsif")}>
           <textarea
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -260,11 +261,11 @@ function AddAssignmentModal({ open, onClose, onDone }: { open: boolean; onClose:
             )}
           />
         </Field>
-        <Field label="Muddat">
+        <Field label={t("Muddat")}>
           <Input type="datetime-local" value={form.deadline} onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))} required />
         </Field>
         <Button type="submit" className="w-full" loading={loading}>
-          Yaratish
+          {t("Yaratish")}
         </Button>
       </form>
     </Modal>

@@ -9,8 +9,9 @@ import { Skeleton } from "../components/ui/Skeleton"
 import { cn } from "../lib/cn"
 import { shortName } from "../lib/format"
 import type { Lesson, Paginated } from "../types"
+import { localeTag, t } from "../i18n"
 
-const DAY_LABELS = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba", "Yakshanba"]
+const DAY_LABELS = [t("Dushanba"), t("Seshanba"), t("Chorshanba"), t("Payshanba"), t("Juma"), t("Shanba"), t("Yakshanba")]
 
 function startOfWeek(offset: number) {
   const now = new Date()
@@ -54,15 +55,15 @@ export default function SchedulePage() {
   return (
     <div>
       <PageHeader
-        title="Dars jadvali"
-        description={`${weekDays[0]!.toLocaleDateString("uz-UZ")} — ${weekDays[6]!.toLocaleDateString("uz-UZ")}`}
+        title={t("Dars jadvali")}
+        description={`${weekDays[0]!.toLocaleDateString(localeTag())} — ${weekDays[6]!.toLocaleDateString(localeTag())}`}
         actions={
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => setWeekOffset((w) => w - 1)}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>
-              Shu hafta
+              {t("Shu hafta")}
             </Button>
             <Button variant="outline" size="icon" onClick={() => setWeekOffset((w) => w + 1)}>
               <ChevronRight className="h-4 w-4" />
@@ -100,7 +101,7 @@ export default function SchedulePage() {
                 {loading ? (
                   <Skeleton className="h-16 w-full" />
                 ) : lessons.length === 0 ? (
-                  <p className="py-6 text-center text-xs text-ink-400">Dars yo'q</p>
+                  <p className="py-6 text-center text-xs text-ink-400">{t("Dars yo'q")}</p>
                 ) : (
                   lessons.map((lesson) => (
                     <div key={lesson.id} className="rounded-xl border border-ink-100 p-2.5 dark:border-ink-800">
@@ -125,7 +126,7 @@ export default function SchedulePage() {
 
       {!loading && data?.results.length === 0 && (
         <div className="mt-6">
-          <EmptyState title="Dars jadvali bo'sh" description="Hozircha darslar kiritilmagan" />
+          <EmptyState title={t("Dars jadvali bo'sh")} description={t("Hozircha darslar kiritilmagan")} />
         </div>
       )}
     </div>

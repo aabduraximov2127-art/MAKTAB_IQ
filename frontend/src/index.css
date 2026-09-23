@@ -71,7 +71,7 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 .dark {
@@ -151,4 +151,33 @@ body {
 ::selection {
   background: var(--color-brand-600);
   color: #fff;
+}
+
+/* ---- Theme switch: new theme is revealed as a curtain falling from top to bottom ---- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-curtain 0.85s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes theme-curtain {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

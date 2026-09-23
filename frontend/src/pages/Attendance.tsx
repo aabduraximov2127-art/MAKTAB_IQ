@@ -18,6 +18,7 @@ import { ATTENDANCE_COLORS, ATTENDANCE_LABELS, fullName } from "../lib/format"
 import { todayISO } from "../lib/date"
 import { cn } from "../lib/cn"
 import type { Attendance, AttendanceStatus, ClassRoom, Paginated, StudentProfile } from "../types"
+import { t } from "../i18n"
 
 export default function AttendancePage() {
   const user = useAuthStore((s) => s.user)
@@ -35,7 +36,7 @@ function MyAttendanceView() {
 
   return (
     <div>
-      <PageHeader title="Davomat" description="Oylik davomat kalendari" />
+      <PageHeader title={t("Davomat")} description={t("Oylik davomat kalendari")} />
       {children.length > 1 && (
         <div className="mb-4">
           <Tabs
@@ -51,8 +52,8 @@ function MyAttendanceView() {
 }
 
 const MONTHS_UZ = [
-  "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
-  "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr",
+  t("Yanvar"), t("Fevral"), t("Mart"), t("Aprel"), t("May"), t("Iyun"),
+  t("Iyul"), t("Avgust"), t("Sentabr"), t("Oktabr"), t("Noyabr"), t("Dekabr"),
 ]
 
 function AttendanceCalendar({ studentId }: { studentId: number }) {
@@ -185,7 +186,7 @@ function ReasonModal({
     setLoading(true)
     try {
       await api.patch(`/attendance/${record.id}/submit_reason/`, { parent_reason: reason })
-      toast.success("Sabab yuborildi")
+      toast.success(t("Sabab yuborildi"))
       onDone()
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -195,20 +196,20 @@ function ReasonModal({
   }
 
   return (
-    <Modal open={!!target} onClose={onClose} title={target ? `${target.date} — kelmagan sabab` : ""}>
+    <Modal open={!!target} onClose={onClose} title={target ? t("{date} — kelmagan sabab", { date: target.date }) : ""}>
       {record?.parent_reason && !canSubmit ? (
         <p className="rounded-xl bg-ink-50 p-3 text-sm text-ink-700 dark:bg-ink-800 dark:text-ink-200">{record.parent_reason}</p>
       ) : canSubmit ? (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Sababni kiriting">
-            <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Masalan: farzandim kasal edi" required />
+          <Field label={t("Sababni kiriting")}>
+            <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("Masalan: farzandim kasal edi")} required />
           </Field>
           <Button type="submit" className="w-full" loading={loading}>
-            Yuborish
+            {t("Yuborish")}
           </Button>
         </form>
       ) : (
-        <EmptyState title="Sabab kiritilmagan" description="Ota-ona hali sabab yubormagan" />
+        <EmptyState title={t("Sabab kiritilmagan")} description={t("Ota-ona hali sabab yubormagan")} />
       )}
     </Modal>
   )
@@ -217,9 +218,9 @@ function ReasonModal({
 /* ------------------------------------ Teacher/Admin ------------------------------------ */
 
 const STATUS_OPTIONS: { status: AttendanceStatus; icon: typeof Check; label: string }[] = [
-  { status: "PRESENT", icon: CheckCircle2, label: "Keldi" },
-  { status: "ABSENT", icon: XCircle, label: "Kelmadi" },
-  { status: "LATE", icon: Clock3, label: "Kechikdi" },
+  { status: "PRESENT", icon: CheckCircle2, label: t("Keldi") },
+  { status: "ABSENT", icon: XCircle, label: t("Kelmadi") },
+  { status: "LATE", icon: Clock3, label: t("Kechikdi") },
 ]
 
 function MarkAttendanceView() {
@@ -261,11 +262,11 @@ function MarkAttendanceView() {
 
   return (
     <div>
-      <PageHeader title="Davomat belgilash" description="Sinf va sanani tanlab, o'quvchilar davomatini belgilang" />
+      <PageHeader title={t("Davomat belgilash")} description={t("Sinf va sanani tanlab, o'quvchilar davomatini belgilang")} />
 
       <div className="mb-5 flex flex-wrap gap-3">
         <Select value={classRoom} onChange={(e) => setClassRoom(e.target.value)} className="max-w-xs">
-          <option value="">Sinfni tanlang...</option>
+          <option value="">{t("Sinfni tanlang...")}</option>
           {classes?.results.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -276,7 +277,7 @@ function MarkAttendanceView() {
       </div>
 
       {!classRoom ? (
-        <EmptyState title="Sinfni tanlang" description="Davomat belgilash uchun avval sinfni tanlang" />
+        <EmptyState title={t("Sinfni tanlang")} description={t("Davomat belgilash uchun avval sinfni tanlang")} />
       ) : studentsLoading || recordsLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -284,7 +285,7 @@ function MarkAttendanceView() {
           ))}
         </div>
       ) : !students || students.results.length === 0 ? (
-        <EmptyState title="Bu sinfda o'quvchi yo'q" />
+        <EmptyState title={t("Bu sinfda o'quvchi yo'q")} />
       ) : (
         <div className="space-y-2.5">
           {students.results.map((s) => {

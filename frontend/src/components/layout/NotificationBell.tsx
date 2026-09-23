@@ -7,6 +7,7 @@ import { useNotificationStore } from "../../store/notifications"
 import { formatRelative } from "../../lib/format"
 import { labelFor } from "../../hooks/useNotificationSocket"
 import { EmptyState } from "../ui/EmptyState"
+import { t } from "../../i18n"
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
@@ -62,7 +63,7 @@ export function NotificationBell() {
             className="absolute right-0 z-30 mt-2 w-80 overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft-lg dark:border-ink-800 dark:bg-ink-900"
           >
             <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3 dark:border-ink-800">
-              <p className="font-display text-sm font-semibold text-ink-800 dark:text-white">Bildirishnomalar</p>
+              <p className="font-display text-sm font-semibold text-ink-800 dark:text-white">{t("Bildirishnomalar")}</p>
               {unread > 0 && (
                 <button
                   onClick={handleMarkAll}
@@ -75,7 +76,7 @@ export function NotificationBell() {
             <div className="max-h-96 overflow-y-auto">
               {items.length === 0 ? (
                 <div className="p-4">
-                  <EmptyState title="Bildirishnoma yo'q" />
+                  <EmptyState title={t("Bildirishnoma yo'q")} />
                 </div>
               ) : (
                 items.map((n) => (
@@ -101,7 +102,7 @@ export function NotificationBell() {
               onClick={() => setOpen(false)}
               className="block border-t border-ink-100 px-4 py-2.5 text-center text-sm font-medium text-brand-600 hover:bg-ink-50 dark:border-ink-800 dark:text-brand-400 dark:hover:bg-ink-800/60"
             >
-              Barchasini ko'rish
+              {t("Barchasini ko'rish")}
             </Link>
           </motion.div>
         )}

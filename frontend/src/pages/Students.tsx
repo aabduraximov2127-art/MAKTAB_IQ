@@ -8,6 +8,7 @@ import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Field, Input } from "../components/ui/Input"
 import { Select } from "../components/ui/Select"
+import { PhoneInput, isPhoneComplete } from "../components/ui/PhoneInput"
 import { DataTable, type Column } from "../components/ui/Table"
 import { Pagination } from "../components/ui/Pagination"
 import { Modal } from "../components/ui/Modal"
@@ -16,6 +17,7 @@ import { Avatar } from "../components/ui/Avatar"
 import { Badge } from "../components/ui/Badge"
 import { fullName, formatDate } from "../lib/format"
 import type { ClassRoom, Paginated, School, StudentProfile } from "../types"
+import { t } from "../i18n"
 
 const PAGE_SIZE = 10
 
@@ -39,7 +41,7 @@ export default function StudentsPage() {
   const columns: Column<StudentProfile>[] = [
     {
       key: "name",
-      header: "O'quvchi",
+      header: t("O'quvchi"),
       render: (row) => (
         <div className="flex items-center gap-3">
           <Avatar name={fullName(row.user)} src={row.photo} size="sm" />
@@ -50,12 +52,12 @@ export default function StudentsPage() {
         </div>
       ),
     },
-    { key: "class", header: "Sinf", render: (row) => row.class_room_name ?? <Badge tone="neutral">Biriktirilmagan</Badge> },
-    { key: "phone", header: "Telefon", render: (row) => row.user.phone || "—", hideOnMobile: true },
-    { key: "email", header: "Email", render: (row) => row.user.email || "—", hideOnMobile: true },
+    { key: "class", header: t("Sinf"), render: (row) => row.class_room_name ?? <Badge tone="neutral">{t("Biriktirilmagan")}</Badge> },
+    { key: "phone", header: t("Telefon"), render: (row) => row.user.phone || "—", hideOnMobile: true },
+    { key: "email", header: t("Email"), render: (row) => row.user.email || "—", hideOnMobile: true },
     {
       key: "joined",
-      header: "Ro'yxatdan o'tgan",
+      header: t("Ro'yxatdan o'tgan"),
       render: (row) => formatDate(row.created_at),
       hideOnMobile: true,
     },
@@ -64,8 +66,8 @@ export default function StudentsPage() {
   return (
     <div>
       <PageHeader
-        title="O'quvchilar"
-        description="Maktabdagi barcha o'quvchilar ro'yxati"
+        title={t("O'quvchilar")}
+        description={t("Maktabdagi barcha o'quvchilar ro'yxati")}
         actions={
           canManage && (
             <Button onClick={() => setAddOpen(true)}>
@@ -78,7 +80,7 @@ export default function StudentsPage() {
       <div className="mb-4 max-w-xs">
         <Input
           icon={<Search className="h-4 w-4" />}
-          placeholder="Ism yoki familiya bo'yicha qidirish..."
+          placeholder={t("Ism yoki familiya bo'yicha qidirish...")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
@@ -92,8 +94,8 @@ export default function StudentsPage() {
         rows={data?.results ?? []}
         keyField={(r) => r.id}
         loading={loading}
-        emptyTitle="O'quvchi topilmadi"
-        emptyDescription="Qidiruv shartlariga mos o'quvchi yo'q"
+        emptyTitle={t("O'quvchi topilmadi")}
+        emptyDescription={t("Qidiruv shartlariga mos o'quvchi yo'q")}
         onRowClick={setSelected}
       />
 
@@ -105,11 +107,11 @@ export default function StudentsPage() {
             <div className="flex justify-center">
               <Avatar name={fullName(selected.user)} src={selected.photo} size="lg" />
             </div>
-            <DetailRow label="Sinf" value={selected.class_room_name ?? "Biriktirilmagan"} />
-            <DetailRow label="Yosh" value={selected.age ? String(selected.age) : "—"} />
-            <DetailRow label="Telefon" value={selected.user.phone || "—"} />
-            <DetailRow label="Email" value={selected.user.email || "—"} />
-            <DetailRow label="Ro'yxatdan o'tgan" value={formatDate(selected.created_at)} />
+            <DetailRow label={t("Sinf")} value={selected.class_room_name ?? t("Biriktirilmagan")} />
+            <DetailRow label={t("Yosh")} value={selected.age ? String(selected.age) : "—"} />
+            <DetailRow label={t("Telefon")} value={selected.user.phone || "—"} />
+            <DetailRow label={t("Email")} value={selected.user.email || "—"} />
+            <DetailRow label={t("Ro'yxatdan o'tgan")} value={formatDate(selected.created_at)} />
             <div className="flex flex-col gap-2 sm:flex-row">
               {canEdit && (
                 <Button variant="outline" className="w-full" onClick={() => setEditOpen(true)}>
@@ -195,7 +197,7 @@ function TransferModal({
     setLoading(true)
     try {
       await api.post(`/students/${student.id}/transfer/`, { new_class: newClass, reason })
-      toast.success("O'quvchi muvaffaqiyatli o'tkazildi")
+      toast.success(t("O'quvchi muvaffaqiyatli o'tkazildi"))
       onDone()
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -205,11 +207,11 @@ function TransferModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Sinfga o'tkazish">
+    <Modal open={open} onClose={onClose} title={t("Sinfga o'tkazish")}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Yangi sinf">
+        <Field label={t("Yangi sinf")}>
           <Select value={newClass} onChange={(e) => setNewClass(e.target.value)} required>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {classes?.results
               .filter((c) => c.id !== student.class_room)
               .map((c) => (
@@ -219,11 +221,11 @@ function TransferModal({
               ))}
           </Select>
         </Field>
-        <Field label="Sabab">
-          <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Masalan: maktab ma'muriy qarori" />
+        <Field label={t("Sabab")}>
+          <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("Masalan: maktab ma'muriy qarori")} />
         </Field>
         <Button type="submit" className="w-full" loading={loading}>
-          O'tkazish
+          {t("O'tkazish")}
         </Button>
       </form>
     </Modal>
@@ -252,6 +254,10 @@ function EditStudentModal({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!isPhoneComplete(form.phone)) {
+      toast.error(t("Telefon raqami to'liq emas"))
+      return
+    }
     setLoading(true)
     try {
       const body = new FormData()
@@ -261,7 +267,7 @@ function EditStudentModal({
       if (form.age) body.append("age", form.age)
       if (photo) body.append("photo", photo)
       await api.patch(`/students/${student.id}/`, body)
-      toast.success("Profil yangilandi")
+      toast.success(t("Profil yangilandi"))
       onDone()
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -271,25 +277,25 @@ function EditStudentModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`Profilni tahrirlash — ${student.student_code}`}>
+    <Modal open={open} onClose={onClose} title={t("Profilni tahrirlash — {code}", { code: student.student_code })}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Ism">
+          <Field label={t("Ism")}>
             <Input value={form.first_name} onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))} required />
           </Field>
-          <Field label="Familiya">
+          <Field label={t("Familiya")}>
             <Input value={form.last_name} onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))} required />
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Telefon">
-            <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+          <Field label={t("Telefon")}>
+            <PhoneInput value={form.phone} onChange={(phone) => setForm((f) => ({ ...f, phone }))} />
           </Field>
-          <Field label="Yosh">
+          <Field label={t("Yosh")}>
             <Input type="number" min={5} max={25} value={form.age} onChange={(e) => setForm((f) => ({ ...f, age: e.target.value }))} />
           </Field>
         </div>
-        <Field label="Rasm">
+        <Field label={t("Rasm")}>
           <input
             type="file"
             accept="image/*"
@@ -298,10 +304,10 @@ function EditStudentModal({
           />
         </Field>
         <p className="text-xs text-ink-400">
-          Sinf va o'quvchi kodi bu yerdan o'zgartirilmaydi — sinf almashtirish uchun "Sinfga o'tkazish" dan foydalaning.
+          Sinf va o'quvchi kodi bu yerdan o'zgartirilmaydi — sinf almashtirish uchun t("Sinfga o'tkazish") dan foydalaning.
         </p>
         <Button type="submit" className="w-full" loading={loading}>
-          Saqlash
+          {t("Saqlash")}
         </Button>
       </form>
     </Modal>
@@ -330,10 +336,14 @@ function AddStudentModal({ open, onClose, onDone }: { open: boolean; onClose: ()
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!isPhoneComplete(form.phone)) {
+      toast.error(t("Telefon raqami to'liq emas"))
+      return
+    }
     setLoading(true)
     try {
       await api.post("/auth/register/student/", form)
-      toast.success("O'quvchi muvaffaqiyatli qo'shildi")
+      toast.success(t("O'quvchi muvaffaqiyatli qo'shildi"))
       setForm({
         first_name: "",
         last_name: "",
@@ -354,29 +364,29 @@ function AddStudentModal({ open, onClose, onDone }: { open: boolean; onClose: ()
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi o'quvchi qo'shish" size="lg">
+    <Modal open={open} onClose={onClose} title={t("Yangi o'quvchi qo'shish")} size="lg">
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Ism">
+        <Field label={t("Ism")}>
           <Input value={form.first_name} onChange={(e) => update("first_name", e.target.value)} required />
         </Field>
-        <Field label="Familiya">
+        <Field label={t("Familiya")}>
           <Input value={form.last_name} onChange={(e) => update("last_name", e.target.value)} required />
         </Field>
-        <Field label="Foydalanuvchi nomi">
+        <Field label={t("Foydalanuvchi nomi")}>
           <Input value={form.username} onChange={(e) => update("username", e.target.value)} required />
         </Field>
-        <Field label="Parol">
+        <Field label={t("Parol")}>
           <Input type="password" value={form.password} onChange={(e) => update("password", e.target.value)} required />
         </Field>
-        <Field label="O'quvchi kodi">
+        <Field label={t("O'quvchi kodi")}>
           <Input value={form.student_code} onChange={(e) => update("student_code", e.target.value)} required />
         </Field>
-        <Field label="Telefon">
-          <Input value={form.phone} onChange={(e) => update("phone", e.target.value)} />
+        <Field label={t("Telefon")}>
+          <PhoneInput value={form.phone} onChange={(phone) => update("phone", phone)} />
         </Field>
-        <Field label="Maktab">
+        <Field label={t("Maktab")}>
           <Select value={form.school} onChange={(e) => update("school", e.target.value)}>
-            <option value="">Tanlanmagan</option>
+            <option value="">{t("Tanlanmagan")}</option>
             {schools?.results.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -384,9 +394,9 @@ function AddStudentModal({ open, onClose, onDone }: { open: boolean; onClose: ()
             ))}
           </Select>
         </Field>
-        <Field label="Sinf">
+        <Field label={t("Sinf")}>
           <Select value={form.class_room} onChange={(e) => update("class_room", e.target.value)}>
-            <option value="">Tanlanmagan</option>
+            <option value="">{t("Tanlanmagan")}</option>
             {classes?.results.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -394,7 +404,7 @@ function AddStudentModal({ open, onClose, onDone }: { open: boolean; onClose: ()
             ))}
           </Select>
         </Field>
-        <Field label="Email" className="sm:col-span-2">
+        <Field label={t("Email")} className="sm:col-span-2">
           <Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} />
         </Field>
         <Button type="submit" className="sm:col-span-2" loading={loading}>

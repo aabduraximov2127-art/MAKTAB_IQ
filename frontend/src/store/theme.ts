@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-type Theme = "dark"
+export type Theme = "light" | "dark"
 
 interface ThemeState {
   theme: Theme
@@ -15,15 +15,30 @@ function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark")
 }
 
+type ViewTransitionDocument = Document & { startViewTransition?: (cb: () => void) => unknown }
+
+/** Switch theme with a top-to-bottom "curtain" reveal (View Transitions API); falls back to an instant swap. */
+function switchTheme(next: Theme, commit: () => void) {
+  const doc = document as ViewTransitionDocument
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  if (!doc.startViewTransition || reduce) {
+    applyTheme(next)
+    commit()
+    return
+  }
+  doc.startViewTransition(() => {
+    applyTheme(next)
+    commit()
+  })
+}
+
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
-      // The Dala-style design is a dark stage only (pure black void), so the
-      // theme is fixed. The store keeps its shape for sidebar state.
+    (set, get) => ({
       theme: "dark",
       toggle: () => {
-        applyTheme("dark")
-        set({ theme: "dark" })
+        const next: Theme = get().theme === "dark" ? "light" : "dark"
+        switchTheme(next, () => set({ theme: next }))
       },
       set: (theme) => {
         applyTheme(theme)

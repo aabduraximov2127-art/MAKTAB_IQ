@@ -10,6 +10,7 @@ import { Avatar } from "../components/ui/Avatar"
 import { Badge } from "../components/ui/Badge"
 import { fullName } from "../lib/format"
 import type { Paginated, TeacherProfile } from "../types"
+import { t } from "../i18n"
 
 const PAGE_SIZE = 10
 
@@ -26,7 +27,7 @@ export default function TeachersPage() {
   const columns: Column<TeacherProfile>[] = [
     {
       key: "name",
-      header: "O'qituvchi",
+      header: t("O'qituvchi"),
       render: (row) => (
         <div className="flex items-center gap-3">
           <Avatar name={fullName(row.user)} src={row.avatar} size="sm" />
@@ -39,21 +40,21 @@ export default function TeachersPage() {
     },
     {
       key: "experience",
-      header: "Tajriba",
+      header: t("Tajriba"),
       render: (row) => <Badge tone="brand">{row.experience_years} yil</Badge>,
     },
-    { key: "phone", header: "Telefon", render: (row) => row.user.phone || "—", hideOnMobile: true },
-    { key: "email", header: "Email", render: (row) => row.user.email || "—", hideOnMobile: true },
+    { key: "phone", header: t("Telefon"), render: (row) => row.user.phone || "—", hideOnMobile: true },
+    { key: "email", header: t("Email"), render: (row) => row.user.email || "—", hideOnMobile: true },
   ]
 
   return (
     <div>
-      <PageHeader title="O'qituvchilar" description="Maktabdagi barcha o'qituvchilar ro'yxati" />
+      <PageHeader title={t("O'qituvchilar")} description={t("Maktabdagi barcha o'qituvchilar ro'yxati")} />
 
       <div className="mb-4 max-w-xs">
         <Input
           icon={<Search className="h-4 w-4" />}
-          placeholder="Ism yoki familiya bo'yicha qidirish..."
+          placeholder={t("Ism yoki familiya bo'yicha qidirish...")}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
@@ -67,7 +68,7 @@ export default function TeachersPage() {
         rows={data?.results ?? []}
         keyField={(r) => r.id}
         loading={loading}
-        emptyTitle="O'qituvchi topilmadi"
+        emptyTitle={t("O'qituvchi topilmadi")}
         onRowClick={setSelected}
       />
 
@@ -79,9 +80,9 @@ export default function TeachersPage() {
             <div className="flex justify-center">
               <Avatar name={fullName(selected.user)} src={selected.avatar} size="lg" />
             </div>
-            <DetailRow label="Tajriba" value={`${selected.experience_years} yil`} />
-            <DetailRow label="Telefon" value={selected.user.phone || "—"} />
-            <DetailRow label="Email" value={selected.user.email || "—"} />
+            <DetailRow label={t("Tajriba")} value={t("{n} yil", { n: selected.experience_years })} />
+            <DetailRow label={t("Telefon")} value={selected.user.phone || "—"} />
+            <DetailRow label={t("Email")} value={selected.user.email || "—"} />
           </div>
         )}
       </Drawer>

@@ -1,5 +1,7 @@
 import { format, formatDistanceToNow, parseISO } from "date-fns"
+import { enUS, ru, uz } from "date-fns/locale"
 import type { AttendanceStatus, NotificationType, Role } from "../types"
+import { getLang, t } from "../i18n"
 
 export function fullName(user?: { first_name?: string; last_name?: string; username?: string } | null) {
   if (!user) return "—"
@@ -28,16 +30,16 @@ export function initials(user?: { first_name?: string; last_name?: string; usern
 export const ROLE_LABELS: Record<Role, string> = {
   SUPERADMIN: "Superadmin",
   ADMIN: "Admin",
-  TEACHER: "O'qituvchi",
-  STUDENT: "O'quvchi",
-  PARENT: "Ota-ona",
+  TEACHER: t("O'qituvchi"),
+  STUDENT: t("O'quvchi"),
+  PARENT: t("Ota-ona"),
 }
 
 export const ATTENDANCE_LABELS: Record<AttendanceStatus, string> = {
-  PRESENT: "Keldi",
-  ABSENT: "Kelmadi",
-  LATE: "Kechikdi",
-  EXCUSED: "Sababli",
+  PRESENT: t("Keldi"),
+  ABSENT: t("Kelmadi"),
+  LATE: t("Kechikdi"),
+  EXCUSED: t("Sababli"),
 }
 
 export const ATTENDANCE_COLORS: Record<AttendanceStatus, string> = {
@@ -48,15 +50,15 @@ export const ATTENDANCE_COLORS: Record<AttendanceStatus, string> = {
 }
 
 export const NOTIFICATION_ICON_LABEL: Record<NotificationType, string> = {
-  GRADE: "Yangi baho",
-  ATTENDANCE: "Davomat",
-  ABSENT: "Kelmadi",
-  HOMEWORK: "Uy vazifasi",
-  HOMEWORK_DEADLINE: "Muddat yaqinlashmoqda",
-  QUIZ_RESULT: "Test natijasi",
-  ANNOUNCEMENT: "E'lon",
-  EMERGENCY: "Favqulodda",
-  CHAT_MESSAGE: "Xabar",
+  GRADE: t("Yangi baho"),
+  ATTENDANCE: t("Davomat"),
+  ABSENT: t("Kelmadi"),
+  HOMEWORK: t("Uy vazifasi"),
+  HOMEWORK_DEADLINE: t("Muddat yaqinlashmoqda"),
+  QUIZ_RESULT: t("Test natijasi"),
+  ANNOUNCEMENT: t("E'lon"),
+  EMERGENCY: t("Favqulodda"),
+  CHAT_MESSAGE: t("Xabar"),
 }
 
 export function formatDate(value?: string | null, pattern = "dd.MM.yyyy") {
@@ -72,10 +74,12 @@ export function formatDateTime(value?: string | null) {
   return formatDate(value, "dd.MM.yyyy HH:mm")
 }
 
+const DATE_LOCALES = { uz, ru, en: enUS }
+
 export function formatRelative(value?: string | null) {
   if (!value) return "—"
   try {
-    return formatDistanceToNow(parseISO(value), { addSuffix: true })
+    return formatDistanceToNow(parseISO(value), { addSuffix: true, locale: DATE_LOCALES[getLang()] })
   } catch {
     return value
   }

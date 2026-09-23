@@ -8,6 +8,7 @@ import { EmptyState } from "../components/ui/EmptyState"
 import { Skeleton } from "../components/ui/Skeleton"
 import { Badge } from "../components/ui/Badge"
 import toast from "react-hot-toast"
+import { t } from "../i18n"
 
 interface Exchange {
   question: string
@@ -22,10 +23,10 @@ interface WeakTopic {
 }
 
 const SUGGESTIONS = [
-  "Kvadrat tenglamani qanday yechish mumkin?",
-  "Fotosintez jarayonini tushuntirib bering",
-  "Present Perfect va Past Simple farqi nima?",
-  "Nyutonning uchinchi qonuni haqida misol bering",
+  t("Kvadrat tenglamani qanday yechish mumkin?"),
+  t("Fotosintez jarayonini tushuntirib bering"),
+  t("Present Perfect va Past Simple farqi nima?"),
+  t("Nyutonning uchinchi qonuni haqida misol bering"),
 ]
 
 export default function AIAssistantPage() {
@@ -58,7 +59,7 @@ export default function AIAssistantPage() {
 
   return (
     <div>
-      <PageHeader title="AI Study Assistant" description="Dars bo'yicha savol bering — AI sizga yordam beradi" />
+      <PageHeader title={t("AI Study Assistant")} description={t("Dars bo'yicha savol bering — AI sizga yordam beradi")} />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
@@ -70,8 +71,8 @@ export default function AIAssistantPage() {
                     <Bot className="h-7 w-7" />
                   </div>
                   <div>
-                    <p className="font-display font-semibold text-ink-800 dark:text-ink-100">Nima bo'yicha yordam kerak?</p>
-                    <p className="mt-1 text-sm text-ink-500 dark:text-ink-400">Quyidagilardan birini sinab ko'ring:</p>
+                    <p className="font-display font-semibold text-ink-800 dark:text-ink-100">{t("Nima bo'yicha yordam kerak?")}</p>
+                    <p className="mt-1 text-sm text-ink-500 dark:text-ink-400">{t("Quyidagilardan birini sinab ko'ring:")}</p>
                   </div>
                   <div className="flex flex-wrap justify-center gap-2">
                     {SUGGESTIONS.map((s) => (
@@ -120,7 +121,7 @@ export default function AIAssistantPage() {
               <input
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Savolingizni yozing..."
+                placeholder={t("Savolingizni yozing...")}
                 className="h-11 flex-1 rounded-xl border border-ink-200 bg-white px-3.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 dark:border-ink-700 dark:bg-ink-900 dark:text-white"
               />
               <button
@@ -136,13 +137,13 @@ export default function AIAssistantPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Zaif mavzular</CardTitle>
+            <CardTitle>{t("Zaif mavzular")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {!data ? (
               <Skeleton className="h-40 w-full" />
             ) : data.weak_topics.length === 0 ? (
-              <EmptyState icon={Sparkles} title="Ajoyib!" description="Zaif mavzu aniqlanmadi" />
+              <EmptyState icon={Sparkles} title={t("Ajoyib!")} description={t("Zaif mavzu aniqlanmadi")} />
             ) : (
               data.weak_topics.map((t) => (
                 <div key={t.subject} className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-500/10">

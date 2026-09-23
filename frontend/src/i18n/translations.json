@@ -1,0 +1,1486 @@
+{
+ "Bosh sahifa": {
+  "ru": "Главная",
+  "en": "Home"
+ },
+ "Umumiy": {
+  "ru": "Общее",
+  "en": "General"
+ },
+ "Dars jadvali": {
+  "ru": "Расписание",
+  "en": "Schedule"
+ },
+ "Baholar": {
+  "ru": "Оценки",
+  "en": "Grades"
+ },
+ "Davomat": {
+  "ru": "Посещаемость",
+  "en": "Attendance"
+ },
+ "Uy vazifalari": {
+  "ru": "Домашние задания",
+  "en": "Homework"
+ },
+ "Testlar": {
+  "ru": "Тесты",
+  "en": "Quizzes"
+ },
+ "Kutubxona": {
+  "ru": "Библиотека",
+  "en": "Library"
+ },
+ "AI Yordamchi": {
+  "ru": "ИИ-помощник",
+  "en": "AI Assistant"
+ },
+ "O'quvchilar": {
+  "ru": "Ученики",
+  "en": "Students"
+ },
+ "Boshqaruv": {
+  "ru": "Управление",
+  "en": "Management"
+ },
+ "O'qituvchilar": {
+  "ru": "Учителя",
+  "en": "Teachers"
+ },
+ "Ota-onalar": {
+  "ru": "Родители",
+  "en": "Parents"
+ },
+ "Sinflar": {
+  "ru": "Классы",
+  "en": "Classes"
+ },
+ "Fanlar": {
+  "ru": "Предметы",
+  "en": "Subjects"
+ },
+ "Statistika": {
+  "ru": "Статистика",
+  "en": "Analytics"
+ },
+ "Aloqa": {
+  "ru": "Связь",
+  "en": "Communication"
+ },
+ "E'lonlar": {
+  "ru": "Объявления",
+  "en": "Announcements"
+ },
+ "Yordam": {
+  "ru": "Помощь",
+  "en": "Help"
+ },
+ "Profil": {
+  "ru": "Профиль",
+  "en": "Profile"
+ },
+ "Chat": {
+  "ru": "Чат",
+  "en": "Chat"
+ },
+ "Bildirishnomalar": {
+  "ru": "Уведомления",
+  "en": "Notifications"
+ },
+ "Bildirishnoma yo'q": {
+  "ru": "Нет уведомлений",
+  "en": "No notifications"
+ },
+ "Barchasini ko'rish": {
+  "ru": "Смотреть все",
+  "en": "View all"
+ },
+ "Chiqish": {
+  "ru": "Выйти",
+  "en": "Log out"
+ },
+ "Sidebarni kengaytirish": {
+  "ru": "Развернуть меню",
+  "en": "Expand sidebar"
+ },
+ "Sidebarni yig'ish": {
+  "ru": "Свернуть меню",
+  "en": "Collapse sidebar"
+ },
+ "Xayrli tun": {
+  "ru": "Доброй ночи",
+  "en": "Good night"
+ },
+ "Xayrli tong": {
+  "ru": "Доброе утро",
+  "en": "Good morning"
+ },
+ "Xayrli kun": {
+  "ru": "Добрый день",
+  "en": "Good afternoon"
+ },
+ "Xayrli kech": {
+  "ru": "Добрый вечер",
+  "en": "Good evening"
+ },
+ "Admin (Telegram)": {
+  "ru": "Админ (Telegram)",
+  "en": "Admin (Telegram)"
+ },
+ "Telegram bot": {
+  "ru": "Telegram-бот",
+  "en": "Telegram bot"
+ },
+ "Call-markaz": {
+  "ru": "Колл-центр",
+  "en": "Call center"
+ },
+ "Hech narsa topilmadi": {
+  "ru": "Ничего не найдено",
+  "en": "Nothing found"
+ },
+ "Yorug' rejim": {
+  "ru": "Светлая тема",
+  "en": "Light mode"
+ },
+ "Qorong'i rejim": {
+  "ru": "Тёмная тема",
+  "en": "Dark mode"
+ },
+ "Ma'lumotlarni yuklab bo'lmadi": {
+  "ru": "Не удалось загрузить данные",
+  "en": "Failed to load data"
+ },
+ "Nimadir xato ketdi": {
+  "ru": "Что-то пошло не так",
+  "en": "Something went wrong"
+ },
+ "Til": {
+  "ru": "Язык",
+  "en": "Language"
+ },
+ "Yakshanba": {
+  "ru": "Воскресенье",
+  "en": "Sunday"
+ },
+ "Dushanba": {
+  "ru": "Понедельник",
+  "en": "Monday"
+ },
+ "Seshanba": {
+  "ru": "Вторник",
+  "en": "Tuesday"
+ },
+ "Chorshanba": {
+  "ru": "Среда",
+  "en": "Wednesday"
+ },
+ "Payshanba": {
+  "ru": "Четверг",
+  "en": "Thursday"
+ },
+ "Juma": {
+  "ru": "Пятница",
+  "en": "Friday"
+ },
+ "Shanba": {
+  "ru": "Суббота",
+  "en": "Saturday"
+ },
+ "Yanvar": {
+  "ru": "Январь",
+  "en": "January"
+ },
+ "Fevral": {
+  "ru": "Февраль",
+  "en": "February"
+ },
+ "Mart": {
+  "ru": "Март",
+  "en": "March"
+ },
+ "Aprel": {
+  "ru": "Апрель",
+  "en": "April"
+ },
+ "May": {
+  "ru": "Май",
+  "en": "May"
+ },
+ "Iyun": {
+  "ru": "Июнь",
+  "en": "June"
+ },
+ "Iyul": {
+  "ru": "Июль",
+  "en": "July"
+ },
+ "Avgust": {
+  "ru": "Август",
+  "en": "August"
+ },
+ "Sentabr": {
+  "ru": "Сентябрь",
+  "en": "September"
+ },
+ "Oktabr": {
+  "ru": "Октябрь",
+  "en": "October"
+ },
+ "Noyabr": {
+  "ru": "Ноябрь",
+  "en": "November"
+ },
+ "Dekabr": {
+  "ru": "Декабрь",
+  "en": "December"
+ },
+ "O'qituvchi": {
+  "ru": "Учитель",
+  "en": "Teacher"
+ },
+ "O'quvchi": {
+  "ru": "Ученик",
+  "en": "Student"
+ },
+ "Ota-ona": {
+  "ru": "Родитель",
+  "en": "Parent"
+ },
+ "Keldi": {
+  "ru": "Пришёл",
+  "en": "Present"
+ },
+ "Kelmadi": {
+  "ru": "Отсутствовал",
+  "en": "Absent"
+ },
+ "Kechikdi": {
+  "ru": "Опоздал",
+  "en": "Late"
+ },
+ "Sababli": {
+  "ru": "По причине",
+  "en": "Excused"
+ },
+ "Yangi baho": {
+  "ru": "Новая оценка",
+  "en": "New grade"
+ },
+ "Uy vazifasi": {
+  "ru": "Домашнее задание",
+  "en": "Homework"
+ },
+ "Muddat yaqinlashmoqda": {
+  "ru": "Срок приближается",
+  "en": "Deadline approaching"
+ },
+ "Test natijasi": {
+  "ru": "Результат теста",
+  "en": "Quiz result"
+ },
+ "E'lon": {
+  "ru": "Объявление",
+  "en": "Announcement"
+ },
+ "Favqulodda": {
+  "ru": "Срочно",
+  "en": "Emergency"
+ },
+ "Xabar": {
+  "ru": "Сообщение",
+  "en": "Message"
+ },
+ "Foydalanuvchi nomi": {
+  "ru": "Имя пользователя",
+  "en": "Username"
+ },
+ "Parol": {
+  "ru": "Пароль",
+  "en": "Password"
+ },
+ "Kirish": {
+  "ru": "Войти",
+  "en": "Sign in"
+ },
+ "Tizimga kirish": {
+  "ru": "Вход в систему",
+  "en": "Sign in"
+ },
+ "Bilim, bir joyda.": {
+  "ru": "Знания в одном месте.",
+  "en": "Knowledge, in one place."
+ },
+ "Maktab boshqaruv platformasi": {
+  "ru": "Платформа управления школой",
+  "en": "School management platform"
+ },
+ "Biz bilan bog'laning": {
+  "ru": "Свяжитесь с нами",
+  "en": "Contact us"
+ },
+ "Login yoki parol xato": {
+  "ru": "Неверный логин или пароль",
+  "en": "Wrong username or password"
+ },
+ "Xush kelibsiz, {name}!": {
+  "ru": "Добро пожаловать, {name}!",
+  "en": "Welcome, {name}!"
+ },
+ "Davomat, baholar, vazifalar va muloqot — o'quvchi, o'qituvchi va ota-onalar uchun yagona tizim.": {
+  "ru": "Посещаемость, оценки, задания и общение — единая система для учеников, учителей и родителей.",
+  "en": "Attendance, grades, homework and communication — one system for students, teachers and parents."
+ },
+ "Boshqaruv paneli": {
+  "ru": "Панель управления",
+  "en": "Dashboard"
+ },
+ "Maktabingizning umumiy holati bir qarashda": {
+  "ru": "Общее состояние вашей школы с первого взгляда",
+  "en": "Your school at a glance"
+ },
+ "Umumiy ko'rsatkichlar": {
+  "ru": "Общие показатели",
+  "en": "Overview"
+ },
+ "Qiymat": {
+  "ru": "Значение",
+  "en": "Value"
+ },
+ "So'nggi e'lonlar": {
+  "ru": "Последние объявления",
+  "en": "Latest announcements"
+ },
+ "E'lonlar yo'q": {
+  "ru": "Нет объявлений",
+  "en": "No announcements"
+ },
+ "Bugun kelmagan": {
+  "ru": "Не пришли сегодня",
+  "en": "Absent today"
+ },
+ "Xush kelibsiz": {
+  "ru": "Добро пожаловать",
+  "en": "Welcome"
+ },
+ "Bugun {day}, {date}": {
+  "ru": "Сегодня {day}, {date}",
+  "en": "Today is {day}, {date}"
+ },
+ "Bugungi darslar": {
+  "ru": "Уроки сегодня",
+  "en": "Today's lessons"
+ },
+ "Mening sinflarim": {
+  "ru": "Мои классы",
+  "en": "My classes"
+ },
+ "Bugungi dars jadvali": {
+  "ru": "Расписание на сегодня",
+  "en": "Today's schedule"
+ },
+ "Bugun darsingiz yo'q": {
+  "ru": "Сегодня у вас нет уроков",
+  "en": "No lessons today"
+ },
+ "Yaxshi dam oling!": {
+  "ru": "Хорошего отдыха!",
+  "en": "Enjoy your rest!"
+ },
+ "Sinflarim": {
+  "ru": "Мои классы",
+  "en": "My classes"
+ },
+ "Baho": {
+  "ru": "Оценка",
+  "en": "Grade"
+ },
+ "Uy vazifa": {
+  "ru": "Домашка",
+  "en": "Homework"
+ },
+ "Test": {
+  "ru": "Тест",
+  "en": "Quiz"
+ },
+ "Bugungi jadval va progressingiz": {
+  "ru": "Ваше расписание и прогресс на сегодня",
+  "en": "Your schedule and progress for today"
+ },
+ "Umumiy progress": {
+  "ru": "Общий прогресс",
+  "en": "Overall progress"
+ },
+ "So'nggi baholar": {
+  "ru": "Последние оценки",
+  "en": "Latest grades"
+ },
+ "Hali baho yo'q": {
+  "ru": "Оценок пока нет",
+  "en": "No grades yet"
+ },
+ "Farzandlaringiz progressi": {
+  "ru": "Успехи ваших детей",
+  "en": "Your children's progress"
+ },
+ "Farzand topilmadi": {
+  "ru": "Ребёнок не найден",
+  "en": "No children found"
+ },
+ "Admin bilan bog'laning": {
+  "ru": "Свяжитесь с администратором",
+  "en": "Contact the administrator"
+ },
+ "Sinf biriktirilmagan": {
+  "ru": "Класс не назначен",
+  "en": "No class assigned"
+ },
+ "Barchasini ko'rish →": {
+  "ru": "Смотреть все →",
+  "en": "View all →"
+ },
+ "Batafsil →": {
+  "ru": "Подробнее →",
+  "en": "Details →"
+ },
+ "Jami o'quvchilar": {
+  "ru": "Всего учеников",
+  "en": "Total students"
+ },
+ "Jami o'qituvchilar": {
+  "ru": "Всего учителей",
+  "en": "Total teachers"
+ },
+ "Faol foydalanuvchilar": {
+  "ru": "Активные пользователи",
+  "en": "Active users"
+ },
+ "O'qituvchi davomati": {
+  "ru": "Посещаемость учителей",
+  "en": "Teacher attendance"
+ },
+ "O'rtacha baho": {
+  "ru": "Средняя оценка",
+  "en": "Average grade"
+ },
+ "Uy vazifa bajarilishi": {
+  "ru": "Выполнение домашних заданий",
+  "en": "Homework completion"
+ },
+ "Test o'rtachasi": {
+  "ru": "Средний балл тестов",
+  "en": "Quiz average"
+ },
+ "Kelganlar": {
+  "ru": "Пришли",
+  "en": "Present"
+ },
+ "Kelmaganlar": {
+  "ru": "Не пришли",
+  "en": "Absent"
+ },
+ "Bugun kelmaganlar": {
+  "ru": "Не пришли сегодня",
+  "en": "Absent today"
+ },
+ "Davomat taqsimoti": {
+  "ru": "Распределение посещаемости",
+  "en": "Attendance breakdown"
+ },
+ "Batafsil ko'rsatkichlar": {
+  "ru": "Подробные показатели",
+  "en": "Detailed metrics"
+ },
+ "Maktab bo'yicha to'liq analitik ko'rsatkichlar": {
+  "ru": "Полная аналитика по школе",
+  "en": "Full school analytics"
+ },
+ "AI Study Assistant": {
+  "ru": "ИИ-помощник для учёбы",
+  "en": "AI Study Assistant"
+ },
+ "Dars bo'yicha savol bering — AI sizga yordam beradi": {
+  "ru": "Задайте вопрос по уроку — ИИ поможет вам",
+  "en": "Ask a question about a lesson — AI will help you"
+ },
+ "Nima bo'yicha yordam kerak?": {
+  "ru": "С чем нужна помощь?",
+  "en": "What do you need help with?"
+ },
+ "Quyidagilardan birini sinab ko'ring:": {
+  "ru": "Попробуйте один из вариантов:",
+  "en": "Try one of these:"
+ },
+ "Kvadrat tenglamani qanday yechish mumkin?": {
+  "ru": "Как решить квадратное уравнение?",
+  "en": "How do I solve a quadratic equation?"
+ },
+ "Fotosintez jarayonini tushuntirib bering": {
+  "ru": "Объясните процесс фотосинтеза",
+  "en": "Explain the process of photosynthesis"
+ },
+ "Present Perfect va Past Simple farqi nima?": {
+  "ru": "В чём разница между Present Perfect и Past Simple?",
+  "en": "What is the difference between Present Perfect and Past Simple?"
+ },
+ "Nyutonning uchinchi qonuni haqida misol bering": {
+  "ru": "Приведите пример третьего закона Ньютона",
+  "en": "Give an example of Newton's third law"
+ },
+ "Savolingizni yozing...": {
+  "ru": "Напишите ваш вопрос...",
+  "en": "Type your question..."
+ },
+ "Zaif mavzular": {
+  "ru": "Слабые темы",
+  "en": "Weak topics"
+ },
+ "Ajoyib!": {
+  "ru": "Отлично!",
+  "en": "Great!"
+ },
+ "Zaif mavzu aniqlanmadi": {
+  "ru": "Слабых тем не обнаружено",
+  "en": "No weak topics found"
+ },
+ "Barcha maktab": {
+  "ru": "Вся школа",
+  "en": "Whole school"
+ },
+ "Ma'lum sinf": {
+  "ru": "Определённый класс",
+  "en": "Specific class"
+ },
+ "Maktab bo'ylab e'lonlar va muhim xabarlar": {
+  "ru": "Объявления и важные сообщения по школе",
+  "en": "School-wide announcements and important messages"
+ },
+ "Oddiy e'lonlar": {
+  "ru": "Обычные объявления",
+  "en": "Regular announcements"
+ },
+ "E'lon yo'q": {
+  "ru": "Нет объявлений",
+  "en": "No announcements"
+ },
+ "Muhim": {
+  "ru": "Важно",
+  "en": "Important"
+ },
+ "Favqulodda xabar yo'q": {
+  "ru": "Срочных сообщений нет",
+  "en": "No emergency messages"
+ },
+ "Favqulodda xabar yuborildi": {
+  "ru": "Срочное сообщение отправлено",
+  "en": "Emergency message sent"
+ },
+ "Favqulodda xabar yuborish": {
+  "ru": "Отправить срочное сообщение",
+  "en": "Send emergency message"
+ },
+ "Sarlavha": {
+  "ru": "Заголовок",
+  "en": "Title"
+ },
+ "Matn": {
+  "ru": "Текст",
+  "en": "Text"
+ },
+ "E'lon yuborildi": {
+  "ru": "Объявление отправлено",
+  "en": "Announcement sent"
+ },
+ "Yangi e'lon": {
+  "ru": "Новое объявление",
+  "en": "New announcement"
+ },
+ "Kimga": {
+  "ru": "Кому",
+  "en": "To"
+ },
+ "Muhimlik": {
+  "ru": "Важность",
+  "en": "Priority"
+ },
+ "Past": {
+  "ru": "Низкая",
+  "en": "Low"
+ },
+ "O'rtacha": {
+  "ru": "Средняя",
+  "en": "Medium"
+ },
+ "Yuqori": {
+  "ru": "Высокая",
+  "en": "High"
+ },
+ "Sinf": {
+  "ru": "Класс",
+  "en": "Class"
+ },
+ "Tanlang...": {
+  "ru": "Выберите...",
+  "en": "Select..."
+ },
+ "Bu xabar Web va Telegram orqali barcha foydalanuvchilarga darhol yuboriladi.": {
+  "ru": "Это сообщение будет немедленно отправлено всем пользователям через сайт и Telegram.",
+  "en": "This message will be sent immediately to all users via the web and Telegram."
+ },
+ "Yuborish": {
+  "ru": "Отправить",
+  "en": "Send"
+ },
+ "Oylik davomat kalendari": {
+  "ru": "Календарь посещаемости за месяц",
+  "en": "Monthly attendance calendar"
+ },
+ "Sabab yuborildi": {
+  "ru": "Причина отправлена",
+  "en": "Reason sent"
+ },
+ "{date} — kelmagan sabab": {
+  "ru": "{date} — причина отсутствия",
+  "en": "{date} — reason for absence"
+ },
+ "Sababni kiriting": {
+  "ru": "Укажите причину",
+  "en": "Enter the reason"
+ },
+ "Masalan: farzandim kasal edi": {
+  "ru": "Например: ребёнок болел",
+  "en": "E.g. my child was ill"
+ },
+ "Sabab kiritilmagan": {
+  "ru": "Причина не указана",
+  "en": "No reason given"
+ },
+ "Ota-ona hali sabab yubormagan": {
+  "ru": "Родитель ещё не указал причину",
+  "en": "The parent has not given a reason yet"
+ },
+ "Davomat belgilash": {
+  "ru": "Отметить посещаемость",
+  "en": "Mark attendance"
+ },
+ "Sinf va sanani tanlab, o'quvchilar davomatini belgilang": {
+  "ru": "Выберите класс и дату, чтобы отметить посещаемость учеников",
+  "en": "Choose a class and date to mark student attendance"
+ },
+ "Sinfni tanlang...": {
+  "ru": "Выберите класс...",
+  "en": "Select a class..."
+ },
+ "Sinfni tanlang": {
+  "ru": "Выберите класс",
+  "en": "Select a class"
+ },
+ "Davomat belgilash uchun avval sinfni tanlang": {
+  "ru": "Сначала выберите класс, чтобы отметить посещаемость",
+  "en": "Select a class first to mark attendance"
+ },
+ "Bu sinfda o'quvchi yo'q": {
+  "ru": "В этом классе нет учеников",
+  "en": "There are no students in this class"
+ },
+ "Sinf chati": {
+  "ru": "Чат класса",
+  "en": "Class chat"
+ },
+ "Shaxsiy": {
+  "ru": "Личный",
+  "en": "Private"
+ },
+ "O'qituvchi-o'quvchi": {
+  "ru": "Учитель–ученик",
+  "en": "Teacher–student"
+ },
+ "Ota-ona-o'qituvchi": {
+  "ru": "Родитель–учитель",
+  "en": "Parent–teacher"
+ },
+ "Sinf chatiga o'tish": {
+  "ru": "Перейти в чат класса",
+  "en": "Open class chat"
+ },
+ "Sinfdoshga yozish": {
+  "ru": "Написать однокласснику",
+  "en": "Message a classmate"
+ },
+ "Ota-onaga yozish": {
+  "ru": "Написать родителю",
+  "en": "Message a parent"
+ },
+ "Chat mavjud emas": {
+  "ru": "Чатов нет",
+  "en": "No chats yet"
+ },
+ "Xabar yo'q": {
+  "ru": "Нет сообщений",
+  "en": "No messages"
+ },
+ "Suhbatni tanlang": {
+  "ru": "Выберите беседу",
+  "en": "Select a conversation"
+ },
+ "Chap tomondan chatlardan birini tanlang": {
+  "ru": "Выберите один из чатов слева",
+  "en": "Pick a chat from the left"
+ },
+ "Sinfdosh ismi bo'yicha qidirish...": {
+  "ru": "Поиск одноклассника по имени...",
+  "en": "Search classmate by name..."
+ },
+ "Sinfdosh topilmadi": {
+  "ru": "Одноклассник не найден",
+  "en": "Classmate not found"
+ },
+ "Ota-ona ismi bo'yicha qidirish...": {
+  "ru": "Поиск родителя по имени...",
+  "en": "Search parent by name..."
+ },
+ "Ota-ona topilmadi": {
+  "ru": "Родитель не найден",
+  "en": "Parent not found"
+ },
+ "Farzand biriktirilmagan": {
+  "ru": "Ребёнок не привязан",
+  "en": "No child linked"
+ },
+ "Birinchi xabarni yuboring": {
+  "ru": "Отправьте первое сообщение",
+  "en": "Send the first message"
+ },
+ "Xabar yozing...": {
+  "ru": "Напишите сообщение...",
+  "en": "Write a message..."
+ },
+ "Maktabdagi barcha sinflar": {
+  "ru": "Все классы школы",
+  "en": "All classes in the school"
+ },
+ "Sinf topilmadi": {
+  "ru": "Класс не найден",
+  "en": "Class not found"
+ },
+ "Biriktirilmagan": {
+  "ru": "Не назначен",
+  "en": "Unassigned"
+ },
+ "{grade}-sinf • {count} o'quvchi": {
+  "ru": "{grade}-й класс • учеников: {count}",
+  "en": "Grade {grade} • {count} students"
+ },
+ "O'quvchi yo'q": {
+  "ru": "Нет учеников",
+  "en": "No students"
+ },
+ "Sinf yaratildi": {
+  "ru": "Класс создан",
+  "en": "Class created"
+ },
+ "Yangi sinf yaratish": {
+  "ru": "Создать новый класс",
+  "en": "Create a new class"
+ },
+ "Maktab": {
+  "ru": "Школа",
+  "en": "School"
+ },
+ "Nomi (masalan 9-A)": {
+  "ru": "Название (например, 9-А)",
+  "en": "Name (e.g. 9-A)"
+ },
+ "Sinf raqami": {
+  "ru": "Номер класса",
+  "en": "Grade number"
+ },
+ "O'quv yili": {
+  "ru": "Учебный год",
+  "en": "Academic year"
+ },
+ "Yaratish": {
+  "ru": "Создать",
+  "en": "Create"
+ },
+ "Fanlar bo'yicha baholar va yillik natijalar": {
+  "ru": "Оценки по предметам и годовые итоги",
+  "en": "Grades by subject and annual results"
+ },
+ "Fan": {
+  "ru": "Предмет",
+  "en": "Subject"
+ },
+ "Chorak": {
+  "ru": "Четверть",
+  "en": "Quarter"
+ },
+ "{q}-chorak": {
+  "ru": "{q}-я четверть",
+  "en": "Quarter {q}"
+ },
+ "Turi": {
+  "ru": "Тип",
+  "en": "Type"
+ },
+ "Sana": {
+  "ru": "Дата",
+  "en": "Date"
+ },
+ "Choraklik baholar": {
+  "ru": "Четвертные оценки",
+  "en": "Quarter grades"
+ },
+ "Natija": {
+  "ru": "Результат",
+  "en": "Result"
+ },
+ "Baho yo'q": {
+  "ru": "Нет оценки",
+  "en": "No grade"
+ },
+ "O'quvchilarga baho qo'yish va nazorat qilish": {
+  "ru": "Выставление и контроль оценок учеников",
+  "en": "Grade and monitor students"
+ },
+ "Jadval": {
+  "ru": "Таблица",
+  "en": "Table"
+ },
+ "Sinf bo'yicha ko'rish": {
+  "ru": "Просмотр по классу",
+  "en": "View by class"
+ },
+ "Barcha fanlar": {
+  "ru": "Все предметы",
+  "en": "All subjects"
+ },
+ "Baho topilmadi": {
+  "ru": "Оценки не найдены",
+  "en": "No grades found"
+ },
+ "Sinf, o'quvchi va fanni tanlab bahoni ko'ring": {
+  "ru": "Выберите класс, ученика и предмет, чтобы увидеть оценки",
+  "en": "Choose a class, student and subject to see grades"
+ },
+ "Fan topilmadi": {
+  "ru": "Предмет не найден",
+  "en": "Subject not found"
+ },
+ "Bu fandan hali baho yo'q": {
+  "ru": "По этому предмету оценок пока нет",
+  "en": "No grades for this subject yet"
+ },
+ "Barcha baholar tarixi": {
+  "ru": "История всех оценок",
+  "en": "Full grade history"
+ },
+ "Baho qo'yildi": {
+  "ru": "Оценка выставлена",
+  "en": "Grade saved"
+ },
+ "Baho qo'yish": {
+  "ru": "Выставить оценку",
+  "en": "Add grade"
+ },
+ "Baho turi": {
+  "ru": "Тип оценки",
+  "en": "Grade type"
+ },
+ "Kundalik": {
+  "ru": "Текущая",
+  "en": "Daily"
+ },
+ "Imtihon": {
+  "ru": "Экзамен",
+  "en": "Exam"
+ },
+ "Baho (0-10)": {
+  "ru": "Оценка (0–10)",
+  "en": "Grade (0-10)"
+ },
+ "Izoh": {
+  "ru": "Комментарий",
+  "en": "Comment"
+ },
+ "Saqlash": {
+  "ru": "Сохранить",
+  "en": "Save"
+ },
+ "Ochiq": {
+  "ru": "Открыто",
+  "en": "Open"
+ },
+ "Jarayonda": {
+  "ru": "В работе",
+  "en": "In progress"
+ },
+ "Yechilgan": {
+  "ru": "Решено",
+  "en": "Resolved"
+ },
+ "Yopilgan": {
+  "ru": "Закрыто",
+  "en": "Closed"
+ },
+ "Kategoriya": {
+  "ru": "Категория",
+  "en": "Category"
+ },
+ "Status": {
+  "ru": "Статус",
+  "en": "Status"
+ },
+ "Foydalanuvchilar murojaatlari": {
+  "ru": "Обращения пользователей",
+  "en": "User requests"
+ },
+ "Muammo yoki savolingiz bo'yicha murojaat qiling": {
+  "ru": "Обратитесь по вашей проблеме или вопросу",
+  "en": "Contact us about a problem or question"
+ },
+ "Tezkor yordam kerakmi?": {
+  "ru": "Нужна срочная помощь?",
+  "en": "Need quick help?"
+ },
+ "Murojaat topilmadi": {
+  "ru": "Обращений не найдено",
+  "en": "No requests found"
+ },
+ "Status yangilandi": {
+  "ru": "Статус обновлён",
+  "en": "Status updated"
+ },
+ "Statusni o'zgartirish": {
+  "ru": "Изменить статус",
+  "en": "Change status"
+ },
+ "Murojaat yuborildi": {
+  "ru": "Обращение отправлено",
+  "en": "Request sent"
+ },
+ "Yangi murojaat": {
+  "ru": "Новое обращение",
+  "en": "New request"
+ },
+ "Tavsif": {
+  "ru": "Описание",
+  "en": "Description"
+ },
+ "Texnik": {
+  "ru": "Техническое",
+  "en": "Technical"
+ },
+ "O'quv": {
+  "ru": "Учебное",
+  "en": "Academic"
+ },
+ "Hisob": {
+  "ru": "Аккаунт",
+  "en": "Account"
+ },
+ "Boshqa": {
+  "ru": "Другое",
+  "en": "Other"
+ },
+ "Sizga berilgan vazifalar": {
+  "ru": "Ваши задания",
+  "en": "Your assignments"
+ },
+ "Berilgan uy vazifalari ro'yxati": {
+  "ru": "Список заданных домашних заданий",
+  "en": "List of assigned homework"
+ },
+ "Uy vazifasi yo'q": {
+  "ru": "Нет домашних заданий",
+  "en": "No homework"
+ },
+ "Muddat o'tgan": {
+  "ru": "Срок истёк",
+  "en": "Overdue"
+ },
+ "Faol": {
+  "ru": "Активно",
+  "en": "Active"
+ },
+ "Tavsif kiritilmagan": {
+  "ru": "Описание не указано",
+  "en": "No description"
+ },
+ "Muddat: {date}": {
+  "ru": "Срок: {date}",
+  "en": "Due: {date}"
+ },
+ "Javobingiz yuborildi": {
+  "ru": "Ваш ответ отправлен",
+  "en": "Your answer was submitted"
+ },
+ "Javobingiz": {
+  "ru": "Ваш ответ",
+  "en": "Your answer"
+ },
+ "Javobingizni shu yerga yozing...": {
+  "ru": "Напишите ваш ответ здесь...",
+  "en": "Write your answer here..."
+ },
+ "Baholandi": {
+  "ru": "Оценено",
+  "en": "Graded"
+ },
+ "Topshirilgan javoblar": {
+  "ru": "Отправленные ответы",
+  "en": "Submitted answers"
+ },
+ "Hali hech kim topshirmagan": {
+  "ru": "Пока никто не отправил",
+  "en": "Nobody has submitted yet"
+ },
+ "Uy vazifasi yaratildi": {
+  "ru": "Домашнее задание создано",
+  "en": "Homework created"
+ },
+ "Yangi uy vazifasi": {
+  "ru": "Новое домашнее задание",
+  "en": "New homework"
+ },
+ "Dars": {
+  "ru": "Урок",
+  "en": "Lesson"
+ },
+ "Muddat": {
+  "ru": "Срок",
+  "en": "Deadline"
+ },
+ "Baholash": {
+  "ru": "Оценить",
+  "en": "Grade"
+ },
+ "Kitob": {
+  "ru": "Книга",
+  "en": "Book"
+ },
+ "Hujjat": {
+  "ru": "Документ",
+  "en": "Document"
+ },
+ "Dars materiali": {
+  "ru": "Учебный материал",
+  "en": "Lesson material"
+ },
+ "Video": {
+  "ru": "Видео",
+  "en": "Video"
+ },
+ "Havola": {
+  "ru": "Ссылка",
+  "en": "Link"
+ },
+ "Elektron kitob, video va dars materiallari": {
+  "ru": "Электронные книги, видео и учебные материалы",
+  "en": "E-books, videos and lesson materials"
+ },
+ "Barcha turlar": {
+  "ru": "Все типы",
+  "en": "All types"
+ },
+ "Material topilmadi": {
+  "ru": "Материалы не найдены",
+  "en": "No materials found"
+ },
+ "Material qo'shildi": {
+  "ru": "Материал добавлен",
+  "en": "Material added"
+ },
+ "Yangi material qo'shish": {
+  "ru": "Добавить новый материал",
+  "en": "Add new material"
+ },
+ "Nomi": {
+  "ru": "Название",
+  "en": "Name"
+ },
+ "Tanlanmagan": {
+  "ru": "Не выбрано",
+  "en": "Not selected"
+ },
+ "Muallif": {
+  "ru": "Автор",
+  "en": "Author"
+ },
+ "Havola (link)": {
+  "ru": "Ссылка (URL)",
+  "en": "Link (URL)"
+ },
+ "Qo'shish": {
+  "ru": "Добавить",
+  "en": "Add"
+ },
+ "Bu sahifa topilmadi.": {
+  "ru": "Эта страница не найдена.",
+  "en": "This page was not found."
+ },
+ "Bosh sahifaga qaytish": {
+  "ru": "Вернуться на главную",
+  "en": "Back to home"
+ },
+ "Barchasi o'qilgan deb belgilandi": {
+  "ru": "Всё отмечено как прочитанное",
+  "en": "All marked as read"
+ },
+ "Barcha bildirishnomalaringiz": {
+  "ru": "Все ваши уведомления",
+  "en": "All your notifications"
+ },
+ "Farzandlar": {
+  "ru": "Дети",
+  "en": "Children"
+ },
+ "Telefon": {
+  "ru": "Телефон",
+  "en": "Phone"
+ },
+ "Tizimga ulangan ota-onalar ro'yxati": {
+  "ru": "Список родителей в системе",
+  "en": "Parents registered in the system"
+ },
+ "Qidirish...": {
+  "ru": "Поиск...",
+  "en": "Search..."
+ },
+ "Farzandlari": {
+  "ru": "Дети",
+  "en": "Children"
+ },
+ "Nusxalandi": {
+  "ru": "Скопировано",
+  "en": "Copied"
+ },
+ "Shaxsiy ma'lumotlaringiz va sozlamalar": {
+  "ru": "Ваши личные данные и настройки",
+  "en": "Your personal details and settings"
+ },
+ "Email": {
+  "ru": "Email",
+  "en": "Email"
+ },
+ "Holat": {
+  "ru": "Статус",
+  "en": "Status"
+ },
+ "Nofaol": {
+  "ru": "Неактивен",
+  "en": "Inactive"
+ },
+ "Ro'yxatdan o'tgan": {
+  "ru": "Дата регистрации",
+  "en": "Registered"
+ },
+ "Sozlamalar": {
+  "ru": "Настройки",
+  "en": "Settings"
+ },
+ "Tizimdan chiqish": {
+  "ru": "Выйти из системы",
+  "en": "Log out"
+ },
+ "Telegram bilan bog'lash": {
+  "ru": "Подключение Telegram",
+  "en": "Connect Telegram"
+ },
+ "Sizga tayinlangan testlar": {
+  "ru": "Назначенные вам тесты",
+  "en": "Quizzes assigned to you"
+ },
+ "Yaratilgan testlar ro'yxati": {
+  "ru": "Список созданных тестов",
+  "en": "List of created quizzes"
+ },
+ "Test topilmadi": {
+  "ru": "Тесты не найдены",
+  "en": "No quizzes found"
+ },
+ "Test yakunlandi!": {
+  "ru": "Тест завершён!",
+  "en": "Quiz completed!"
+ },
+ "Natijangiz muvaffaqiyatli saqlandi": {
+  "ru": "Ваш результат успешно сохранён",
+  "en": "Your result was saved"
+ },
+ "{title} — natijalar": {
+  "ru": "{title} — результаты",
+  "en": "{title} — results"
+ },
+ "Test yaratildi": {
+  "ru": "Тест создан",
+  "en": "Quiz created"
+ },
+ "Yangi test yaratish": {
+  "ru": "Создать новый тест",
+  "en": "Create a new quiz"
+ },
+ "Vaqt limiti (daqiqa)": {
+  "ru": "Лимит времени (минуты)",
+  "en": "Time limit (minutes)"
+ },
+ "Savollar": {
+  "ru": "Вопросы",
+  "en": "Questions"
+ },
+ "Savol {n}": {
+  "ru": "Вопрос {n}",
+  "en": "Question {n}"
+ },
+ "Variant {n}": {
+  "ru": "Вариант {n}",
+  "en": "Option {n}"
+ },
+ "Testni boshlash": {
+  "ru": "Начать тест",
+  "en": "Start quiz"
+ },
+ "Yopish": {
+  "ru": "Закрыть",
+  "en": "Close"
+ },
+ "Yakunlash va topshirish": {
+  "ru": "Завершить и отправить",
+  "en": "Finish and submit"
+ },
+ "Ball:": {
+  "ru": "Балл:",
+  "en": "Score:"
+ },
+ "Dars yo'q": {
+  "ru": "Нет уроков",
+  "en": "No lessons"
+ },
+ "Dars jadvali bo'sh": {
+  "ru": "Расписание пусто",
+  "en": "The schedule is empty"
+ },
+ "Hozircha darslar kiritilmagan": {
+  "ru": "Уроки пока не добавлены",
+  "en": "No lessons have been added yet"
+ },
+ "Shu hafta": {
+  "ru": "Эта неделя",
+  "en": "This week"
+ },
+ "Maktabdagi barcha o'quvchilar ro'yxati": {
+  "ru": "Список всех учеников школы",
+  "en": "All students in the school"
+ },
+ "Ism yoki familiya bo'yicha qidirish...": {
+  "ru": "Поиск по имени или фамилии...",
+  "en": "Search by first or last name..."
+ },
+ "O'quvchi topilmadi": {
+  "ru": "Ученик не найден",
+  "en": "Student not found"
+ },
+ "Qidiruv shartlariga mos o'quvchi yo'q": {
+  "ru": "Нет учеников, подходящих под условия поиска",
+  "en": "No students match your search"
+ },
+ "Yosh": {
+  "ru": "Возраст",
+  "en": "Age"
+ },
+ "O'quvchi muvaffaqiyatli o'tkazildi": {
+  "ru": "Ученик успешно переведён",
+  "en": "Student transferred successfully"
+ },
+ "Sinfga o'tkazish": {
+  "ru": "Перевести в класс",
+  "en": "Transfer to class"
+ },
+ "Yangi sinf": {
+  "ru": "Новый класс",
+  "en": "New class"
+ },
+ "Sabab": {
+  "ru": "Причина",
+  "en": "Reason"
+ },
+ "Masalan: maktab ma'muriy qarori": {
+  "ru": "Например: решение администрации школы",
+  "en": "E.g. school administration decision"
+ },
+ "Profil yangilandi": {
+  "ru": "Профиль обновлён",
+  "en": "Profile updated"
+ },
+ "Profilni tahrirlash — {code}": {
+  "ru": "Редактирование профиля — {code}",
+  "en": "Edit profile — {code}"
+ },
+ "Ism": {
+  "ru": "Имя",
+  "en": "First name"
+ },
+ "Familiya": {
+  "ru": "Фамилия",
+  "en": "Last name"
+ },
+ "Rasm": {
+  "ru": "Фото",
+  "en": "Photo"
+ },
+ "O'quvchi muvaffaqiyatli qo'shildi": {
+  "ru": "Ученик успешно добавлен",
+  "en": "Student added successfully"
+ },
+ "Yangi o'quvchi qo'shish": {
+  "ru": "Добавить нового ученика",
+  "en": "Add a new student"
+ },
+ "O'quvchi kodi": {
+  "ru": "Код ученика",
+  "en": "Student code"
+ },
+ "O'tkazish": {
+  "ru": "Перевести",
+  "en": "Transfer"
+ },
+ "Maktabda o'qitiladigan fanlar ro'yxati": {
+  "ru": "Список предметов, преподаваемых в школе",
+  "en": "Subjects taught at the school"
+ },
+ "Fan qo'shildi": {
+  "ru": "Предмет добавлен",
+  "en": "Subject added"
+ },
+ "Yangi fan qo'shish": {
+  "ru": "Добавить новый предмет",
+  "en": "Add a new subject"
+ },
+ "Icon (emoji)": {
+  "ru": "Иконка (эмодзи)",
+  "en": "Icon (emoji)"
+ },
+ "Tajriba": {
+  "ru": "Опыт",
+  "en": "Experience"
+ },
+ "{n} yil": {
+  "ru": "{n} лет",
+  "en": "{n} yrs"
+ },
+ "Maktabdagi barcha o'qituvchilar ro'yxati": {
+  "ru": "Список всех учителей школы",
+  "en": "All teachers in the school"
+ },
+ "O'qituvchi topilmadi": {
+  "ru": "Учитель не найден",
+  "en": "Teacher not found"
+ },
+ "Telefon raqami": {
+  "ru": "Номер телефона",
+  "en": "Phone number"
+ },
+ "Telegram botga ulanish": {
+  "ru": "Подключение к Telegram-боту",
+  "en": "Connect to the Telegram bot"
+ },
+ "Bildirishnomalar (davomat, baho, e'lonlar) Telegram orqali kelishi uchun kodni botga yuboring.": {
+  "ru": "Отправьте код боту, чтобы получать уведомления (посещаемость, оценки, объявления) в Telegram.",
+  "en": "Send the code to the bot to receive notifications (attendance, grades, announcements) on Telegram."
+ },
+ "Ulangan": {
+  "ru": "Подключено",
+  "en": "Connected"
+ },
+ "Ulanmagan": {
+  "ru": "Не подключено",
+  "en": "Not connected"
+ },
+ "Kod olish": {
+  "ru": "Получить код",
+  "en": "Get code"
+ },
+ "Yangi kod olish": {
+  "ru": "Получить новый код",
+  "en": "Get a new code"
+ },
+ "Botni ochish": {
+  "ru": "Открыть бота",
+  "en": "Open the bot"
+ },
+ "Kodni botga yuboring": {
+  "ru": "Отправьте код боту",
+  "en": "Send this code to the bot"
+ },
+ "Kod {time} dan keyin eskiradi": {
+  "ru": "Код истечёт через {time}",
+  "en": "Code expires in {time}"
+ },
+ "Kod muddati tugadi. Yangi kod oling.": {
+  "ru": "Срок действия кода истёк. Получите новый код.",
+  "en": "The code has expired. Get a new one."
+ },
+ "Bot kodni kutmoqda...": {
+  "ru": "Бот ждёт код...",
+  "en": "Waiting for the bot to receive the code..."
+ },
+ "Telegram muvaffaqiyatli ulandi!": {
+  "ru": "Telegram успешно подключён!",
+  "en": "Telegram connected successfully!"
+ },
+ "Telegram hisobingiz ulangan. Bildirishnomalar botga yuboriladi.": {
+  "ru": "Ваш Telegram подключён. Уведомления приходят в бот.",
+  "en": "Your Telegram is connected. Notifications are sent to the bot."
+ },
+ "Uzish": {
+  "ru": "Отключить",
+  "en": "Disconnect"
+ },
+ "Telegram uzildi": {
+  "ru": "Telegram отключён",
+  "en": "Telegram disconnected"
+ },
+ "Kodni nusxalash": {
+  "ru": "Скопировать код",
+  "en": "Copy code"
+ },
+ "Telefon raqami to'liq emas": {
+  "ru": "Номер телефона неполный",
+  "en": "Phone number is incomplete"
+ },
+ "Emoji": {
+  "ru": "Эмодзи",
+  "en": "Emoji"
+ },
+ "Xabar yuborilmadi": {
+  "ru": "Не удалось отправить сообщение",
+  "en": "Message was not sent"
+ },
+ "{n} a'zo": {
+  "ru": "Участников: {n}",
+  "en": "{n} members"
+ },
+ "Ko'p ishlatilgan": {
+  "ru": "Часто используемые",
+  "en": "Frequently used"
+ },
+ "Yuzlar": {
+  "ru": "Смайлики",
+  "en": "Smileys"
+ },
+ "Qo'l va harakatlar": {
+  "ru": "Жесты и действия",
+  "en": "Gestures & actions"
+ },
+ "Yuraklar va belgilar": {
+  "ru": "Сердечки и символы",
+  "en": "Hearts & symbols"
+ },
+ "Hayvonlar va tabiat": {
+  "ru": "Животные и природа",
+  "en": "Animals & nature"
+ },
+ "Ovqat": {
+  "ru": "Еда",
+  "en": "Food"
+ }
+}

@@ -7,6 +7,7 @@ import { useThemeStore } from "../../store/theme"
 import { navForRole } from "../../lib/nav"
 import { ROLE_LABELS, fullName, initials } from "../../lib/format"
 import { cn } from "../../lib/cn"
+import { t } from "../../i18n"
 
 interface SidebarProps {
   mobileOpen: boolean
@@ -102,7 +103,7 @@ function SidebarContent({
           {!collapsed && (
             <button
               onClick={logout}
-              title="Chiqish"
+              title={t("Chiqish")}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
             >
               <LogOut className="h-4 w-4" />
@@ -129,7 +130,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
         <button
           onClick={toggleSidebar}
           className="absolute -right-3 top-20 flex h-6 w-6 items-center justify-center rounded-full border border-ink-200 bg-white text-ink-500 shadow-soft transition-colors hover:bg-ink-50 hover:text-brand-600 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-300 dark:hover:bg-ink-700"
-          title={collapsed ? "Sidebarni kengaytirish" : "Sidebarni yig'ish"}
+          title={collapsed ? t("Sidebarni kengaytirish") : t("Sidebarni yig'ish")}
         >
           {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
         </button>

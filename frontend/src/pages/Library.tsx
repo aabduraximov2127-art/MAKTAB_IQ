@@ -14,14 +14,15 @@ import { Modal } from "../components/ui/Modal"
 import { EmptyState } from "../components/ui/EmptyState"
 import { CardSkeleton } from "../components/ui/Skeleton"
 import type { LibraryMaterial, Paginated, Subject } from "../types"
+import { t } from "../i18n"
 
 const TYPE_META: Record<LibraryMaterial["material_type"], { label: string; icon: typeof BookOpen; color: string }> = {
-  BOOK: { label: "Kitob", icon: BookOpen, color: "from-brand-500 to-brand-700" },
+  BOOK: { label: t("Kitob"), icon: BookOpen, color: "from-brand-500 to-brand-700" },
   PDF: { label: "PDF", icon: FileText, color: "from-rose-500 to-rose-600" },
-  DOCUMENT: { label: "Hujjat", icon: FileText, color: "from-sky-500 to-sky-600" },
-  LESSON_MATERIAL: { label: "Dars materiali", icon: LibraryBig, color: "from-accent-500 to-accent-600" },
-  VIDEO: { label: "Video", icon: Video, color: "from-violet-500 to-violet-600" },
-  LINK: { label: "Havola", icon: Link2, color: "from-emerald-500 to-emerald-600" },
+  DOCUMENT: { label: t("Hujjat"), icon: FileText, color: "from-sky-500 to-sky-600" },
+  LESSON_MATERIAL: { label: t("Dars materiali"), icon: LibraryBig, color: "from-accent-500 to-accent-600" },
+  VIDEO: { label: t("Video"), icon: Video, color: "from-violet-500 to-violet-600" },
+  LINK: { label: t("Havola"), icon: Link2, color: "from-emerald-500 to-emerald-600" },
 }
 
 export default function LibraryPage() {
@@ -39,8 +40,8 @@ export default function LibraryPage() {
   return (
     <div>
       <PageHeader
-        title="Kutubxona"
-        description="Elektron kitob, video va dars materiallari"
+        title={t("Kutubxona")}
+        description={t("Elektron kitob, video va dars materiallari")}
         actions={
           canManage && (
             <Button onClick={() => setAddOpen(true)}>
@@ -52,7 +53,7 @@ export default function LibraryPage() {
 
       <div className="mb-4 max-w-xs">
         <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-          <option value="">Barcha turlar</option>
+          <option value="">{t("Barcha turlar")}</option>
           {Object.entries(TYPE_META).map(([key, meta]) => (
             <option key={key} value={key}>
               {meta.label}
@@ -68,7 +69,7 @@ export default function LibraryPage() {
           ))}
         </div>
       ) : !data || data.results.length === 0 ? (
-        <EmptyState icon={LibraryBig} title="Material topilmadi" />
+        <EmptyState icon={LibraryBig} title={t("Material topilmadi")} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {data.results.map((m, i) => {
@@ -116,7 +117,7 @@ function AddMaterialModal({ open, onClose, onDone }: { open: boolean; onClose: (
     setLoading(true)
     try {
       await api.post("/library/", form)
-      toast.success("Material qo'shildi")
+      toast.success(t("Material qo'shildi"))
       setForm({ title: "", material_type: "BOOK", subject: "", author: "", link: "" })
       onDone()
     } catch (err) {
@@ -127,12 +128,12 @@ function AddMaterialModal({ open, onClose, onDone }: { open: boolean; onClose: (
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi material qo'shish">
+    <Modal open={open} onClose={onClose} title={t("Yangi material qo'shish")}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Nomi">
+        <Field label={t("Nomi")}>
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
         </Field>
-        <Field label="Turi">
+        <Field label={t("Turi")}>
           <Select value={form.material_type} onChange={(e) => setForm((f) => ({ ...f, material_type: e.target.value }))}>
             {Object.entries(TYPE_META).map(([key, meta]) => (
               <option key={key} value={key}>
@@ -141,9 +142,9 @@ function AddMaterialModal({ open, onClose, onDone }: { open: boolean; onClose: (
             ))}
           </Select>
         </Field>
-        <Field label="Fan">
+        <Field label={t("Fan")}>
           <Select value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}>
-            <option value="">Tanlanmagan</option>
+            <option value="">{t("Tanlanmagan")}</option>
             {subjects?.results.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -151,14 +152,14 @@ function AddMaterialModal({ open, onClose, onDone }: { open: boolean; onClose: (
             ))}
           </Select>
         </Field>
-        <Field label="Muallif">
+        <Field label={t("Muallif")}>
           <Input value={form.author} onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))} />
         </Field>
-        <Field label="Havola (link)">
+        <Field label={t("Havola (link)")}>
           <Input value={form.link} onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))} placeholder="https://..." />
         </Field>
         <Button type="submit" className="w-full" loading={loading}>
-          Qo'shish
+          {t("Qo'shish")}
         </Button>
       </form>
     </Modal>

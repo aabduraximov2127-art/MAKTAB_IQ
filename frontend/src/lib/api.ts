@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { useAuthStore } from "../store/auth"
+import { t } from "../i18n"
 
 export const api = axios.create({
   baseURL: "/api/v1",
@@ -56,7 +57,7 @@ export interface ApiErrorShape {
   errors: Record<string, unknown>
 }
 
-export function getErrorMessage(error: unknown, fallback = "Nimadir xato ketdi"): string {
+export function getErrorMessage(error: unknown, fallback = t("Nimadir xato ketdi")): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as ApiErrorShape | undefined
     if (data?.message) return data.message

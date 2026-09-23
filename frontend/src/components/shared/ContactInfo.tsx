@@ -1,4 +1,5 @@
 import { Headset, Phone, Send } from "lucide-react"
+import { t } from "../../i18n"
 
 const ADMIN_TELEGRAM = "abduraximov_uz7"
 const BOT_TELEGRAM = "maktabIQ_bot"
@@ -28,7 +29,7 @@ export function ContactInfo({ variant = "dark", className = "" }: ContactInfoPro
           <Send className="h-4 w-4" />
         </span>
         <span>
-          <span className={`block ${labelClass}`}>Admin (Telegram)</span>
+          <span className={`block ${labelClass}`}>{t("Admin (Telegram)")}</span>
           <span className={valueClass}>@{ADMIN_TELEGRAM}</span>
         </span>
       </a>
@@ -38,7 +39,7 @@ export function ContactInfo({ variant = "dark", className = "" }: ContactInfoPro
           <Send className="h-4 w-4" />
         </span>
         <span>
-          <span className={`block ${labelClass}`}>Telegram bot</span>
+          <span className={`block ${labelClass}`}>{t("Telegram bot")}</span>
           <span className={valueClass}>@{BOT_TELEGRAM}</span>
         </span>
       </a>
@@ -48,7 +49,7 @@ export function ContactInfo({ variant = "dark", className = "" }: ContactInfoPro
           <Headset className="h-4 w-4" />
         </span>
         <span>
-          <span className={`block ${labelClass}`}>Call-markaz</span>
+          <span className={`block ${labelClass}`}>{t("Call-markaz")}</span>
           <span className="flex flex-wrap gap-x-3">
             {CALL_CENTER_NUMBERS.map((num) => (
               <a key={num} href={`tel:${num}`} className={`${valueClass} hover:underline`}>

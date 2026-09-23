@@ -18,6 +18,7 @@ import { StatCard } from "../components/ui/StatCard"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
 import { CardSkeleton, Skeleton } from "../components/ui/Skeleton"
 import type { AdminAnalytics } from "../types"
+import { t } from "../i18n"
 
 const PIE_COLORS = ["var(--color-emerald-500, #10b981)", "var(--color-rose-500, #f43f5e)"]
 
@@ -28,8 +29,8 @@ export default function AnalyticsPage() {
     () =>
       data
         ? [
-            { name: "Kelganlar", value: data.attendance_percentage },
-            { name: "Kelmaganlar", value: Math.max(0, 100 - data.attendance_percentage) },
+            { name: t("Kelganlar"), value: data.attendance_percentage },
+            { name: t("Kelmaganlar"), value: Math.max(0, 100 - data.attendance_percentage) },
           ]
         : [],
     [data]
@@ -37,19 +38,19 @@ export default function AnalyticsPage() {
 
   return (
     <div>
-      <PageHeader title="Statistika" description="Maktab bo'yicha to'liq analitik ko'rsatkichlar" />
+      <PageHeader title={t("Statistika")} description={t("Maktab bo'yicha to'liq analitik ko'rsatkichlar")} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {loading || !data ? (
           Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
         ) : (
           <>
-            <StatCard label="Jami o'quvchilar" value={data.total_students} icon={Users} tone="brand" />
-            <StatCard label="Jami o'qituvchilar" value={data.total_teachers} icon={UsersRound} tone="accent" />
-            <StatCard label="Sinflar" value={data.total_classes} icon={School} tone="sky" />
-            <StatCard label="Faol foydalanuvchilar" value={data.active_users} icon={Activity} tone="emerald" />
-            <StatCard label="Bugun kelmaganlar" value={data.absent_students} icon={AlertOctagon} tone="rose" />
-            <StatCard label="O'qituvchi davomati" value={`${data.teacher_attendance_percentage}%`} icon={UserCheck} tone="brand" />
+            <StatCard label={t("Jami o'quvchilar")} value={data.total_students} icon={Users} tone="brand" />
+            <StatCard label={t("Jami o'qituvchilar")} value={data.total_teachers} icon={UsersRound} tone="accent" />
+            <StatCard label={t("Sinflar")} value={data.total_classes} icon={School} tone="sky" />
+            <StatCard label={t("Faol foydalanuvchilar")} value={data.active_users} icon={Activity} tone="emerald" />
+            <StatCard label={t("Bugun kelmaganlar")} value={data.absent_students} icon={AlertOctagon} tone="rose" />
+            <StatCard label={t("O'qituvchi davomati")} value={`${data.teacher_attendance_percentage}%`} icon={UserCheck} tone="brand" />
           </>
         )}
       </div>
@@ -57,7 +58,7 @@ export default function AnalyticsPage() {
       <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Davomat taqsimoti</CardTitle>
+            <CardTitle>{t("Davomat taqsimoti")}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading || !data ? (
@@ -87,17 +88,17 @@ export default function AnalyticsPage() {
 
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Batafsil ko'rsatkichlar</CardTitle>
+            <CardTitle>{t("Batafsil ko'rsatkichlar")}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {loading || !data ? (
               <Skeleton className="h-56 w-full sm:col-span-2" />
             ) : (
               <>
-                <MetricRow icon={GraduationCap} label="O'rtacha baho" value={data.average_grades} />
-                <MetricRow icon={ClipboardCheck} label="Davomat" value={`${data.attendance_percentage}%`} />
-                <MetricRow icon={BookOpenCheck} label="Uy vazifa bajarilishi" value={`${data.homework_completion}%`} />
-                <MetricRow icon={BadgeCheck} label="Test o'rtachasi" value={`${data.quiz_average}%`} />
+                <MetricRow icon={GraduationCap} label={t("O'rtacha baho")} value={data.average_grades} />
+                <MetricRow icon={ClipboardCheck} label={t("Davomat")} value={`${data.attendance_percentage}%`} />
+                <MetricRow icon={BookOpenCheck} label={t("Uy vazifa bajarilishi")} value={`${data.homework_completion}%`} />
+                <MetricRow icon={BadgeCheck} label={t("Test o'rtachasi")} value={`${data.quiz_average}%`} />
               </>
             )}
           </CardContent>

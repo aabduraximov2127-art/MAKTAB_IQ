@@ -17,6 +17,7 @@ import { CardSkeleton } from "../components/ui/Skeleton"
 import { Avatar } from "../components/ui/Avatar"
 import { fullName } from "../lib/format"
 import type { AcademicYear, ClassRoom, Paginated, School as SchoolType, StudentProfile } from "../types"
+import { t } from "../i18n"
 
 export default function ClassesPage() {
   const user = useAuthStore((s) => s.user)
@@ -29,8 +30,8 @@ export default function ClassesPage() {
   return (
     <div>
       <PageHeader
-        title="Sinflar"
-        description="Maktabdagi barcha sinflar"
+        title={t("Sinflar")}
+        description={t("Maktabdagi barcha sinflar")}
         actions={
           isAdmin && (
             <Button onClick={() => setAddOpen(true)}>
@@ -47,7 +48,7 @@ export default function ClassesPage() {
           ))}
         </div>
       ) : !data || data.results.length === 0 ? (
-        <EmptyState icon={School} title="Sinf topilmadi" />
+        <EmptyState icon={School} title={t("Sinf topilmadi")} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.results.map((c, i) => (
@@ -71,7 +72,7 @@ export default function ClassesPage() {
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-ink-500 dark:text-ink-400">
-                    Curator: <span className="font-medium text-ink-700 dark:text-ink-200">{c.curator_name ?? "Biriktirilmagan"}</span>
+                    Curator: <span className="font-medium text-ink-700 dark:text-ink-200">{c.curator_name ?? t("Biriktirilmagan")}</span>
                   </p>
                   <div className="mt-3 flex items-center gap-1.5 text-sm text-ink-600 dark:text-ink-300">
                     <Users className="h-4 w-4 text-brand-500" /> {c.student_count} o'quvchi
@@ -95,7 +96,7 @@ function ClassDetailDrawer({ classRoom, onClose }: { classRoom: ClassRoom | null
   )
 
   return (
-    <Drawer open={!!classRoom} onClose={onClose} title={classRoom?.name} subtitle={`${classRoom?.grade}-sinf • ${classRoom?.student_count} o'quvchi`}>
+    <Drawer open={!!classRoom} onClose={onClose} title={classRoom?.name} subtitle={t("{grade}-sinf • {count} o'quvchi", { grade: classRoom?.grade ?? "", count: classRoom?.student_count ?? 0 })}>
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -103,7 +104,7 @@ function ClassDetailDrawer({ classRoom, onClose }: { classRoom: ClassRoom | null
           ))}
         </div>
       ) : !students || students.results.length === 0 ? (
-        <EmptyState title="O'quvchi yo'q" />
+        <EmptyState title={t("O'quvchi yo'q")} />
       ) : (
         <div className="space-y-2">
           {students.results.map((s) => (
@@ -132,7 +133,7 @@ function AddClassModal({ open, onClose, onDone }: { open: boolean; onClose: () =
     setLoading(true)
     try {
       await api.post("/classes/", form)
-      toast.success("Sinf yaratildi")
+      toast.success(t("Sinf yaratildi"))
       setForm({ school: "", name: "", grade: "", academic_year: "" })
       onDone()
     } catch (err) {
@@ -143,11 +144,11 @@ function AddClassModal({ open, onClose, onDone }: { open: boolean; onClose: () =
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Yangi sinf yaratish">
+    <Modal open={open} onClose={onClose} title={t("Yangi sinf yaratish")}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Maktab">
+        <Field label={t("Maktab")}>
           <Select value={form.school} onChange={(e) => setForm((f) => ({ ...f, school: e.target.value }))} required>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {schools?.results.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -156,16 +157,16 @@ function AddClassModal({ open, onClose, onDone }: { open: boolean; onClose: () =
           </Select>
         </Field>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Nomi (masalan 9-A)">
+          <Field label={t("Nomi (masalan 9-A)")}>
             <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
           </Field>
-          <Field label="Sinf raqami">
+          <Field label={t("Sinf raqami")}>
             <Input type="number" min={1} max={11} value={form.grade} onChange={(e) => setForm((f) => ({ ...f, grade: e.target.value }))} required />
           </Field>
         </div>
-        <Field label="O'quv yili">
+        <Field label={t("O'quv yili")}>
           <Select value={form.academic_year} onChange={(e) => setForm((f) => ({ ...f, academic_year: e.target.value }))} required>
-            <option value="">Tanlang...</option>
+            <option value="">{t("Tanlang...")}</option>
             {years?.results.map((y) => (
               <option key={y.id} value={y.id}>
                 {y.name}
@@ -174,7 +175,7 @@ function AddClassModal({ open, onClose, onDone }: { open: boolean; onClose: () =
           </Select>
         </Field>
         <Button type="submit" className="w-full" loading={loading}>
-          Yaratish
+          {t("Yaratish")}
         </Button>
       </form>
     </Modal>

@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useRef, useState } from "react"
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react"
 import { ArrowLeft, MessagesSquare, Pencil, School, Search, Send, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
@@ -6,6 +6,7 @@ import { api, getErrorMessage } from "../lib/api"
 import { useAuthStore } from "../store/auth"
 import { Avatar } from "../components/ui/Avatar"
 import { Button } from "../components/ui/Button"
+import { EmojiPicker } from "../components/ui/EmojiPicker"
 import { EmptyState } from "../components/ui/EmptyState"
 import { Input } from "../components/ui/Input"
 import { Modal } from "../components/ui/Modal"
@@ -13,12 +14,13 @@ import { Skeleton } from "../components/ui/Skeleton"
 import { cn } from "../lib/cn"
 import { formatRelative, fullName } from "../lib/format"
 import type { ChatRoom, Message, Paginated, ParentProfile, StudentProfile } from "../types"
+import { t } from "../i18n"
 
 const ROOM_TYPE_LABEL: Record<ChatRoom["room_type"], string> = {
-  CLASS_GENERAL: "Sinf chati",
-  PRIVATE: "Shaxsiy",
-  TEACHER_STUDENT: "O'qituvchi-o'quvchi",
-  PARENT_TEACHER: "Ota-ona-o'qituvchi",
+  CLASS_GENERAL: t("Sinf chati"),
+  PRIVATE: t("Shaxsiy"),
+  TEACHER_STUDENT: t("O'qituvchi-o'quvchi"),
+  PARENT_TEACHER: t("Ota-ona-o'qituvchi"),
 }
 
 export default function ChatPage() {
@@ -53,13 +55,13 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft dark:border-ink-800 dark:bg-ink-900">
       <div className={cn("w-full shrink-0 border-r border-ink-100 dark:border-ink-800 sm:w-80", mobileThread && "hidden sm:block")}>
         <div className="flex items-center justify-between border-b border-ink-100 px-4 py-4 dark:border-ink-800">
-          <h2 className="font-display text-lg font-bold text-ink-900 dark:text-white">Chat</h2>
+          <h2 className="font-display text-lg font-bold text-ink-900 dark:text-white">{t("Chat")}</h2>
           <div className="flex items-center gap-1">
             {isStudent && (
               <button
                 onClick={openClassGroup}
                 disabled={joiningClassGroup}
-                title="Sinf chatiga o'tish"
+                title={t("Sinf chatiga o'tish")}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-brand-600 transition-colors hover:bg-brand-50 disabled:opacity-60 dark:text-brand-400 dark:hover:bg-brand-500/10"
               >
                 <School className="h-4 w-4" />
@@ -68,7 +70,7 @@ export default function ChatPage() {
             {(canMessageParent || isStudent) && (
               <button
                 onClick={() => setNewMessageOpen(true)}
-                title={isStudent ? "Sinfdoshga yozish" : "Ota-onaga yozish"}
+                title={isStudent ? t("Sinfdoshga yozish") : t("Ota-onaga yozish")}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-brand-600 transition-colors hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-500/10"
               >
                 <Pencil className="h-4 w-4" />
@@ -85,7 +87,7 @@ export default function ChatPage() {
             </div>
           ) : !rooms || rooms.results.length === 0 ? (
             <div className="p-4">
-              <EmptyState icon={MessagesSquare} title="Chat mavjud emas" />
+              <EmptyState icon={MessagesSquare} title={t("Chat mavjud emas")} />
             </div>
           ) : (
             rooms.results.map((room) => (
@@ -105,7 +107,7 @@ export default function ChatPage() {
                     {room.name || ROOM_TYPE_LABEL[room.room_type]}
                   </p>
                   <p className="truncate text-xs text-ink-400">
-                    {room.last_message ? room.last_message.text : "Xabar yo'q"}
+                    {room.last_message ? room.last_message.text : t("Xabar yo'q")}
                   </p>
                 </div>
               </button>
@@ -119,7 +121,7 @@ export default function ChatPage() {
           <ChatThread room={activeRoom} onBack={() => setMobileThread(false)} />
         ) : (
           <div className="flex flex-1 items-center justify-center">
-            <EmptyState icon={MessagesSquare} title="Suhbatni tanlang" description="Chap tomondan chatlardan birini tanlang" />
+            <EmptyState icon={MessagesSquare} title={t("Suhbatni tanlang")} description={t("Chap tomondan chatlardan birini tanlang")} />
           </div>
         )}
       </div>
@@ -203,11 +205,11 @@ function NewClassmateMessageModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Sinfdoshga yozish">
+    <Modal open={open} onClose={onClose} title={t("Sinfdoshga yozish")}>
       <div className="space-y-4">
         <Input
           icon={<Search className="h-4 w-4" />}
-          placeholder="Sinfdosh ismi bo'yicha qidirish..."
+          placeholder={t("Sinfdosh ismi bo'yicha qidirish...")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           autoFocus
@@ -216,7 +218,7 @@ function NewClassmateMessageModal({
           {loading ? (
             <Skeleton className="h-40 w-full" />
           ) : others.length === 0 ? (
-            <EmptyState title="Sinfdosh topilmadi" />
+            <EmptyState title={t("Sinfdosh topilmadi")} />
           ) : (
             others.map((s) => (
               <button
@@ -285,11 +287,11 @@ function NewParentMessageModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Ota-onaga yozish">
+    <Modal open={open} onClose={onClose} title={t("Ota-onaga yozish")}>
       <div className="space-y-4">
         <Input
           icon={<Search className="h-4 w-4" />}
-          placeholder="Ota-ona ismi bo'yicha qidirish..."
+          placeholder={t("Ota-ona ismi bo'yicha qidirish...")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           autoFocus
@@ -298,7 +300,7 @@ function NewParentMessageModal({
           {loading ? (
             <Skeleton className="h-40 w-full" />
           ) : !parents || parents.results.length === 0 ? (
-            <EmptyState title="Ota-ona topilmadi" />
+            <EmptyState title={t("Ota-ona topilmadi")} />
           ) : (
             parents.results.map((p) => (
               <button
@@ -311,7 +313,7 @@ function NewParentMessageModal({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink-800 dark:text-ink-100">{fullName(p.user)}</p>
                   <p className="truncate text-xs text-ink-400">
-                    {p.children.map((c) => fullName(c.user)).join(", ") || "Farzand biriktirilmagan"}
+                    {p.children.map((c) => fullName(c.user)).join(", ") || t("Farzand biriktirilmagan")}
                   </p>
                 </div>
                 {startingId === p.id && <Button size="sm" loading />}
@@ -330,44 +332,114 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(true)
-  const socketRef = useRef<WebSocket | null>(null)
+  const [sending, setSending] = useState(false)
+  const [connected, setConnected] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Add messages we don't have yet (WebSocket push, REST reply and polling can all deliver the same one).
+  const merge = useCallback((incoming: Message[]) => {
+    setMessages((prev) => {
+      const seen = new Set(prev.map((m) => m.id))
+      const fresh = incoming.filter((m) => !seen.has(m.id))
+      return fresh.length ? [...prev, ...fresh].sort((a, b) => a.id - b.id) : prev
+    })
+  }, [])
+
+  const fetchMessages = useCallback(async () => {
+    const res = await api.get<Paginated<Message>>(`/chat/messages/?chat_room=${room.id}&page_size=200`)
+    merge(res.data.results)
+  }, [room.id, merge])
 
   useEffect(() => {
     setLoading(true)
-    api
-      .get<Paginated<Message>>(`/chat/messages/?chat_room=${room.id}&page_size=200`)
-      .then((res) => setMessages(res.data.results))
+    setMessages([])
+    fetchMessages()
+      .catch(() => undefined)
       .finally(() => setLoading(false))
-  }, [room.id])
+  }, [fetchMessages])
 
+  // Real-time channel. Sending never depends on it; it only makes other people's messages appear instantly.
   useEffect(() => {
     if (!accessToken) return
-    const protocol = window.location.protocol === "https:" ? "wss" : "ws"
-    const socket = new WebSocket(`${protocol}://${window.location.host}/ws/chat/${room.id}/?token=${accessToken}`)
-    socketRef.current = socket
+    let cancelled = false
+    let retryDelay = 1000
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
+    let socket: WebSocket | null = null
 
-    socket.onmessage = (event) => {
-      const payload = JSON.parse(event.data) as Message
-      setMessages((prev) => (prev.some((m) => m.id === payload.id) ? prev : [...prev, payload]))
+    function connect() {
+      if (cancelled) return
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws"
+      socket = new WebSocket(`${protocol}://${window.location.host}/ws/chat/${room.id}/?token=${accessToken}`)
+      socket.onopen = () => {
+        retryDelay = 1000
+        setConnected(true)
+        fetchMessages().catch(() => undefined) // catch up on anything missed while offline
+      }
+      socket.onmessage = (event) => {
+        try {
+          merge([JSON.parse(event.data) as Message])
+        } catch {
+          /* ignore malformed payloads */
+        }
+      }
+      socket.onerror = () => socket?.close()
+      socket.onclose = () => {
+        setConnected(false)
+        if (cancelled) return
+        retryTimer = setTimeout(connect, retryDelay)
+        retryDelay = Math.min(retryDelay * 1.6, 10000)
+      }
     }
 
-    return () => socket.close()
-  }, [room.id, accessToken])
+    connect()
+    return () => {
+      cancelled = true
+      clearTimeout(retryTimer)
+      socket?.close()
+    }
+  }, [room.id, accessToken, fetchMessages, merge])
+
+  // No live socket -> poll so the conversation still updates.
+  useEffect(() => {
+    if (connected) return
+    const id = setInterval(() => fetchMessages().catch(() => undefined), 4000)
+    return () => clearInterval(id)
+  }, [connected, fetchMessages])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  function handleSend(e: FormEvent) {
-    e.preventDefault()
+  async function handleSend(e?: FormEvent) {
+    e?.preventDefault()
     const trimmed = text.trim()
-    if (!trimmed || socketRef.current?.readyState !== WebSocket.OPEN) return
-    socketRef.current.send(JSON.stringify({ text: trimmed }))
-    setText("")
+    if (!trimmed || sending) return
+    setSending(true)
+    try {
+      // REST is the reliable path; the server also pushes the message to everyone connected via WebSocket.
+      const { data } = await api.post<Message>("/chat/messages/", { chat_room: room.id, text: trimmed })
+      merge([data])
+      setText("")
+      inputRef.current?.focus()
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("Xabar yuborilmadi")))
+    } finally {
+      setSending(false)
+    }
   }
 
-  const grouped = useMemo(() => messages, [messages])
+  function insertEmoji(emoji: string) {
+    const el = inputRef.current
+    const start = el?.selectionStart ?? text.length
+    const end = el?.selectionEnd ?? text.length
+    setText(text.slice(0, start) + emoji + text.slice(end))
+    const caret = start + emoji.length
+    requestAnimationFrame(() => {
+      el?.focus()
+      el?.setSelectionRange(caret, caret)
+    })
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -380,17 +452,17 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
         </div>
         <div>
           <p className="text-sm font-semibold text-ink-800 dark:text-ink-100">{room.name || ROOM_TYPE_LABEL[room.room_type]}</p>
-          <p className="text-xs text-ink-400">{room.members.length} a'zo</p>
+          <p className="text-xs text-ink-400">{t("{n} a'zo", { n: room.members.length })}</p>
         </div>
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-2/3" />)
-        ) : grouped.length === 0 ? (
-          <EmptyState title="Xabar yo'q" description="Birinchi xabarni yuboring" />
+        ) : messages.length === 0 ? (
+          <EmptyState title={t("Xabar yo'q")} description={t("Birinchi xabarni yuboring")} />
         ) : (
-          grouped.map((m) => {
+          messages.map((m) => {
             const mine = m.sender === user?.id
             return (
               <div key={m.id} className={cn("flex items-end gap-2", mine && "flex-row-reverse")}>
@@ -404,7 +476,7 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
                   )}
                 >
                   {!mine && <p className="mb-0.5 text-xs font-semibold text-brand-500">{m.sender_name}</p>}
-                  <p>{m.text}</p>
+                  <p className="whitespace-pre-wrap break-words">{m.text}</p>
                   <p className={cn("mt-1 text-[10px]", mine ? "text-brand-100" : "text-ink-400")}>{formatRelative(m.created_at)}</p>
                 </div>
               </div>
@@ -414,17 +486,22 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-ink-100 p-3 dark:border-ink-800">
+      <form onSubmit={handleSend} className="flex items-center gap-1.5 border-t border-ink-100 p-3 dark:border-ink-800">
+        <EmojiPicker onPick={insertEmoji} />
         <input
+          ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Xabar yozing..."
-          className="h-11 flex-1 rounded-xl border border-ink-200 bg-white px-3.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 dark:border-ink-700 dark:bg-ink-900 dark:text-white"
+          placeholder={t("Xabar yozing...")}
+          maxLength={2000}
+          autoComplete="off"
+          className="h-11 min-w-0 flex-1 rounded-full border border-ink-200 bg-white px-5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 dark:border-ink-700 dark:bg-ink-950 dark:text-white"
         />
         <button
           type="submit"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
-          disabled={!text.trim()}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
+          disabled={!text.trim() || sending}
+          aria-label={t("Yuborish")}
         >
           <Send className="h-4.5 w-4.5" />
         </button>

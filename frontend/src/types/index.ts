@@ -12,6 +12,7 @@ export interface User {
   is_active: boolean
   is_deactivated: boolean
   date_joined: string
+  telegram_linked?: boolean
 }
 
 export interface School {
