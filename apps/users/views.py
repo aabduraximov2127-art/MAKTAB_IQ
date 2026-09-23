@@ -207,6 +207,86 @@ class TelegramUnlinkView(APIView):
         return Response({"success": True, "linked": False})
 
 
+# ---------------------------------------------------------------------------
+# Telegram Mini App auth — Telegram signs `initData` with the bot token, proving which
+# Telegram account opened the app. See apps/users/telegram_webapp.py for the signature
+# check and apps/users/telegram_link.py for how a chat gets bound to a MaktabIQ account.
+# ---------------------------------------------------------------------------
+class TelegramAuthView(APIView):
+    """Silent sign-in: if this Telegram account is already linked to a MaktabIQ user,
+    exchange the (Telegram-signed) initData for that user's JWT — no password needed,
+    Telegram already proved who is opening the app. Used every time the Mini App opens."""
+
+    serializer_class = EmptySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        from .telegram_webapp import telegram_chat_id_from, verify_init_data
+
+        verified = verify_init_data(request.data.get("init_data", ""))
+        if verified is None:
+            return Response({"success": False, "message": "initData tasdiqlanmadi"}, status=400)
+
+        chat_id = telegram_chat_id_from(verified)
+        user = User.objects.filter(telegram_chat_id=chat_id).first() if chat_id else None
+        if user is None or not user.is_active or user.is_deactivated:
+            return Response({"linked": False})
+
+        refresh = RefreshToken.for_user(user)
+        return Response({"linked": True, "access": str(refresh.access_token), "refresh": str(refresh)})
+
+
+class TelegramWebAppLoginView(APIView):
+    """First-time Mini App sign-in: verifies the initData (proves the Telegram identity)
+    *and* a MaktabIQ username/password (proves the account), links the two, and issues
+    that user's JWT — after this, TelegramAuthView signs the same chat in silently."""
+
+    serializer_class = EmptySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        from django.contrib.auth import authenticate
+
+        from .telegram_link import bind_chat_id, notify_linked
+        from .telegram_webapp import telegram_chat_id_from, verify_init_data
+
+        verified = verify_init_data(request.data.get("init_data", ""))
+        if verified is None:
+            return Response({"success": False, "message": "initData tasdiqlanmadi"}, status=400)
+
+        chat_id = telegram_chat_id_from(verified)
+        if not chat_id:
+            return Response({"success": False, "message": "Telegram foydalanuvchisi aniqlanmadi"}, status=400)
+
+        username = request.data.get("username", "")
+        password = request.data.get("password", "")
+        user = authenticate(request, username=username, password=password)
+
+        existing = user or User.objects.filter(username=username).first()
+        if existing is not None:
+            from common.models import LoginHistory
+
+            LoginHistory.objects.create(
+                user=existing,
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get("HTTP_USER_AGENT", "")[:255],
+                success=user is not None,
+            )
+
+        if user is None:
+            return Response({"success": False, "message": "Login yoki parol xato"}, status=400)
+        if not user.is_active or user.is_deactivated:
+            return Response({"success": False, "message": "Hisob faol emas"}, status=400)
+
+        already_linked = user.telegram_chat_id == chat_id
+        bind_chat_id(user, chat_id)
+        if not already_linked:
+            notify_linked(user)
+
+        refresh = RefreshToken.for_user(user)
+        return Response({"access": str(refresh.access_token), "refresh": str(refresh)})
+
+
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]

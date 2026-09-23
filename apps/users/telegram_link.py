@@ -41,6 +41,22 @@ def issue_code(user):
     return code
 
 
+def bind_chat_id(user, chat_id):
+    """Attach ``chat_id`` to ``user``, stealing it from whoever else had it first.
+
+    ``telegram_chat_id`` is unique, so a chat can only ever belong to one account —
+    used both when a code is redeemed and when the Mini App links a Telegram-verified
+    identity to a password login (see ``telegram_webapp.py``).
+    """
+    from .models import User
+
+    chat_id = str(chat_id)
+    User.objects.filter(telegram_chat_id=chat_id).exclude(id=user.id).update(telegram_chat_id=None)
+    if user.telegram_chat_id != chat_id:
+        user.telegram_chat_id = chat_id
+        user.save(update_fields=["telegram_chat_id"])
+
+
 def link_with_code(code, chat_id):
     """Verify ``code`` and bind ``chat_id`` to the user it was issued for.
 
@@ -65,10 +81,7 @@ def link_with_code(code, chat_id):
     if user is None:
         return LINK_NO_USER, None
 
-    # telegram_chat_id is unique: a chat can only belong to one account at a time.
-    User.objects.filter(telegram_chat_id=chat_id).exclude(id=user.id).update(telegram_chat_id=None)
-    user.telegram_chat_id = chat_id
-    user.save(update_fields=["telegram_chat_id"])
+    bind_chat_id(user, chat_id)
     cache.delete(attempts_key)
     return LINK_OK, user
 

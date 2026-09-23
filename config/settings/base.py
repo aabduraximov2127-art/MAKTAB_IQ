@@ -193,6 +193,10 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # ---------------------------------------------------------------------------
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+# Public HTTPS URL of the Telegram Mini App (telegram-app/). Required for the bot's menu
+# button / "Ilovani ochish" button to work — Telegram only opens web_app buttons over HTTPS.
+# Empty is fine for a backend-only setup; the bot just skips offering the button.
+TELEGRAM_WEBAPP_URL = os.getenv("TELEGRAM_WEBAPP_URL", "")
 
 # ---------------------------------------------------------------------------
 # AI Study Assistant
