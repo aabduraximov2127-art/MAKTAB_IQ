@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Check, CheckCircle2, Clock3, XCircle } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
+import { useFamilyStudents } from "../hooks/useFamilyStudents"
 import { api, getErrorMessage } from "../lib/api"
 import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
@@ -33,9 +34,9 @@ export default function AttendancePage() {
 /* -------------------------------- Student/Parent -------------------------------- */
 
 function MyAttendanceView() {
-  const { data: students } = useFetch<Paginated<StudentProfile>>("/students/")
+  // own profile (student) / children (parent) only — never the classmates a student can list
+  const { students: children } = useFamilyStudents()
   const [activeChild, setActiveChild] = useState<number | null>(null)
-  const children = students?.results ?? []
   const selectedId = activeChild ?? children[0]?.id ?? null
 
   return (
