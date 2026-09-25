@@ -33,7 +33,7 @@ from rest_framework.views import APIView
 from common import rbac
 from common.audit import log_action
 from common.permissions import require
-from common.rbac import MANAGE_PERMISSIONS, MANAGE_ROLES, MANAGE_USERS
+from common.rbac import MANAGE_PERMISSIONS, MANAGE_ROLES
 
 from .permissions import can_manage_user
 
@@ -46,6 +46,10 @@ SYSTEM_PERMISSIONS = frozenset(
         rbac.MANAGE_SCHOOL_SETTINGS,
         rbac.VIEW_SENSITIVE_STUDENT_DATA,
         rbac.MODERATE_CHAT,
+        rbac.MANAGE_SCHOOLS,
+        rbac.MANAGE_ADMINS,
+        rbac.DELETE_USERS,
+        rbac.VIEW_SYSTEM_STATS,
     }
 )
 
@@ -213,9 +217,9 @@ class UserAccessMixin:
 
 
 class RoleListView(APIView):
-    """Role catalogue with each role's *default* permissions."""
+    """Role catalogue with each role's *default* permissions (the SuperAdmin's view of the role system)."""
 
-    permission_classes = [require(MANAGE_ROLES, MANAGE_USERS)]
+    permission_classes = [require(MANAGE_ROLES)]
     serializer_class = serializers.Serializer
 
     def get(self, request):

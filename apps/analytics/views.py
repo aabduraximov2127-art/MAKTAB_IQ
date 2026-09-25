@@ -15,10 +15,11 @@ from common.rbac import (
     VIEW_CLASS_REPORTS,
     VIEW_OWN_GRADES,
     VIEW_REPORTS,
+    VIEW_SYSTEM_STATS,
 )
 
 from .serializers import AdminAnalyticsResponseSerializer, StudentProgressResponseSerializer
-from .services import compute_admin_analytics, compute_student_progress
+from .services import compute_admin_analytics, compute_student_progress, compute_system_analytics
 
 PROGRESS_PERMISSIONS = (VIEW_OWN_GRADES, VIEW_CHILD_GRADES, VIEW_ASSIGNED_GRADES, VIEW_CLASS_REPORTS, VIEW_ALL_GRADES)
 
@@ -66,6 +67,17 @@ class AdminAnalyticsView(APIView):
         school = get_object_or_404(School, pk=school_id) if school_id else None
         data = compute_admin_analytics(school=school)
         return Response({"success": True, **data})
+
+
+class SystemAnalyticsView(APIView):
+    """System-wide totals (schools, admins, pupils, teachers ...) and one row per school —
+    ``view_system_stats``, i.e. the SuperAdmin only."""
+
+    permission_classes = [require(VIEW_SYSTEM_STATS)]
+    serializer_class = serializers.Serializer
+
+    def get(self, request):
+        return Response({"success": True, **compute_system_analytics()})
 
 
 class ClassReportView(APIView):

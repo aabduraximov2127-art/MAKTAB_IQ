@@ -79,7 +79,11 @@ class RegistryTests(SimpleTestCase):
                         "manage_classes", "manage_students", "manage_teachers"},
             set(),
         )
-        self.assertTrue({"manage_users", "manage_roles", "manage_permissions"} <= admin)
+        self.assertIn("manage_users", admin)  # the accounts of its own school
+        # roles, global permissions, administrators and schools belong to the SuperAdmin alone
+        system = {"manage_roles", "manage_permissions", "manage_schools", "manage_admins", "delete_users", "view_system_stats"}
+        self.assertEqual(admin & system, set())
+        self.assertTrue(system <= rbac.ROLE_PERMISSIONS[rbac.SUPERADMIN])
 
     def test_director_runs_subjects_announcements_library_chat_and_own_profile(self):
         director = rbac.ROLE_PERMISSIONS[rbac.DIRECTOR]
@@ -225,7 +229,12 @@ class AuthenticationTests(SchoolWorld):
     def test_role_field_still_cannot_be_patched(self):
         self.as_user(self.admin_a)
         response = self.client.patch(f"/api/v1/users/{self.s1_user.id}/", {"role": "SUPERADMIN"})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)  # PATCH is for SuperAdmin + admin accounts
+        self.assertEqual(User.objects.get(pk=self.s1_user.pk).role, R.STUDENT)
+        # not even the SuperAdmin can write a role through it: the field is simply not accepted
+        self.as_user(self.superadmin)
+        self.client.patch(f"/api/v1/users/{self.admin_a.id}/", {"role": "SUPERADMIN", "first_name": "Ok"})
+        self.assertEqual(User.objects.get(pk=self.admin_a.pk).role, R.ADMIN)
 
 
 # ---------------------------------------------------------------------------
@@ -309,7 +318,7 @@ class StudentRoleTests(SchoolWorld):
 
     def test_own_profile_edit_only_with_explicit_grant(self):
         self.assertEqual(self.client.patch(f"/api/v1/students/{self.s1.id}/", {"first_name": "Aziz"}).status_code, 403)
-        self.as_user(self.admin_a)
+        self.as_user(self.superadmin)
         granted = self.client.post(f"/api/v1/users/{self.s1_user.id}/permissions/", {"permission": "update_own_profile"})
         self.assertEqual(granted.status_code, 200)
         self.as_user(self.s1_user)
@@ -448,8 +457,8 @@ class TeacherRoleTests(SchoolWorld):
         self.as_user(self.t2_user)
         self.assertEqual(self.client.post(f"/api/v1/students/{self.s1.id}/transfer/", payload).status_code, 403)
 
-        # ...until an admin grants the permission to *that* teacher
-        self.as_user(self.admin_a)
+        # ...until the SuperAdmin grants the permission to *that* teacher
+        self.as_user(self.superadmin)
         self.assertEqual(self.client.post(f"/api/v1/users/{self.t2_user.id}/permissions/", {"permission": "transfer_students"}).status_code, 200)
         self.as_user(self.t2_user)
         self.assertEqual(self.client.post(f"/api/v1/students/{self.s1.id}/transfer/", {"new_class": self.class_b.id}).status_code, 201)
@@ -699,49 +708,6 @@ class AdminRoleTests(SchoolWorld):
         self.assertEqual(self.client.patch(f"/api/v1/schools/{self.school_a.id}/", {"name": "Renamed"}).status_code, 200)
         self.assertEqual(self.client.patch(f"/api/v1/schools/{self.school_b.id}/", {"name": "Hacked"}).status_code, 403)
 
-    def test_grants_and_revokes_roles(self):
-        url = f"/api/v1/users/{self.t3_user.id}/roles/"
-        granted = self.client.post(url, {"role": "DIRECTOR"})
-        self.assertEqual(granted.status_code, 200)
-        self.assertEqual(granted.data["extra_roles"], ["DIRECTOR"])
-        self.assertIn("view_all_grades", granted.data["permissions"])
-        self.assertIn("TEACHER", granted.data["roles"])  # multi-role: primary + extra
-        removed = self.client.delete(f"{url}DIRECTOR/")
-        self.assertEqual(removed.status_code, 200)
-        self.assertEqual(removed.data["extra_roles"], [])
-        self.assertNotIn("view_all_grades", removed.data["permissions"])
-
-    def test_role_guard_rails(self):
-        url = f"/api/v1/users/{self.t3_user.id}/roles/"
-        self.assertEqual(self.client.post(url, {"role": "SUPERADMIN"}).status_code, 403)            # only SUPERADMIN hands that out
-        self.assertEqual(self.client.post(url, {"role": "CLASS_TEACHER"}).status_code, 400)          # derived, not assignable
-        self.assertEqual(self.client.post(url, {"role": "NOPE"}).status_code, 400)
-        self.assertEqual(self.client.delete(f"{url}CLASS_TEACHER/").status_code, 400)
-        self.assertEqual(self.client.delete(f"{url}TEACHER/").status_code, 400)                     # primary role
-        own = f"/api/v1/users/{self.admin_a.id}/roles/"
-        self.assertEqual(self.client.post(own, {"role": "DIRECTOR"}).status_code, 403)              # no self-edit
-        foreign = f"/api/v1/users/{self.s4_user.id}/roles/"
-        self.assertEqual(self.client.post(foreign, {"role": "TEACHER"}).status_code, 403)           # other school
-        target_super = f"/api/v1/users/{self.superadmin.id}/roles/"
-        self.assertEqual(self.client.post(target_super, {"role": "TEACHER"}).status_code, 403)      # never a SUPERADMIN
-
-    def test_permission_guard_rails(self):
-        url = f"/api/v1/users/{self.t3_user.id}/permissions/"
-        self.assertEqual(self.client.post(url, {"permission": "transfer_students"}).status_code, 200)
-        self.assertEqual(self.client.post(url, {"permission": "manage_roles"}).status_code, 403)    # system level
-        self.assertEqual(self.client.post(url, {"permission": "made_up"}).status_code, 400)
-        revoked = self.client.delete(f"{url}transfer_students/")
-        self.assertEqual(revoked.status_code, 200)
-        self.assertNotIn("transfer_students", revoked.data["permissions"])
-
-    def test_catalogues(self):
-        roles = self.client.get("/api/v1/roles/").data
-        self.assertEqual({r["code"] for r in roles}, set(rbac.ALL_ROLES))
-        self.assertTrue(next(r for r in roles if r["code"] == "CLASS_TEACHER")["derived"])
-        perms = self.client.get("/api/v1/permissions/").data
-        self.assertGreaterEqual(len(perms), 80)
-        self.assertIn("manage_school_settings", [p["codename"] for p in perms])
-
     def test_access_endpoint(self):
         own = self.client.get(f"/api/v1/users/{self.admin_a.id}/access/")
         self.assertEqual(own.status_code, 200)
@@ -758,6 +724,71 @@ class AdminRoleTests(SchoolWorld):
         self.assertEqual(self.client.post(url, {"permission": "manage_roles"}).status_code, 200)
         self.assertEqual(self.client.post(f"/api/v1/users/{self.t3_user.id}/roles/", {"role": "SUPERADMIN"}).status_code, 200)
         self.assertEqual(self.client.get(f"/api/v1/users/{self.s4_user.id}/access/").status_code, 200)  # any school
+
+
+class RoleAdministrationTests(SchoolWorld):
+    """Roles and global permissions are handed out by the SuperAdmin — a school admin cannot."""
+
+    def setUp(self):
+        super().setUp()
+        self.as_user(self.superadmin)
+
+    def test_grants_and_revokes_roles(self):
+        url = f"/api/v1/users/{self.t3_user.id}/roles/"
+        granted = self.client.post(url, {"role": "DIRECTOR"})
+        self.assertEqual(granted.status_code, 200)
+        self.assertEqual(granted.data["extra_roles"], ["DIRECTOR"])
+        self.assertIn("view_all_grades", granted.data["permissions"])
+        self.assertIn("TEACHER", granted.data["roles"])  # multi-role: primary + extra
+        removed = self.client.delete(f"{url}DIRECTOR/")
+        self.assertEqual(removed.status_code, 200)
+        self.assertEqual(removed.data["extra_roles"], [])
+        self.assertNotIn("view_all_grades", removed.data["permissions"])
+
+    def test_role_guard_rails(self):
+        url = f"/api/v1/users/{self.t3_user.id}/roles/"
+        self.assertEqual(self.client.post(url, {"role": "CLASS_TEACHER"}).status_code, 400)          # derived, not assignable
+        self.assertEqual(self.client.post(url, {"role": "NOPE"}).status_code, 400)
+        self.assertEqual(self.client.delete(f"{url}CLASS_TEACHER/").status_code, 400)
+        self.assertEqual(self.client.delete(f"{url}TEACHER/").status_code, 400)                     # primary role
+        own = f"/api/v1/users/{self.superadmin.id}/roles/"
+        self.assertEqual(self.client.post(own, {"role": "DIRECTOR"}).status_code, 403)              # no self-edit
+        foreign = f"/api/v1/users/{self.s4_user.id}/roles/"
+        self.assertEqual(self.client.post(foreign, {"role": "PARENT"}).status_code, 200)            # any school
+        self.assertEqual(self.client.post(url, {"role": "SUPERADMIN"}).status_code, 200)            # only the SuperAdmin hands that out
+
+    def test_permission_guard_rails(self):
+        url = f"/api/v1/users/{self.t3_user.id}/permissions/"
+        self.assertEqual(self.client.post(url, {"permission": "transfer_students"}).status_code, 200)
+        self.assertEqual(self.client.post(url, {"permission": "manage_roles"}).status_code, 200)    # system level: allowed here
+        self.assertEqual(self.client.post(url, {"permission": "made_up"}).status_code, 400)
+        revoked = self.client.delete(f"{url}transfer_students/")
+        self.assertEqual(revoked.status_code, 200)
+        self.assertNotIn("transfer_students", revoked.data["permissions"])
+
+    def test_catalogues(self):
+        roles = self.client.get("/api/v1/roles/").data
+        self.assertEqual({r["code"] for r in roles}, set(rbac.ALL_ROLES))
+        self.assertTrue(next(r for r in roles if r["code"] == "CLASS_TEACHER")["derived"])
+        perms = self.client.get("/api/v1/permissions/").data
+        self.assertGreaterEqual(len(perms), 80)
+        codenames = [p["codename"] for p in perms]
+        for name in ("manage_school_settings", "manage_schools", "manage_admins", "delete_users", "view_system_stats"):
+            self.assertIn(name, codenames)
+
+    def test_a_school_admin_cannot_administer_roles_or_permissions(self):
+        self.as_user(self.admin_a)
+        for method, url, body in [
+            ("get", "/api/v1/roles/", None),
+            ("get", "/api/v1/permissions/", None),
+            ("post", f"/api/v1/users/{self.t3_user.id}/roles/", {"role": "PARENT"}),
+            ("delete", f"/api/v1/users/{self.t3_user.id}/roles/TEACHER/", None),
+            ("post", f"/api/v1/users/{self.t3_user.id}/permissions/", {"permission": "transfer_students"}),
+            ("delete", f"/api/v1/users/{self.t3_user.id}/permissions/transfer_students/", None),
+        ]:
+            with self.subTest(url=url):
+                response = getattr(self.client, method)(url, body) if body else getattr(self.client, method)(url)
+                self.assertEqual(response.status_code, 403)
 
 
 # ---------------------------------------------------------------------------
@@ -808,7 +839,7 @@ class MultiRoleTests(SchoolWorld):
         self.assertIn("view_assigned_students", me["permissions"])
 
     def test_extra_permission_is_added_on_top_of_role_permissions(self):
-        self.as_user(self.admin_a)
+        self.as_user(self.superadmin)
         self.client.post(f"/api/v1/users/{self.s1_user.id}/permissions/", {"permission": "manage_library"})
         self.as_user(self.s1_user)
         self.assertEqual(self.client.post("/api/v1/library/", {"title": "Kitob", "material_type": "BOOK"}).status_code, 201)
@@ -819,7 +850,7 @@ class MultiRoleTests(SchoolWorld):
         self.add_role(self.t3_user, R.DIRECTOR)
         self.as_user(self.t3_user)
         self.assertEqual(len(self.ids(self.client.get("/api/v1/students/"))), 3)
-        self.as_user(self.admin_a)
+        self.as_user(self.superadmin)
         self.client.delete(f"/api/v1/users/{self.t3_user.id}/roles/DIRECTOR/")
         self.as_user(self.t3_user)
         self.assertEqual(self.ids(self.client.get("/api/v1/students/")), [])

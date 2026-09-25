@@ -73,7 +73,10 @@ def compute_admin_analytics(school=None):
         avg=Avg("score")
     )["avg"] or 0
 
-    active_users = User.objects.filter(is_active=True).count()
+    active_accounts = User.objects.filter(is_active=True)
+    if school is not None:
+        active_accounts = active_accounts.filter(school=school)  # a school's figure counts that school only
+    active_users = active_accounts.count()
     absent_today = attendance_qs.filter(status=AttendanceStatus.ABSENT).count()
 
     teacher_attendance_qs = TeacherAttendance.objects.filter(teacher__in=teachers)
@@ -95,4 +98,33 @@ def compute_admin_analytics(school=None):
         "active_users": active_users,
         "absent_students": absent_today,
         "teacher_attendance_percentage": round(teacher_attendance_percentage, 2),
+    }
+
+
+def compute_system_analytics():
+    """The whole system for the SuperAdmin: the overall figures plus one row per school."""
+    from apps.schools.models import School
+    from apps.users.models import User
+
+    overall = compute_admin_analytics(school=None)
+    schools = []
+    for school in School.objects.all().order_by("name"):
+        stats = compute_admin_analytics(school=school)
+        schools.append(
+            {
+                "id": school.id,
+                "name": school.name,
+                "students": stats["total_students"],
+                "teachers": stats["total_teachers"],
+                "classes": stats["total_classes"],
+                "admins": User.objects.filter(role=User.Role.ADMIN, school=school).count(),
+                "attendance_percentage": stats["attendance_percentage"],
+                "average_grades": stats["average_grades"],
+            }
+        )
+    return {
+        **overall,
+        "total_schools": len(schools),
+        "total_admins": User.objects.filter(role=User.Role.ADMIN).count(),
+        "schools": schools,
     }

@@ -588,3 +588,18 @@ def announcements_scope(user, qs):
     # a class teacher can always see (and manage) what they themselves sent
     q |= Q(created_by=user)
     return qs.filter(q).distinct()
+
+
+def subject_used_outside_school(subject, school_id) -> bool:
+    """Subjects are one catalogue shared by every school (the name is unique system-wide), so a
+    school admin must not rename or delete one that another school's lessons, grades or teachers
+    depend on."""
+    from apps.grades.models import Grade
+    from apps.lessons.models import Lesson
+    from apps.users.models import TeacherProfile
+
+    return (
+        Lesson.objects.filter(subject=subject).exclude(class_room__school_id=school_id).exists()
+        or Grade.objects.filter(subject=subject).exclude(student__school_id=school_id).exists()
+        or TeacherProfile.objects.filter(subjects=subject).exclude(school_id=school_id).exists()
+    )

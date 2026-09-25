@@ -11,10 +11,12 @@ class SchoolAPITests(APITestCase):
         self.admin = User.objects.create_user(username="admin", password="Str0ngPass!23", role=User.Role.ADMIN)
         self.teacher = User.objects.create_user(username="teacher", password="Str0ngPass!23", role=User.Role.TEACHER)
 
-    def test_admin_can_create_school(self):
+    def test_only_the_superadmin_can_create_a_school(self):
         self.client.force_authenticate(self.admin)
-        response = self.client.post("/api/v1/schools/", {"name": "Maktab 1"})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.client.post("/api/v1/schools/", {"name": "Maktab 1"}).status_code, status.HTTP_403_FORBIDDEN)
+        superadmin = User.objects.create_user(username="root", password="Str0ngPass!23", role=User.Role.SUPERADMIN)
+        self.client.force_authenticate(superadmin)
+        self.assertEqual(self.client.post("/api/v1/schools/", {"name": "Maktab 1"}).status_code, status.HTTP_201_CREATED)
 
     def test_teacher_cannot_create_school(self):
         self.client.force_authenticate(self.teacher)

@@ -151,6 +151,11 @@ MANAGE_CLASSES = "manage_classes"
 MANAGE_SUBJECTS = "manage_subjects"
 MANAGE_SCHEDULE = "manage_schedule"
 MANAGE_SCHOOL_SETTINGS = "manage_school_settings"
+# -- system level: SUPERADMIN only ------------------------------------------------
+MANAGE_SCHOOLS = "manage_schools"  # create / edit / delete any school
+MANAGE_ADMINS = "manage_admins"  # create / edit / block / delete administrators, assign them to a school
+DELETE_USERS = "delete_users"  # permanently delete a user account
+VIEW_SYSTEM_STATS = "view_system_stats"  # totals and per-school figures for the whole system
 SEND_ANNOUNCEMENTS = "send_announcements"
 MANAGE_HELPDESK = "manage_helpdesk"
 MANAGE_ACADEMIC_RECORDS = "manage_academic_records"  # school-wide grade/attendance/homework/quiz override (admin)
@@ -251,6 +256,10 @@ _CATALOG_ROWS = [
     (MANAGE_SUBJECTS, "management", "Fanlarni boshqarish"),
     (MANAGE_SCHEDULE, "management", "Dars jadvalini boshqarish"),
     (MANAGE_SCHOOL_SETTINGS, "management", "Maktab sozlamalarini boshqarish"),
+    (MANAGE_SCHOOLS, "management", "Maktablarni qo'shish, tahrirlash va o'chirish"),
+    (MANAGE_ADMINS, "management", "Adminlarni yaratish, tahrirlash, bloklash, o'chirish va maktabga biriktirish"),
+    (DELETE_USERS, "management", "Foydalanuvchini butunlay o'chirish"),
+    (VIEW_SYSTEM_STATS, "management", "Butun tizim va barcha maktablar statistikasini ko'rish"),
     (SEND_ANNOUNCEMENTS, "management", "Butun maktabga e'lon yuborish"),
     (MANAGE_HELPDESK, "management", "Yordam murojaatlarini boshqarish"),
     (MANAGE_ACADEMIC_RECORDS, "management", "Butun maktab bo'yicha baho, davomat, vazifa va testlarni boshqarish"),
@@ -396,16 +405,16 @@ _DIRECTOR = _SUPERVISION | {
     UPDATE_OWN_PROFILE,
 }
 
-# Admin keeps everything it could already do before this permission system existed
-# (grades / attendance / homework overrides inside its own school) plus user & role admin.
+# Admin runs ONE school: its pupils, teachers, classes, subjects, attendance and grades (with the
+# grade / attendance / homework overrides it always had), plus the accounts of that school. It does
+# not administer roles, global permissions, other administrators or schools — those are the
+# SuperAdmin's (see _SUPERADMIN below).
 _ADMIN = (
     _SUPERVISION
     | {
         VIEW_ALL_PARENTS,
         VIEW_SENSITIVE_STUDENT_DATA,
         MANAGE_USERS,
-        MANAGE_ROLES,
-        MANAGE_PERMISSIONS,
         MANAGE_STUDENTS,
         MANAGE_TEACHERS,
         MANAGE_CLASSES,
@@ -458,6 +467,10 @@ _SUPERADMIN = (
         MANAGE_SUBJECTS,
         MANAGE_SCHEDULE,
         MANAGE_SCHOOL_SETTINGS,
+        MANAGE_SCHOOLS,
+        MANAGE_ADMINS,
+        DELETE_USERS,
+        VIEW_SYSTEM_STATS,
         SEND_ANNOUNCEMENTS,
         MANAGE_HELPDESK,
         MODERATE_CHAT,

@@ -34,15 +34,15 @@ same_school = access.same_school  # kept as a module-level name for backwards co
 
 def can_manage_user(actor, target) -> bool:
     """May ``actor`` administer (activate / deactivate / reset password / change roles of)
-    ``target``? Needs ``manage_users``; school-bound admins stay inside their own school and
-    can never touch a SUPERADMIN account."""
+    ``target``? Needs ``manage_users``; school-bound admins stay inside their own school and can
+    never touch an administrator or a SUPERADMIN account (administrators are the SuperAdmin's)."""
     if not rbac.has_perm(actor, MANAGE_USERS):
         return False
     if rbac.is_global(actor):
         return True
     if not access.same_school(actor, target.school_id):
         return False
-    return not rbac.has_role(target, rbac.SUPERADMIN)
+    return not (rbac.has_role(target, rbac.SUPERADMIN) or rbac.has_role(target, rbac.ADMIN))
 
 
 class IsSelfOrAdmin(BasePermission):

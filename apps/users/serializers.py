@@ -1,4 +1,5 @@
 from django.contrib.auth import password_validation
+from django.db import transaction
 from rest_framework import serializers
 
 from apps.classes.models import ClassRoom
@@ -87,6 +88,36 @@ class MeUpdateSerializer(PhoneValidationMixin, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("first_name", "last_name", "email", "phone")
+
+
+class AdminAccountCreateSerializer(PhoneValidationMixin, serializers.ModelSerializer):
+    """The SuperAdmin creates an administrator account. An admin always belongs to a school."""
+
+    password = serializers.CharField(write_only=True, validators=[password_validation.validate_password])
+    school = serializers.PrimaryKeyRelatedField(queryset=School.objects.all())
+
+    class Meta:
+        model = User
+        fields = ("id", "username", "password", "first_name", "last_name", "email", "phone", "school")
+        read_only_fields = ("id",)
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        user = User(role=User.Role.ADMIN, **validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+
+class AdminAccountUpdateSerializer(PhoneValidationMixin, serializers.ModelSerializer):
+    """The SuperAdmin edits an administrator: name, contact details and the school they run.
+    Login, role and password are not editable here (password reset has its own action)."""
+
+    school = serializers.PrimaryKeyRelatedField(queryset=School.objects.all(), required=False)
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email", "phone", "school")
 
 
 class UserAdminSerializer(UserSerializer):
@@ -213,8 +244,29 @@ class StudentProfileUpdateSerializer(PhoneValidationMixin, serializers.ModelSeri
         return super().update(instance, validated_data)
 
 
-class TeacherProfileSerializer(serializers.ModelSerializer):
+def _next_teacher_id():
+    """T-0001, T-0002, ... — the first free code."""
+    number = TeacherProfile.objects.count() + 1
+    while TeacherProfile.objects.filter(teacher_id=f"T-{number:04d}").exists():
+        number += 1
+    return f"T-{number:04d}"
+
+
+class TeacherProfileSerializer(PhoneValidationMixin, serializers.ModelSerializer):
+    """A teacher. Creating one also creates the login (``username`` + ``password`` + name);
+    editing one may change the name and contact details, never the login or the password."""
+
     user = UserSerializer(read_only=True)
+    username = serializers.CharField(write_only=True, required=False, max_length=150)
+    password = serializers.CharField(write_only=True, required=False, validators=[password_validation.validate_password])
+    first_name = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=150)
+    last_name = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=150)
+    email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
+    phone = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=20)
+    teacher_id = serializers.CharField(required=False, max_length=30)  # generated when left out
+
+    LOGIN_FIELDS = ("username", "password")
+    CONTACT_FIELDS = ("first_name", "last_name", "email", "phone")
 
     class Meta:
         model = TeacherProfile
@@ -227,8 +279,63 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
             "experience_years",
             "avatar",
             "created_at",
+            "username",
+            "password",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
         )
         read_only_fields = ("id", "created_at")
+
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Bu login band.")
+        User.username_validator(value)
+        return value
+
+    def validate_teacher_id(self, value):
+        clash = TeacherProfile.objects.filter(teacher_id=value)
+        if self.instance is not None:
+            clash = clash.exclude(pk=self.instance.pk)
+        if clash.exists():
+            raise serializers.ValidationError("Bu o'qituvchi kodi band.")
+        return value
+
+    def validate(self, attrs):
+        if self.instance is None:
+            missing = [name for name in ("username", "password", "first_name") if not attrs.get(name)]
+            if missing:
+                raise serializers.ValidationError({name: "Bu maydon majburiy." for name in missing})
+        else:
+            forbidden = [name for name in self.LOGIN_FIELDS if name in attrs]
+            if forbidden:
+                raise serializers.ValidationError(
+                    {name: "Login va parol bu yerda o'zgartirilmaydi (parolni tiklash alohida)." for name in forbidden}
+                )
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        login = {name: validated_data.pop(name) for name in self.LOGIN_FIELDS}
+        contact = {name: validated_data.pop(name) for name in self.CONTACT_FIELDS if name in validated_data}
+        subjects = validated_data.pop("subjects", [])
+        user = User(role=User.Role.TEACHER, school=validated_data.get("school"), username=login["username"], **contact)
+        user.set_password(login["password"])
+        user.save()
+        validated_data.setdefault("teacher_id", _next_teacher_id())
+        profile = TeacherProfile.objects.create(user=user, **validated_data)
+        profile.subjects.set(subjects)
+        return profile
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        contact = {name: validated_data.pop(name) for name in self.CONTACT_FIELDS if name in validated_data}
+        if contact:
+            for name, value in contact.items():
+                setattr(instance.user, name, value)
+            instance.user.save(update_fields=list(contact))
+        return super().update(instance, validated_data)
 
 
 class ParentProfileSerializer(serializers.ModelSerializer):

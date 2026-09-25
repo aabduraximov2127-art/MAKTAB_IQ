@@ -409,8 +409,10 @@ class SchoolAdminScopingTests(APITestCase):
         self.assertEqual(self.student_a_user.role, User.Role.STUDENT)
 
     def test_no_endpoint_lets_admin_write_role_field(self):
-        # UserViewSet is read-only for everyone, including ADMIN — there is no API
-        # surface at all that accepts a `role` field for an existing user.
+        # PATCH /users/{id}/ belongs to the SuperAdmin (administrator accounts only) and never
+        # accepts a `role` field — a school admin is simply refused.
         self.client.force_authenticate(self.admin_a)
         response = self.client.patch(f"/api/v1/users/{self.student_a_user.id}/", {"role": "SUPERADMIN"})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.student_a_user.refresh_from_db()
+        self.assertEqual(self.student_a_user.role, User.Role.STUDENT)

@@ -109,12 +109,18 @@ va hisoblanadigan `CLASS_TEACHER` (foydalanuvchi biror sinfning `curator`i bo'ls
 - **Yangi model yo'q.** Asosiy rol — `User.role`; qo'shimcha rollar — `User.groups` (guruh nomi = rol kodi);
   foydalanuvchiga individual ruxsat — `User.user_permissions`. Bir foydalanuvchida bir nechta rol bo'lishi mumkin
   (masalan `TEACHER + CLASS_TEACHER`, `TEACHER + PARENT`) — ruxsatlar birlashtiriladi (union).
-- `common/rbac.py` — 84 ta standart permission (`view_own_grades`, `create_grade`, `manage_users`, ...) va
+- `common/rbac.py` — 88 ta standart permission (`view_own_grades`, `create_grade`, `manage_users`, ...) va
   `ROLE_PERMISSIONS` (rol → default permissionlar).
 - `common/access.py` — permission *turini* beradi, scope esa *qaysi obyektlarga* ekanini belgilaydi
   (o'zining / farzandi / biriktirilgan / sinf / maktab / global). Boshqa birovning obyekti → `403`,
   tokensiz → `401`.
 - `common/permissions.py` — `RBACPermission` va `require("codename", ...)` (DRF permission).
+- **SuperAdmin** butun tizimni boshqaradi: tizim dashboardi (`GET /analytics/system/`), maktablar
+  (`/schools/` — yaratish/tahrirlash/o'chirish), admin hisoblari (`POST|PATCH /users/`, faqat `role=ADMIN`),
+  foydalanuvchini o'chirish (`DELETE /users/{id}/`), rollar va permissionlar. Yangi permissionlar:
+  `manage_schools`, `manage_admins`, `delete_users`, `view_system_stats` (faqat SuperAdmin).
+- **Admin** faqat o'z maktabini boshqaradi (o'quvchi, o'qituvchi, sinf, fan, davomat, baho); maktab yaratolmaydi/o'chirolmaydi,
+  rol va global permission bermaydi, boshqa adminlarni boshqarmaydi.
 - Admin API: `GET /roles/`, `GET /permissions/`, `GET /users/{id}/access/`, `POST|DELETE /users/{id}/roles/[ROL]`,
   `POST|DELETE /users/{id}/permissions/[codename]`.
 - Frontend: `useAccess()` (`frontend/src/lib/access.ts`) — menyu, route va tugmalar `permissions`ga qarab chiqadi;

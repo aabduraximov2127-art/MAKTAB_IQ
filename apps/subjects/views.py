@@ -1,6 +1,7 @@
 from rest_framework import permissions, viewsets
+from rest_framework.exceptions import PermissionDenied
 
-from common import access
+from common import access, rbac
 from common.permissions import require
 from common.rbac import MANAGE_SUBJECTS
 from common.guards import ForbidOutOfScopeMixin
@@ -23,3 +24,18 @@ class SubjectViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
         if self.request.method not in permissions.SAFE_METHODS:
             return [require(MANAGE_SUBJECTS)()]
         return [permissions.IsAuthenticated()]
+
+    def _guard_shared_subject(self, subject):
+        # the catalogue is shared: a school admin cannot rename / delete a subject that other
+        # schools' lessons, grades or teachers use — only the SuperAdmin can
+        user = self.request.user
+        if not rbac.is_global(user) and access.subject_used_outside_school(subject, user.school_id):
+            raise PermissionDenied("Bu fan boshqa maktablarda ham ishlatiladi; uni faqat SuperAdmin o'zgartira oladi.")
+
+    def perform_update(self, serializer):
+        self._guard_shared_subject(serializer.instance)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._guard_shared_subject(instance)
+        instance.delete()

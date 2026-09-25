@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,12 +8,14 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from common import access, rbac
 from common.audit import get_client_ip, log_action
 from common.permissions import RBACPermission, require
 from common.rbac import (
+    DELETE_USERS,
+    MANAGE_ADMINS,
     MANAGE_STUDENTS,
     MANAGE_TEACHERS,
     MANAGE_USERS,
@@ -43,6 +45,8 @@ from .permissions import (
     can_manage_user,
 )
 from .serializers import (
+    AdminAccountCreateSerializer,
+    AdminAccountUpdateSerializer,
     EmptySerializer,
     LogoutSerializer,
     MeSerializer,
@@ -320,15 +324,61 @@ class TelegramWebAppLoginView(APIView):
         return Response({"access": str(refresh.access_token), "refresh": str(refresh)})
 
 
-class UserViewSet(ForbidOutOfScopeMixin, UserAccessMixin, viewsets.ReadOnlyModelViewSet):
-    """Read-only user directory for user administrators (``manage_users``). Roles and
-    permissions are changed through the dedicated actions in ``access_api.py`` — there is
-    deliberately no PATCH/PUT that accepts a ``role`` field."""
+class UserViewSet(
+    ForbidOutOfScopeMixin,
+    UserAccessMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    """The user directory. Reading it needs ``manage_users`` (a school admin sees its own school).
+
+    Roles and permissions change through the dedicated actions in ``access_api.py`` — there is
+    deliberately no PATCH/PUT that accepts a ``role`` field. The only writes here belong to the
+    SuperAdmin: create / edit an *administrator* account and assign it to a school
+    (``manage_admins``), and permanently delete an account (``delete_users``)."""
 
     serializer_class = UserAdminSerializer
     permission_classes = [require(MANAGE_USERS)]
     search_fields = ["username", "first_name", "last_name", "email"]
     filterset_fields = ["role", "school", "is_active"]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_permissions(self):
+        if self.action in {"create", "partial_update"}:
+            return [require(MANAGE_ADMINS)()]
+        if self.action == "destroy":
+            return [require(DELETE_USERS)()]
+        return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        serializer = AdminAccountCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        log_action(request.user, "ADMIN_CREATED", target=user.username, description=f"school={user.school_id}", request=request)
+        return Response(UserAdminSerializer(user).data, status=status.HTTP_201_CREATED)
+
+    def partial_update(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.role != User.Role.ADMIN:
+            raise PermissionDenied("Bu yerda faqat admin hisoblarini tahrirlash mumkin.")
+        serializer = AdminAccountUpdateSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        before = user.school_id
+        user = serializer.save()
+        note = f"school {before} -> {user.school_id}" if before != user.school_id else "details"
+        log_action(request.user, "ADMIN_UPDATED", target=user.username, description=note, request=request)
+        return Response(UserAdminSerializer(user).data)
+
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.pk == request.user.pk:
+            raise PermissionDenied("O'zingizning hisobingizni o'chira olmaysiz.")
+        if rbac.has_role(user, rbac.SUPERADMIN):
+            raise PermissionDenied("SuperAdmin hisobini o'chirib bo'lmaydi.")
+        log_action(request.user, "USER_DELETED", target=user.username, description=f"role={user.role} school={user.school_id}", request=request)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self):
         qs = User.objects.all().order_by("-date_joined").prefetch_related("groups", "user_permissions")
@@ -377,6 +427,11 @@ class StudentViewSet(viewsets.ModelViewSet):
     def me(self, request):
         profile = get_object_or_404(StudentProfile, user=request.user)
         return Response(self.get_serializer(profile).data)
+
+    def perform_destroy(self, instance):
+        # deleting a pupil removes the login too — a lingering account would still sign in
+        log_action(self.request.user, "STUDENT_DELETED", target=instance.user.username, description=f"code={instance.student_code}", request=self.request)
+        instance.user.delete()
 
     @action(detail=True, methods=["post"], permission_classes=[CanTransferStudent])
     def transfer(self, request, pk=None):
@@ -436,12 +491,26 @@ class TeacherViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
             raise PermissionDenied("Boshqa maktab uchun o'qituvchi yarata/o'zgartira olmaysiz.")
 
     def perform_create(self, serializer):
+        requester = self.request.user
         self._enforce_own_school(serializer)
-        serializer.save()
+        if not rbac.is_global(requester):
+            # a school admin only ever creates teachers for its own school
+            if not requester.school_id:
+                raise PermissionDenied("Sizga maktab biriktirilmagan.")
+            serializer.validated_data["school"] = requester.school
+        elif serializer.validated_data.get("school") is None:
+            raise ValidationError({"school": "Maktabni tanlang."})
+        teacher = serializer.save()
+        log_action(requester, "TEACHER_CREATED", target=teacher.user.username, description=f"code={teacher.teacher_id}", request=self.request)
 
     def perform_update(self, serializer):
         self._enforce_own_school(serializer)
         serializer.save()
+
+    def perform_destroy(self, instance):
+        # deleting a teacher removes the login too (the profile and their lessons go with it)
+        log_action(self.request.user, "TEACHER_DELETED", target=instance.user.username, description=f"code={instance.teacher_id}", request=self.request)
+        instance.user.delete()
 
     @action(detail=False, methods=["get"])
     def me(self, request):
