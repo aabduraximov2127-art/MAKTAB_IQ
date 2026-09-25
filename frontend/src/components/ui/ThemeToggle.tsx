@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion"
-import { Moon, Sun } from "lucide-react"
+import { ToggleOffIcon, ToggleOnIcon } from "./icons"
 import { useThemeStore } from "../../store/theme"
 import { t } from "../../i18n"
 
@@ -24,7 +24,7 @@ export function ThemeToggle() {
           transition={{ duration: 0.18 }}
           className="flex"
         >
-          {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {isDark ? <ToggleOnIcon className="h-7 w-7 text-brand-500" /> : <ToggleOffIcon className="h-7 w-7" />}
         </motion.span>
       </AnimatePresence>
     </button>

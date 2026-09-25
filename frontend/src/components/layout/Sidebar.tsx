@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom"
 import { motion } from "framer-motion"
-import { ChevronLeft, ChevronRight, LogOut, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useAuthStore } from "../../store/auth"
 import { Logo } from "../shared/Logo"
+import { SignOutIcon } from "./SignOutIcon"
 import { useThemeStore } from "../../store/theme"
 import { navForUser } from "../../lib/nav"
 import { roleLabels, fullName, initials } from "../../lib/format"
@@ -106,7 +107,7 @@ function SidebarContent({
               title={t("Chiqish")}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
             >
-              <LogOut className="h-4 w-4" />
+              <SignOutIcon className="h-4 w-4" />
             </button>
           )}
         </div>

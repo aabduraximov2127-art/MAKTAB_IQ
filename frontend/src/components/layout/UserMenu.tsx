@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, LogOut, Settings, User as UserIcon } from "lucide-react"
+import { ChevronDown, Settings, User as UserIcon } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useAuthStore } from "../../store/auth"
+import { SignOutIcon } from "./SignOutIcon"
 import { fullName, initials, roleLabels } from "../../lib/format"
 
 export function UserMenu() {
@@ -67,7 +68,7 @@ export function UserMenu() {
               onClick={logout}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
             >
-              <LogOut className="h-4 w-4" /> Chiqish
+              <SignOutIcon className="h-4 w-4" /> Chiqish
             </button>
           </motion.div>
         )}
