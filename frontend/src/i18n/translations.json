@@ -1786,5 +1786,53 @@
  "Yuklanmoqda...": {
   "ru": "Загрузка...",
   "en": "Loading..."
+ },
+ "O'quvchilarni ko'rish uchun avval sinfni tanlang": {
+  "ru": "Сначала выберите класс, чтобы увидеть учеников",
+  "en": "Select a class first to see its students"
+ },
+ "Barcha o'qituvchilar": {
+  "ru": "Все учителя",
+  "en": "All teachers"
+ },
+ "O'qituvchini tanlang...": {
+  "ru": "Выберите учителя...",
+  "en": "Select a teacher..."
+ },
+ "O'quvchini tanlang": {
+  "ru": "Выберите ученика",
+  "en": "Select a student"
+ },
+ "O'qituvchilar va o'quvchilar davomati": {
+  "ru": "Посещаемость учителей и учеников",
+  "en": "Teacher and student attendance"
+ },
+ "Davomatini ko'rish uchun avval sinfni, keyin o'quvchini tanlang": {
+  "ru": "Чтобы увидеть посещаемость, сначала выберите класс, затем ученика",
+  "en": "Select a class, then a student, to see their attendance"
+ },
+ "Dars jadvalini ko'rish uchun o'qituvchini tanlang": {
+  "ru": "Выберите учителя, чтобы увидеть его расписание",
+  "en": "Select a teacher to see their timetable"
+ },
+ "Dars jadvalini ko'rish uchun avval sinfni, keyin o'quvchini tanlang": {
+  "ru": "Чтобы увидеть расписание, сначала выберите класс, затем ученика",
+  "en": "Select a class, then a student, to see the timetable"
+ },
+ "Yaqin 7 kundagi darslar": {
+  "ru": "Уроки на ближайшие 7 дней",
+  "en": "Lessons in the next 7 days"
+ },
+ "Ish davomati (30 kun)": {
+  "ru": "Посещаемость работы (30 дней)",
+  "en": "Work attendance (30 days)"
+ },
+ "Profilni tahrirlash": {
+  "ru": "Редактировать профиль",
+  "en": "Edit profile"
+ },
+ "Bekor qilish": {
+  "ru": "Отмена",
+  "en": "Cancel"
  }
 }

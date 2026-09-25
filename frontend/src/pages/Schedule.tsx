@@ -7,9 +7,11 @@ import { Card } from "../components/ui/Card"
 import { EmptyState } from "../components/ui/EmptyState"
 import { Skeleton } from "../components/ui/Skeleton"
 import { Tabs } from "../components/ui/Tabs"
+import { Select } from "../components/ui/Select"
+import { ClassStudentPicker, type PickerSelection } from "../components/shared/ClassStudentPicker"
 import { useAccess } from "../lib/access"
 import { cn } from "../lib/cn"
-import { shortName } from "../lib/format"
+import { fullName, shortName } from "../lib/format"
 import type { Lesson, Paginated, TeacherProfile } from "../types"
 import { localeTag, t } from "../i18n"
 
@@ -63,8 +65,70 @@ export default function SchedulePage() {
         }
       />
 
-      {hasRole("CLASS_TEACHER") ? <ClassTeacherSchedule weekDays={weekDays} /> : <LessonsBoard query="" weekDays={weekDays} />}
+      {hasRole("DIRECTOR") ? (
+        <DirectorSchedule weekDays={weekDays} />
+      ) : hasRole("CLASS_TEACHER") ? (
+        <ClassTeacherSchedule weekDays={weekDays} />
+      ) : (
+        <LessonsBoard query="" weekDays={weekDays} />
+      )}
     </div>
+  )
+}
+
+/**
+ * The director browses the timetable in two tabs: one teacher's week, or a class's week (pick
+ * the class, then optionally a pupil — a pupil follows the timetable of their class).
+ */
+function DirectorSchedule({ weekDays }: { weekDays: Date[] }) {
+  const [tab, setTab] = useState<"teachers" | "students">("teachers")
+  const [teacherId, setTeacherId] = useState("")
+  const [picked, setPicked] = useState<PickerSelection>({ classRoom: null, student: null })
+  const { data: teachers } = useFetch<Paginated<TeacherProfile>>("/teachers/?page_size=100")
+
+  return (
+    <>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <Tabs
+          tabs={[
+            { key: "teachers", label: t("O'qituvchilar") },
+            { key: "students", label: t("O'quvchilar") },
+          ]}
+          active={tab}
+          onChange={(key) => setTab(key as "teachers" | "students")}
+        />
+        {tab === "teachers" ? (
+          <Select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="min-w-[14rem]" aria-label={t("O'qituvchini tanlang...")}>
+            <option value="">{t("O'qituvchini tanlang...")}</option>
+            {teachers?.results.map((teacher) => (
+              <option key={teacher.id} value={teacher.id}>
+                {fullName(teacher.user)}
+              </option>
+            ))}
+          </Select>
+        ) : (
+          <ClassStudentPicker onChange={setPicked} />
+        )}
+      </div>
+
+      {tab === "teachers" ? (
+        teacherId ? (
+          <LessonsBoard key={`teacher-${teacherId}`} query={`&teacher=${teacherId}`} weekDays={weekDays} />
+        ) : (
+          <EmptyState title={t("O'qituvchini tanlang...")} description={t("Dars jadvalini ko'rish uchun o'qituvchini tanlang")} />
+        )
+      ) : picked.classRoom ? (
+        <>
+          <p className="mb-3 text-sm text-ink-500 dark:text-ink-400">
+            {picked.student && <span className="font-semibold text-ink-800 dark:text-ink-100">{fullName(picked.student.user)} · </span>}
+            {picked.classRoom.name}
+          </p>
+          <LessonsBoard key={`class-${picked.classRoom.id}`} query={`&class_room=${picked.classRoom.id}`} weekDays={weekDays} />
+        </>
+      ) : (
+        <EmptyState title={t("Sinfni tanlang")} description={t("Dars jadvalini ko'rish uchun avval sinfni, keyin o'quvchini tanlang")} />
+      )}
+    </>
   )
 }
 

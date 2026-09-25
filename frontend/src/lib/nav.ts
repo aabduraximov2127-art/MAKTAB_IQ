@@ -81,6 +81,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: ListChecks,
     section: t("Umumiy"),
     anyPerm: ["view_own_homework", "view_child_homework", "view_assigned_homework", "view_all_homework", "view_class_reports"],
+    hiddenFor: ["DIRECTOR"], // homework is the teachers' business; the director does not need the section
   },
   {
     to: "/quizzes",

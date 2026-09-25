@@ -306,6 +306,15 @@ export interface Paginated<T> {
   results: T[]
 }
 
+export interface TeacherAttendance {
+  id: number
+  teacher: number
+  teacher_name: string
+  date: string
+  status: AttendanceStatus
+  reason: string
+}
+
 /** A colleague a staff member can start a private chat with (GET /chat/staff/). */
 export interface StaffContact {
   id: number

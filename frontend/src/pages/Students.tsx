@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react"
-import { ArrowRightLeft, Pencil, Plus, Search, UserRound } from "lucide-react"
+import { ArrowRightLeft, Pencil, Plus, Search, UserRound, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
@@ -15,14 +15,19 @@ import { Modal } from "../components/ui/Modal"
 import { Drawer } from "../components/ui/Drawer"
 import { Avatar } from "../components/ui/Avatar"
 import { Badge } from "../components/ui/Badge"
+import { EmptyState } from "../components/ui/EmptyState"
+import { Skeleton } from "../components/ui/Skeleton"
+import { ClassStudentPicker, type PickerSelection } from "../components/shared/ClassStudentPicker"
 import { fullName, formatDate } from "../lib/format"
-import type { ClassRoom, Paginated, School, StudentProfile } from "../types"
+import type { ClassRoom, Paginated, School, StudentProfile, StudentProgress } from "../types"
 import { t } from "../i18n"
 
 const PAGE_SIZE = 10
 
 export default function StudentsPage() {
-  const { can, canAny } = useAccess()
+  const { can, canAny, hasRole } = useAccess()
+  // The director browses the school class by class: pick a class, then (optionally) a pupil.
+  const isDirector = hasRole("DIRECTOR")
   const canManage = can("manage_students") // create / delete students
   const canTransfer = can("transfer_students")
   const canEdit = canAny("manage_students", "manage_class_students", "update_child_profile")
@@ -34,10 +39,17 @@ export default function StudentsPage() {
   const [transferOpen, setTransferOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
 
+  const [picked, setPicked] = useState<PickerSelection>({ classRoom: null, student: null })
+  const waitingForClass = isDirector && !picked.classRoom
+
   const query = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE) })
   if (search) query.set("search", search)
+  if (isDirector && picked.classRoom) query.set("class_room", String(picked.classRoom.id))
 
-  const { data, loading, refetch } = useFetch<Paginated<StudentProfile>>(`/students/?${query.toString()}`, [page, search])
+  const { data, loading, refetch } = useFetch<Paginated<StudentProfile>>(
+    waitingForClass ? null : `/students/?${query.toString()}`,
+    [page, search, picked.classRoom?.id]
+  )
 
   const columns: Column<StudentProfile>[] = [
     {
@@ -78,29 +90,51 @@ export default function StudentsPage() {
         }
       />
 
-      <div className="mb-4 max-w-xs">
-        <Input
-          icon={<Search className="h-4 w-4" />}
-          placeholder={t("Ism yoki familiya bo'yicha qidirish...")}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
+      {isDirector && (
+        <ClassStudentPicker
+          className="mb-4"
+          onChange={(selection) => {
+            setPicked(selection)
             setPage(1)
+            setSearch("")
+            if (selection.student) setSelected(selection.student)
           }}
         />
-      </div>
+      )}
 
-      <DataTable
-        columns={columns}
-        rows={data?.results ?? []}
-        keyField={(r) => r.id}
-        loading={loading}
-        emptyTitle={t("O'quvchi topilmadi")}
-        emptyDescription={t("Qidiruv shartlariga mos o'quvchi yo'q")}
-        onRowClick={setSelected}
-      />
+      {waitingForClass ? (
+        <EmptyState
+          icon={Users}
+          title={t("Sinfni tanlang")}
+          description={t("O'quvchilarni ko'rish uchun avval sinfni tanlang")}
+        />
+      ) : (
+        <>
+          <div className="mb-4 max-w-xs">
+            <Input
+              icon={<Search className="h-4 w-4" />}
+              placeholder={t("Ism yoki familiya bo'yicha qidirish...")}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
+            />
+          </div>
 
-      {data && <Pagination page={page} count={data.count} pageSize={PAGE_SIZE} onChange={setPage} />}
+          <DataTable
+            columns={columns}
+            rows={data?.results ?? []}
+            keyField={(r) => r.id}
+            loading={loading}
+            emptyTitle={t("O'quvchi topilmadi")}
+            emptyDescription={t("Qidiruv shartlariga mos o'quvchi yo'q")}
+            onRowClick={setSelected}
+          />
+
+          {data && <Pagination page={page} count={data.count} pageSize={PAGE_SIZE} onChange={setPage} />}
+        </>
+      )}
 
       <Drawer open={!!selected} onClose={() => setSelected(null)} title={selected ? fullName(selected.user) : ""} subtitle={selected?.student_code}>
         {selected && (
@@ -113,6 +147,7 @@ export default function StudentsPage() {
             <DetailRow label={t("Telefon")} value={selected.user.phone || "—"} />
             <DetailRow label={t("Email")} value={selected.user.email || "—"} />
             <DetailRow label={t("Ro'yxatdan o'tgan")} value={formatDate(selected.created_at)} />
+            {isDirector && <ProgressTiles studentId={selected.id} />}
             <div className="flex flex-col gap-2 sm:flex-row">
               {canEdit && (
                 <Button variant="outline" className="w-full" onClick={() => setEditOpen(true)}>
@@ -163,6 +198,30 @@ export default function StudentsPage() {
           refetch()
         }}
       />
+    </div>
+  )
+}
+
+/** The pupil's headline numbers — average grade, attendance, homework and quizzes. */
+function ProgressTiles({ studentId }: { studentId: number }) {
+  const { data, loading } = useFetch<StudentProgress>(`/analytics/progress/?student=${studentId}`, [studentId])
+  if (loading && !data) return <Skeleton className="h-24 w-full" />
+  if (!data) return null
+
+  const tiles = [
+    { label: t("O'rtacha baho"), value: String(data.average_grade) },
+    { label: t("Davomat"), value: `${data.attendance_percentage}%` },
+    { label: t("Uy vazifa"), value: `${data.homework_completion}%` },
+    { label: t("Test o'rtachasi"), value: `${data.quiz_average}%` },
+  ]
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {tiles.map((tile) => (
+        <div key={tile.label} className="rounded-xl border border-ink-100 p-3 dark:border-ink-800">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">{tile.label}</p>
+          <p className="mt-1 font-display text-xl font-bold text-ink-900 dark:text-white">{tile.value}</p>
+        </div>
+      ))}
     </div>
   )
 }

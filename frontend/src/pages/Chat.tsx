@@ -29,8 +29,8 @@ export default function ChatPage() {
   const { can, hasRole } = useAccess()
   const canMessageParent = can("moderate_chat")
   const isStudent = can("view_classmates")
-  // A class teacher can also write to any colleague and shares the teachers' room with them.
-  const canMessageStaff = hasRole("CLASS_TEACHER") && can("use_staff_chat")
+  // A class teacher and the director can also write to any colleague and share the staff room.
+  const canMessageStaff = hasRole("CLASS_TEACHER", "DIRECTOR") && can("use_staff_chat")
   const { data: rooms, loading, refetch } = useFetch<Paginated<ChatRoom>>("/chat/?page_size=100")
   const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null)
   const [mobileThread, setMobileThread] = useState(false)

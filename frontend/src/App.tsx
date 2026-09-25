@@ -104,7 +104,7 @@ export default function App() {
             <Route element={<RoleGuard perms={ATTENDANCE_PERMS} />}>
               <Route path="/attendance" element={<AttendancePage />} />
             </Route>
-            <Route element={<RoleGuard perms={HOMEWORK_PERMS} />}>
+            <Route element={<RoleGuard perms={HOMEWORK_PERMS} hiddenFor={["DIRECTOR"]} />}>
               <Route path="/homework" element={<HomeworkPage />} />
             </Route>
             <Route element={<RoleGuard perms={QUIZ_PERMS} />}>

@@ -1,20 +1,36 @@
 import { useState } from "react"
 import { Search } from "lucide-react"
 import { useFetch } from "../hooks/useFetch"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Input } from "../components/ui/Input"
+import { Select } from "../components/ui/Select"
+import { Skeleton } from "../components/ui/Skeleton"
 import { DataTable, type Column } from "../components/ui/Table"
 import { Pagination } from "../components/ui/Pagination"
 import { Drawer } from "../components/ui/Drawer"
 import { Avatar } from "../components/ui/Avatar"
 import { Badge } from "../components/ui/Badge"
-import { fullName } from "../lib/format"
-import type { Paginated, TeacherProfile } from "../types"
+import { ATTENDANCE_LABELS, fullName } from "../lib/format"
+import { weekdayUz } from "../lib/date"
+import type { Lesson, Paginated, Subject, TeacherAttendance, TeacherProfile } from "../types"
 import { t } from "../i18n"
 
 const PAGE_SIZE = 10
 
+/** ISO date (yyyy-mm-dd) in the school's local time, ``days`` from today. */
+function isoFromToday(days = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+}
+
 export default function TeachersPage() {
+  const { hasRole } = useAccess()
+  // The director can pick any teacher from a list and see how they work: subjects, the coming
+  // week's lessons and the last month's attendance.
+  const isDirector = hasRole("DIRECTOR")
+  const { data: everyone } = useFetch<Paginated<TeacherProfile>>(isDirector ? "/teachers/?page_size=100" : null)
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<TeacherProfile | null>(null)
@@ -51,6 +67,23 @@ export default function TeachersPage() {
     <div>
       <PageHeader title={t("O'qituvchilar")} description={t("Maktabdagi barcha o'qituvchilar ro'yxati")} />
 
+      {isDirector && (
+        <div className="mb-4 max-w-xs">
+          <Select
+            value={selected?.id ?? ""}
+            onChange={(e) => setSelected(everyone?.results.find((x) => String(x.id) === e.target.value) ?? null)}
+            aria-label={t("O'qituvchini tanlang...")}
+          >
+            <option value="">{t("O'qituvchini tanlang...")}</option>
+            {everyone?.results.map((teacher) => (
+              <option key={teacher.id} value={teacher.id}>
+                {fullName(teacher.user)}
+              </option>
+            ))}
+          </Select>
+        </div>
+      )}
+
       <div className="mb-4 max-w-xs">
         <Input
           icon={<Search className="h-4 w-4" />}
@@ -83,9 +116,103 @@ export default function TeachersPage() {
             <DetailRow label={t("Tajriba")} value={t("{n} yil", { n: selected.experience_years })} />
             <DetailRow label={t("Telefon")} value={selected.user.phone || "—"} />
             <DetailRow label={t("Email")} value={selected.user.email || "—"} />
+            {isDirector && <TeacherWork teacher={selected} />}
           </div>
         )}
       </Drawer>
+    </div>
+  )
+}
+
+function TeacherWork({ teacher }: { teacher: TeacherProfile }) {
+  const { data: subjects } = useFetch<Paginated<Subject>>("/subjects/?page_size=100")
+  const { data: lessons } = useFetch<Paginated<Lesson>>(
+    `/lessons/?teacher=${teacher.id}&page_size=200&ordering=date,start_time`,
+    [teacher.id]
+  )
+  const { data: attendance } = useFetch<Paginated<TeacherAttendance>>(
+    `/attendance/teacher-attendance/?teacher=${teacher.id}&page_size=100`,
+    [teacher.id]
+  )
+
+  const subjectNames = teacher.subjects.map((id) => subjects?.results.find((s) => s.id === id)?.name).filter(Boolean) as string[]
+  const today = isoFromToday()
+  const weekAhead = isoFromToday(7)
+  const upcoming = (lessons?.results ?? []).filter((l) => l.date >= today && l.date <= weekAhead)
+
+  const monthAgo = isoFromToday(-30)
+  const recent = (attendance?.results ?? []).filter((r) => r.date >= monthAgo)
+  const count = (status: string) => recent.filter((r) => r.status === status).length
+  const came = count("PRESENT") + count("LATE")
+  const pct = recent.length ? Math.round((came / recent.length) * 100) : 0
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-400">{t("Fanlar")}</p>
+        {subjects ? (
+          subjectNames.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {subjectNames.map((name) => (
+                <Badge key={name} tone="brand">
+                  {name}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-ink-400">—</p>
+          )
+        ) : (
+          <Skeleton className="h-6 w-1/2" />
+        )}
+      </div>
+
+      <div>
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-400">{t("Yaqin 7 kundagi darslar")}</p>
+        {!lessons ? (
+          <Skeleton className="h-16 w-full" />
+        ) : upcoming.length === 0 ? (
+          <p className="text-sm text-ink-400">{t("Dars yo'q")}</p>
+        ) : (
+          <ul className="space-y-1.5">
+            {upcoming.slice(0, 8).map((l) => (
+              <li key={l.id} className="flex items-center justify-between gap-3 rounded-lg bg-ink-50 px-3 py-2 text-sm dark:bg-ink-800/60">
+                <span className="truncate text-ink-800 dark:text-ink-100">
+                  {l.subject_name} · {l.class_room_name}
+                </span>
+                <span className="shrink-0 text-xs text-ink-500 dark:text-ink-400">
+                  {weekdayUz(l.date)} {l.start_time.slice(0, 5)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div>
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-400">{t("Ish davomati (30 kun)")}</p>
+        {!attendance ? (
+          <Skeleton className="h-10 w-full" />
+        ) : recent.length === 0 ? (
+          <p className="text-sm text-ink-400">{t("Belgilanmagan")}</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            <Badge tone="success">
+              {ATTENDANCE_LABELS.PRESENT}: {count("PRESENT")}
+            </Badge>
+            <Badge tone="warning">
+              {ATTENDANCE_LABELS.LATE}: {count("LATE")}
+            </Badge>
+            <Badge tone="danger">
+              {ATTENDANCE_LABELS.ABSENT}: {count("ABSENT")}
+            </Badge>
+            <Badge tone="info">
+              {ATTENDANCE_LABELS.EXCUSED}: {count("EXCUSED")}
+            </Badge>
+            <Badge tone="brand">{pct}%</Badge>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
