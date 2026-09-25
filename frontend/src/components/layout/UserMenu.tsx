@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, LogOut, Settings, User as UserIcon } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useAuthStore } from "../../store/auth"
-import { fullName, initials, ROLE_LABELS } from "../../lib/format"
+import { fullName, initials, roleLabels } from "../../lib/format"
 
 export function UserMenu() {
   const [open, setOpen] = useState(false)
@@ -45,7 +45,7 @@ export function UserMenu() {
           >
             <div className="px-3 py-2">
               <p className="truncate text-sm font-semibold text-ink-800 dark:text-white">{fullName(user)}</p>
-              <p className="text-xs text-ink-400">{ROLE_LABELS[user.role]}</p>
+              <p className="text-xs text-ink-400">{roleLabels(user)}</p>
             </div>
             <div className="my-1 h-px bg-ink-100 dark:bg-ink-800" />
             <Link

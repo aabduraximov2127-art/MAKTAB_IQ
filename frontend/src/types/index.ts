@@ -1,4 +1,7 @@
-export type Role = "SUPERADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "PARENT"
+export type Role = "SUPERADMIN" | "ADMIN" | "DIRECTOR" | "DEPUTY_DIRECTOR" | "TEACHER" | "STUDENT" | "PARENT"
+/** Roles a user can *effectively* hold: the stored ones plus CLASS_TEACHER, which the backend
+ * derives from being the curator of a class. */
+export type EffectiveRole = Role | "CLASS_TEACHER"
 
 export interface User {
   id: number
@@ -8,6 +11,11 @@ export interface User {
   email: string
   phone: string
   role: Role
+  /** Effective roles (primary + extra + derived) — from `/users/me/`. */
+  roles?: EffectiveRole[]
+  /** Permission codenames the user holds — from `/users/me/`. */
+  permissions?: string[]
+  curated_classes?: { id: number; name: string }[]
   school: number | null
   is_active: boolean
   is_deactivated: boolean

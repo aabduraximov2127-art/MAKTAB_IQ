@@ -1,6 +1,6 @@
 import { format, formatDistanceToNow, parseISO } from "date-fns"
 import { enUS, ru, uz } from "date-fns/locale"
-import type { AttendanceStatus, NotificationType, Role } from "../types"
+import type { AttendanceStatus, EffectiveRole, NotificationType, User } from "../types"
 import { getLang, t } from "../i18n"
 
 export function fullName(user?: { first_name?: string; last_name?: string; username?: string } | null) {
@@ -27,9 +27,12 @@ export function initials(user?: { first_name?: string; last_name?: string; usern
   return (parts[0]![0] + parts[1]![0]).toUpperCase()
 }
 
-export const ROLE_LABELS: Record<Role, string> = {
+export const ROLE_LABELS: Record<EffectiveRole, string> = {
   SUPERADMIN: "Superadmin",
   ADMIN: "Admin",
+  DIRECTOR: t("Direktor"),
+  DEPUTY_DIRECTOR: t("Direktor o'rinbosari"),
+  CLASS_TEACHER: t("Sinf rahbari"),
   TEACHER: t("O'qituvchi"),
   STUDENT: t("O'quvchi"),
   PARENT: t("Ota-ona"),
@@ -99,4 +102,11 @@ export function gradeCellClasses(value: number | null) {
   if (value >= 7) return "bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
   if (value >= 5) return "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
   return "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400"
+}
+
+/** "O'qituvchi · Sinf rahbari" — every role the user effectively holds. */
+export function roleLabels(user: Pick<User, "role" | "roles"> | null | undefined): string {
+  if (!user) return ""
+  const roles: EffectiveRole[] = user.roles && user.roles.length > 0 ? user.roles : [user.role]
+  return roles.map((r) => ROLE_LABELS[r]).join(" · ")
 }

@@ -6,7 +6,7 @@ import { Button } from "../components/ui/Button"
 import { Avatar } from "../components/ui/Avatar"
 import { Badge } from "../components/ui/Badge"
 import { TelegramLinkCard } from "../components/shared/TelegramLinkCard"
-import { ROLE_LABELS, fullName } from "../lib/format"
+import { roleLabels, fullName } from "../lib/format"
 import { localeTag, t } from "../i18n"
 
 export default function ProfilePage() {
@@ -28,7 +28,7 @@ export default function ProfilePage() {
             <div>
               <p className="font-display text-lg font-bold text-ink-900 dark:text-white">{fullName(user)}</p>
               <div className="mt-1 flex items-center gap-2">
-                <Badge tone="brand">{ROLE_LABELS[user.role]}</Badge>
+                <Badge tone="brand">{roleLabels(user)}</Badge>
                 <span className="text-sm text-ink-400">@{user.username}</span>
               </div>
             </div>

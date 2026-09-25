@@ -13,57 +13,159 @@ import {
   Megaphone,
   Bell,
   School,
+  ShieldCheck,
   Ticket,
   User,
   Users,
   UsersRound,
+  Workflow,
 } from "lucide-react"
-import type { Role } from "../types"
+import type { EffectiveRole, User as AppUser } from "../types"
+import { permissionsOf, rolesOf } from "./access"
 import { t } from "../i18n"
 
 export interface NavItem {
   to: string
   label: string
   icon: typeof LayoutGrid
-  roles: Role[]
   section?: string
+  /** Visible when the user holds ANY of these permissions (omit = no permission needed). */
+  anyPerm?: string[]
+  /** Visible when the user holds ANY of these roles (omit = any role). */
+  roles?: EffectiveRole[]
+  /** Hidden when every one of the user's roles is in this list (e.g. STUDENT-only accounts). */
+  hiddenFor?: EffectiveRole[]
 }
 
-const ALL: Role[] = ["SUPERADMIN", "ADMIN", "TEACHER", "STUDENT", "PARENT"]
-const STAFF: Role[] = ["SUPERADMIN", "ADMIN"]
-// SUPERADMIN is deliberately excluded from attendance, homework, quizzes and the
-// standalone classes browser — it's an oversight role, not an operational one.
-const NOT_SUPERADMIN: Role[] = ["ADMIN", "TEACHER", "STUDENT", "PARENT"]
-// STUDENT gets announcements/notifications only via the top bell (NotificationBell) —
-// no separate sidebar pages for them. Subjects is a staff/teacher concern for STUDENT.
-const NOT_STUDENT: Role[] = ["SUPERADMIN", "ADMIN", "TEACHER", "PARENT"]
-
+/*
+ * Navigation is driven by the permissions the backend reports for the user, so a user with
+ * several roles (Teacher + Parent, Director + Teacher ...) automatically gets the union of
+ * the menus. The API still checks every request — this only decides what to show.
+ *
+ * SUPERADMIN is an oversight role: no attendance, homework or quizzes (it holds none of the
+ * matching permissions) and no standalone class browser (it drills into a class from inside
+ * Grades instead). STUDENT gets announcements/notifications only via the top bell.
+ */
 export const NAV_ITEMS: NavItem[] = [
-  { to: "/", label: t("Bosh sahifa"), icon: LayoutGrid, roles: ALL, section: t("Umumiy") },
-  { to: "/schedule", label: t("Dars jadvali"), icon: CalendarDays, roles: ALL, section: t("Umumiy") },
-  { to: "/grades", label: t("Baholar"), icon: GraduationCap, roles: ALL, section: t("Umumiy") },
-  { to: "/attendance", label: t("Davomat"), icon: ClipboardCheck, roles: NOT_SUPERADMIN, section: t("Umumiy") },
-  { to: "/homework", label: t("Uy vazifalari"), icon: ListChecks, roles: NOT_SUPERADMIN, section: t("Umumiy") },
-  { to: "/quizzes", label: t("Testlar"), icon: BookOpen, roles: NOT_SUPERADMIN, section: t("Umumiy") },
-  { to: "/library", label: t("Kutubxona"), icon: LibraryBig, roles: ALL, section: t("Umumiy") },
-  { to: "/ai", label: t("AI Yordamchi"), icon: Bot, roles: ["STUDENT"], section: t("Umumiy") },
+  { to: "/", label: t("Bosh sahifa"), icon: LayoutGrid, section: t("Umumiy") },
+  {
+    to: "/schedule",
+    label: t("Dars jadvali"),
+    icon: CalendarDays,
+    section: t("Umumiy"),
+    anyPerm: ["view_own_schedule", "view_child_schedule", "view_all_schedule", "view_class_reports"],
+  },
+  {
+    to: "/grades",
+    label: t("Baholar"),
+    icon: GraduationCap,
+    section: t("Umumiy"),
+    anyPerm: ["view_own_grades", "view_child_grades", "view_assigned_grades", "view_all_grades", "view_class_reports"],
+  },
+  {
+    to: "/attendance",
+    label: t("Davomat"),
+    icon: ClipboardCheck,
+    section: t("Umumiy"),
+    anyPerm: [
+      "view_own_attendance",
+      "view_child_attendance",
+      "view_assigned_attendance",
+      "view_all_attendance",
+      "view_class_reports",
+    ],
+  },
+  {
+    to: "/homework",
+    label: t("Uy vazifalari"),
+    icon: ListChecks,
+    section: t("Umumiy"),
+    anyPerm: ["view_own_homework", "view_child_homework", "view_assigned_homework", "view_all_homework", "view_class_reports"],
+  },
+  {
+    to: "/quizzes",
+    label: t("Testlar"),
+    icon: BookOpen,
+    section: t("Umumiy"),
+    anyPerm: ["view_own_quizzes", "view_child_quizzes", "view_assigned_quizzes", "view_all_quizzes", "view_class_reports"],
+  },
+  { to: "/library", label: t("Kutubxona"), icon: LibraryBig, section: t("Umumiy"), anyPerm: ["view_library"] },
+  { to: "/ai", label: t("AI Yordamchi"), icon: Bot, section: t("Umumiy"), anyPerm: ["use_ai_assistant"] },
 
-  { to: "/students", label: t("O'quvchilar"), icon: Users, roles: [...STAFF, "TEACHER", "PARENT"], section: t("Boshqaruv") },
-  { to: "/teachers", label: t("O'qituvchilar"), icon: UsersRound, roles: STAFF, section: t("Boshqaruv") },
-  { to: "/parents", label: t("Ota-onalar"), icon: UsersRound, roles: STAFF, section: t("Boshqaruv") },
-  { to: "/classes", label: t("Sinflar"), icon: School, roles: NOT_SUPERADMIN, section: t("Boshqaruv") },
-  { to: "/subjects", label: t("Fanlar"), icon: BookOpen, roles: NOT_STUDENT, section: t("Boshqaruv") },
-  { to: "/analytics", label: t("Statistika"), icon: LineChart, roles: STAFF, section: t("Boshqaruv") },
+  // -- role dashboards ---------------------------------------------------------------
+  {
+    to: "/my-class",
+    label: t("Sinf boshqaruvi"),
+    icon: Workflow,
+    section: t("Boshqaruv"),
+    roles: ["CLASS_TEACHER"],
+  },
+  {
+    to: "/education",
+    label: t("O'quv jarayoni"),
+    icon: ShieldCheck,
+    section: t("Boshqaruv"),
+    roles: ["DIRECTOR", "DEPUTY_DIRECTOR"],
+  },
+  { to: "/users", label: t("Foydalanuvchilar va rollar"), icon: UsersRound, section: t("Boshqaruv"), anyPerm: ["manage_users"] },
 
-  { to: "/chat", label: t("Chat"), icon: MessagesSquare, roles: ALL, section: t("Aloqa") },
-  { to: "/announcements", label: t("E'lonlar"), icon: Megaphone, roles: NOT_STUDENT, section: t("Aloqa") },
-  { to: "/notifications", label: t("Bildirishnomalar"), icon: Bell, roles: NOT_STUDENT, section: t("Aloqa") },
-  { to: "/helpdesk", label: t("Yordam"), icon: Ticket, roles: ALL, section: t("Aloqa") },
-  { to: "/profile", label: t("Profil"), icon: User, roles: ALL, section: t("Aloqa") },
+  {
+    to: "/students",
+    label: t("O'quvchilar"),
+    icon: Users,
+    section: t("Boshqaruv"),
+    anyPerm: ["view_all_students", "view_assigned_students", "view_class_students", "view_child_profile"],
+  },
+  { to: "/teachers", label: t("O'qituvchilar"), icon: UsersRound, section: t("Boshqaruv"), anyPerm: ["view_all_teachers"] },
+  { to: "/parents", label: t("Ota-onalar"), icon: UsersRound, section: t("Boshqaruv"), anyPerm: ["view_all_parents"] },
+  {
+    to: "/classes",
+    label: t("Sinflar"),
+    icon: School,
+    section: t("Boshqaruv"),
+    anyPerm: ["view_all_classes", "view_assigned_classes", "view_own_class", "view_child_class"],
+    hiddenFor: ["SUPERADMIN"],
+  },
+  {
+    to: "/subjects",
+    label: t("Fanlar"),
+    icon: BookOpen,
+    section: t("Boshqaruv"),
+    anyPerm: ["view_all_subjects", "view_child_class"],
+    hiddenFor: ["STUDENT"],
+  },
+  { to: "/analytics", label: t("Statistika"), icon: LineChart, section: t("Boshqaruv"), anyPerm: ["view_reports"] },
+
+  { to: "/chat", label: t("Chat"), icon: MessagesSquare, section: t("Aloqa"), anyPerm: ["use_chat"] },
+  {
+    to: "/announcements",
+    label: t("E'lonlar"),
+    icon: Megaphone,
+    section: t("Aloqa"),
+    anyPerm: ["view_announcements"],
+    hiddenFor: ["STUDENT"],
+  },
+  {
+    to: "/notifications",
+    label: t("Bildirishnomalar"),
+    icon: Bell,
+    section: t("Aloqa"),
+    hiddenFor: ["STUDENT"],
+  },
+  { to: "/helpdesk", label: t("Yordam"), icon: Ticket, section: t("Aloqa") },
+  { to: "/profile", label: t("Profil"), icon: User, section: t("Aloqa") },
 ]
 
-export function navForRole(role: Role) {
-  return NAV_ITEMS.filter((item) => item.roles.includes(role))
+export function navForUser(user: AppUser | null | undefined): NavItem[] {
+  if (!user) return []
+  const roles = rolesOf(user)
+  const permissions = permissionsOf(user)
+  return NAV_ITEMS.filter((item) => {
+    if (item.roles && !item.roles.some((r) => roles.includes(r))) return false
+    if (item.anyPerm && !item.anyPerm.some((p) => permissions.has(p))) return false
+    if (item.hiddenFor && roles.every((r) => item.hiddenFor!.includes(r))) return false
+    return true
+  })
 }
 
 export const analyticsIcon = BarChart3

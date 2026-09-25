@@ -4,8 +4,8 @@ import { ChevronLeft, ChevronRight, LogOut, X } from "lucide-react"
 import { useAuthStore } from "../../store/auth"
 import { Logo } from "../shared/Logo"
 import { useThemeStore } from "../../store/theme"
-import { navForRole } from "../../lib/nav"
-import { ROLE_LABELS, fullName, initials } from "../../lib/format"
+import { navForUser } from "../../lib/nav"
+import { roleLabels, fullName, initials } from "../../lib/format"
 import { cn } from "../../lib/cn"
 import { t } from "../../i18n"
 
@@ -27,7 +27,7 @@ function SidebarContent({
   const logout = useAuthStore((s) => s.logout)
   if (!user) return null
 
-  const items = navForRole(user.role)
+  const items = navForUser(user)
   const sections = Array.from(new Set(items.map((i) => i.section ?? "")))
 
   return (
@@ -97,7 +97,7 @@ function SidebarContent({
           {!collapsed && (
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-ink-800 dark:text-ink-100">{fullName(user)}</p>
-              <p className="truncate text-xs text-ink-400">{ROLE_LABELS[user.role]}</p>
+              <p className="truncate text-xs text-ink-400">{roleLabels(user)}</p>
             </div>
           )}
           {!collapsed && (
