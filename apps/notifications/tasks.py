@@ -149,6 +149,8 @@ def send_weekly_parent_reports():
 ROLE_LABELS_UZ = {
     "SUPERADMIN": "Superadmin",
     "ADMIN": "Admin",
+    "DIRECTOR": "Direktor",
+    "DEPUTY_DIRECTOR": "Direktor o'rinbosari",
     "TEACHER": "O'qituvchi",
     "STUDENT": "O'quvchi",
     "PARENT": "Ota-ona",
@@ -160,18 +162,36 @@ def _class_of(user):
     return getattr(profile, "class_room", None)
 
 
+def _directors_of(sender):
+    """The school director(s) — they hear about *every* incident in their school."""
+    from django.db.models import Q
+
+    from apps.users.models import User
+
+    return list(
+        User.objects.filter(is_active=True, school_id=sender.school_id)
+        .filter(Q(role=User.Role.DIRECTOR) | Q(groups__name=User.Role.DIRECTOR))
+        .distinct()
+    )
+
+
 def _moderation_recipients(incident):
-    """Teachers (and, as a fallback, school admins) who must hear about a flagged message.
+    """Everyone who must hear about a flagged message.
 
     - the class curator of the offending student (and of any student they wrote to),
-    - every teacher who is a member of that chat room,
-    - school admins when the sender is not a student, or nobody else could be found.
+    - every teacher who is a member of that chat room (not for the shared staff room, where
+      that would alert the whole staff),
+    - school admins when the sender is not a student, or nobody else could be found,
+    - always: the school director.
     """
+    from apps.chat.models import ChatRoom
     from apps.users.models import User
 
     sender = incident.sender
     members = [m.user for m in incident.chat_room.members.select_related("user")]
     others = [u for u in members if u.id != sender.id]
+    if incident.chat_room.room_type == ChatRoom.RoomType.STAFF_GENERAL:
+        others = []
 
     recipients = {}
 
@@ -196,6 +216,8 @@ def _moderation_recipients(incident):
             admins = admins.filter(school_id=sender.school_id)
         for admin in admins:
             add(admin)
+    for director in _directors_of(sender):
+        add(director)
     return list(recipients.values())
 
 
@@ -246,7 +268,21 @@ def notify_profanity_incident(incident_id):
         f"Vaqt: {when}"
     )
 
+    # The director gets the full picture: who exactly wrote it (login, phone) and which teacher
+    # is responsible for that pupil's class, on top of the same text the teachers receive.
+    detail_lines = [f"Login: @{sender.username}"]
+    if sender.phone:
+        detail_lines.append(f"Telefon: {sender.phone}")
+    if sender_class and sender_class.curator_id:
+        curator_user = sender_class.curator.user
+        curator = curator_user.get_full_name() or curator_user.username
+        if curator_user.phone:
+            curator += f", {curator_user.phone}"
+        detail_lines.append(f"Sinf rahbari: {curator}")
+    director_body = body.replace("Kimga:", "\n".join([*detail_lines, "Kimga:"]), 1)
+
     recipients = _moderation_recipients(incident)
+    director_ids = {d.id for d in _directors_of(sender)}
     for user in recipients:
-        _deliver(user, title, body, NotificationType.CHAT_MESSAGE)
+        _deliver(user, title, director_body if user.id in director_ids else body, NotificationType.CHAT_MESSAGE)
     incident.notified.set(recipients)

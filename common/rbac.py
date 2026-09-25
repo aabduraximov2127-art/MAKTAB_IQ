@@ -63,7 +63,7 @@ ROLE_LABELS = {
 # ---------------------------------------------------------------------------
 # -- own data (student, and every user's own profile) --
 VIEW_OWN_PROFILE = "view_own_profile"
-UPDATE_OWN_PROFILE = "update_own_profile"  # NOT a default of any role — grant per user
+UPDATE_OWN_PROFILE = "update_own_profile"  # default for DIRECTOR only — grant it per user to anyone else
 VIEW_OWN_CLASS = "view_own_class"
 VIEW_OWN_TEACHERS = "view_own_teachers"
 VIEW_OWN_SUBJECTS = "view_own_subjects"
@@ -168,7 +168,7 @@ class PermissionInfo:
 _CATALOG_ROWS = [
     # -- own --
     (VIEW_OWN_PROFILE, "own", "O'z profilini ko'rish"),
-    (UPDATE_OWN_PROFILE, "own", "O'z profilini tahrirlash (faqat alohida ruxsat bilan)"),
+    (UPDATE_OWN_PROFILE, "own", "O'z profilini tahrirlash (ism, email, telefon)"),
     (VIEW_OWN_CLASS, "own", "O'z sinfini ko'rish"),
     (VIEW_OWN_TEACHERS, "own", "O'z o'qituvchilarini ko'rish"),
     (VIEW_OWN_SUBJECTS, "own", "O'z fanlarini ko'rish"),
@@ -383,7 +383,18 @@ _DEPUTY_DIRECTOR = _EVERYONE | {
     VIEW_CLASS_REPORTS,
     MANAGE_SCHEDULE,
 }
-_DIRECTOR = _SUPERVISION | {TRANSFER_STUDENTS}
+# The director additionally runs the school's public face: subjects, announcements and the
+# library are theirs to extend, they talk to the teachers (private chats + the shared staff
+# room) and they maintain their own profile.
+_DIRECTOR = _SUPERVISION | {
+    TRANSFER_STUDENTS,
+    MANAGE_SUBJECTS,
+    SEND_ANNOUNCEMENTS,
+    MANAGE_LIBRARY,
+    CREATE_CHAT_ROOMS,
+    USE_STAFF_CHAT,
+    UPDATE_OWN_PROFILE,
+}
 
 # Admin keeps everything it could already do before this permission system existed
 # (grades / attendance / homework overrides inside its own school) plus user & role admin.

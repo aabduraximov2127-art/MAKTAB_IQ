@@ -29,7 +29,7 @@ def moderate_message(message):
 
 STAFF_ROOM_NAME = "O'qituvchilar xonasi"
 # Roles (stored or extra) that share the staff room and can be picked in "Ustozga yozish".
-STAFF_ROOM_ROLES = ("TEACHER",)
+STAFF_ROOM_ROLES = ("TEACHER", "DIRECTOR")
 
 
 def staff_members(user):

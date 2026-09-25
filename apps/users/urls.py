@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .access_api import PermissionListView, RoleListView
 from .views import (
+    MeProfileView,
     MeView,
     ParentViewSet,
     SchoolHealthRecordViewSet,
@@ -33,6 +34,7 @@ parents_router.register("", ParentViewSet, basename="parent")
 
 urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
+    path("me/profile/", MeProfileView.as_view(), name="me-profile"),
     path("me/telegram-link-code/", TelegramLinkCodeView.as_view(), name="telegram-link-code"),
     path("me/telegram-status/", TelegramStatusView.as_view(), name="telegram-status"),
     path("me/telegram-unlink/", TelegramUnlinkView.as_view(), name="telegram-unlink"),

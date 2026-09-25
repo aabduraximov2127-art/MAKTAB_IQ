@@ -80,6 +80,15 @@ class MeSerializer(UserSerializer):
         return list(ClassRoom.objects.filter(curator__user=obj).values("id", "name"))
 
 
+class MeUpdateSerializer(PhoneValidationMixin, serializers.ModelSerializer):
+    """What a user may change about *themselves* (needs ``update_own_profile``): name, email
+    and phone. Login, role, school and activity flags are never editable here."""
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email", "phone")
+
+
 class UserAdminSerializer(UserSerializer):
     """What an administrator sees in the users list: the stored roles (primary first, then
     extra ones held through groups) and any permissions granted to this one user."""

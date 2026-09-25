@@ -76,10 +76,27 @@ class RegistryTests(SimpleTestCase):
         self.assertNotEqual(director, admin)
         self.assertEqual(
             director & {"manage_users", "manage_roles", "manage_permissions", "manage_school_settings",
-                        "manage_classes", "manage_subjects", "manage_students", "manage_teachers"},
+                        "manage_classes", "manage_students", "manage_teachers"},
             set(),
         )
         self.assertTrue({"manage_users", "manage_roles", "manage_permissions"} <= admin)
+
+    def test_director_runs_subjects_announcements_library_chat_and_own_profile(self):
+        director = rbac.ROLE_PERMISSIONS[rbac.DIRECTOR]
+        self.assertTrue(
+            {"manage_subjects", "send_announcements", "manage_library", "create_chat_rooms", "use_staff_chat",
+             "update_own_profile", "manage_schedule", "view_all_attendance", "view_all_schedule"} <= director
+        )
+        # ...but is not a class-book keeper: no grades, no marking attendance, no homework
+        self.assertEqual(director & {"create_grade", "mark_attendance", "create_homework", "manage_quizzes"}, set())
+
+    def test_only_teachers_and_director_have_the_staff_room(self):
+        holders = {role for role, perms in rbac.ROLE_PERMISSIONS.items() if "use_staff_chat" in perms}
+        self.assertEqual(holders, {rbac.TEACHER, rbac.DIRECTOR})
+
+    def test_update_own_profile_is_a_director_default_and_a_per_user_grant_for_the_rest(self):
+        holders = {role for role, perms in rbac.ROLE_PERMISSIONS.items() if "update_own_profile" in perms}
+        self.assertEqual(holders, {rbac.DIRECTOR})
 
     def test_deputy_supervises_and_manages_schedule_only(self):
         perms = rbac.ROLE_PERMISSIONS[rbac.DEPUTY_DIRECTOR]
@@ -582,7 +599,6 @@ class DirectorRoleTests(SchoolWorld):
             ("get", "/api/v1/roles/", None),
             ("get", "/api/v1/permissions/", None),
             ("post", f"/api/v1/users/{self.t1_user.id}/roles/", {"role": "ADMIN"}),
-            ("post", "/api/v1/subjects/", {"name": "Kimyo"}),
             ("patch", f"/api/v1/classes/{self.class_a.id}/", {"name": "X"}),
             ("patch", f"/api/v1/schools/{self.school_a.id}/", {"name": "Renamed"}),
             ("post", "/api/v1/auth/register/student/", {"username": "n", "password": PASSWORD, "student_code": "S-9"}),
@@ -594,6 +610,58 @@ class DirectorRoleTests(SchoolWorld):
     def test_can_transfer_students_inside_own_school(self):
         self.assertEqual(self.client.post(f"/api/v1/students/{self.s1.id}/transfer/", {"new_class": self.class_b.id}).status_code, 201)
         self.assertEqual(self.client.post(f"/api/v1/students/{self.s2.id}/transfer/", {"new_class": self.class_x.id}).status_code, 403)
+
+    def test_adds_subjects_announces_and_stocks_the_library(self):
+        self.assertEqual(self.client.post("/api/v1/subjects/", {"name": "Kimyo"}).status_code, 201)
+        announcement = {"title": "Yig'ilish", "content": "Ertaga 9:00 da", "target": "ALL", "priority": "NORMAL"}
+        self.assertEqual(self.client.post("/api/v1/notifications/announcements/", announcement).status_code, 201)
+        material = {"title": "Alifbo", "material_type": "BOOK", "author": "X"}
+        created = self.client.post("/api/v1/library/", material)
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.data["uploaded_by"], self.director.id)
+
+    def test_edits_only_own_profile_fields(self):
+        response = self.client.patch(
+            "/api/v1/users/me/profile/",
+            {"first_name": "Akmal", "last_name": "Nurmatov", "email": "d@school.uz", "phone": "901234567",
+             "username": "hacker", "role": "ADMIN"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual((response.data["first_name"], response.data["email"], response.data["phone"]), ("Akmal", "d@school.uz", "+998901234567"))
+        fresh = User.objects.get(pk=self.director.pk)
+        self.assertEqual((fresh.username, fresh.role), ("director", R.DIRECTOR))  # untouched
+        self.assertEqual(self.client.patch("/api/v1/users/me/profile/", {"phone": "12"}).status_code, 400)
+        # /users/me/ itself stays read-only for everybody
+        self.assertEqual(self.client.patch("/api/v1/users/me/", {"first_name": "X"}).status_code, 405)
+
+    def test_cannot_touch_grades_attendance_or_homework(self):
+        self.assertEqual(self.client.post("/api/v1/assignments/", {"lesson": self.lesson_a.id, "title": "x", "deadline": "2026-12-01T10:00:00Z"}).status_code, 403)
+        self.assertEqual(self.client.patch(f"/api/v1/attendance/{self.att_1.id}/", {"status": "ABSENT"}).status_code, 403)
+
+    def test_sees_teacher_work_attendance_and_any_pupils_attendance_and_class_timetable(self):
+        self.assertEqual(self.client.get("/api/v1/attendance/teacher-attendance/").status_code, 200)
+        self.assertEqual(len(self.ids(self.client.get(f"/api/v1/attendance/?student={self.s1.id}"))), 1)
+        self.assertEqual(self.client.get(f"/api/v1/attendance/calendar/?student={self.s3.id}&month=9&year=2026").status_code, 200)
+        self.assertEqual(self.ids(self.client.get(f"/api/v1/lessons/?class_room={self.class_b.id}")), [self.lesson_b.id])
+        self.assertEqual(self.ids(self.client.get(f"/api/v1/lessons/?teacher={self.t1.id}")), [self.lesson_a.id])
+
+
+class OwnProfileEditTests(SchoolWorld):
+    def test_teacher_and_student_cannot_edit_profile_without_a_grant(self):
+        for user in (self.t1_user, self.s1_user, self.p1_user, self.admin_a):
+            self.as_user(user)
+            with self.subTest(user=user.username):
+                self.assertEqual(self.client.patch("/api/v1/users/me/profile/", {"first_name": "X"}).status_code, 403)
+
+    def test_a_per_user_grant_unlocks_it(self):
+        self.t1_user.user_permissions.add(rbac.get_permission_row(rbac.UPDATE_OWN_PROFILE))
+        self.as_user(self.t1_user)
+        self.assertEqual(self.client.patch("/api/v1/users/me/profile/", {"first_name": "Yangi"}).status_code, 200)
+        self.assertEqual(User.objects.get(pk=self.t1_user.pk).first_name, "Yangi")
+
+    def test_anonymous_gets_401(self):
+        self.client.force_authenticate(None)
+        self.assertEqual(self.client.patch("/api/v1/users/me/profile/", {"first_name": "X"}).status_code, 401)
 
 
 # ---------------------------------------------------------------------------

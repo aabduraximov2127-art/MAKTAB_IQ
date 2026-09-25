@@ -17,6 +17,7 @@ from common.rbac import (
     MANAGE_STUDENTS,
     MANAGE_TEACHERS,
     MANAGE_USERS,
+    UPDATE_OWN_PROFILE,
     VIEW_ALL_STUDENTS,
     VIEW_ASSIGNED_STUDENTS,
     VIEW_CLASS_STUDENTS,
@@ -45,6 +46,7 @@ from .serializers import (
     EmptySerializer,
     LogoutSerializer,
     MeSerializer,
+    MeUpdateSerializer,
     ParentProfileSerializer,
     PasswordResetSerializer,
     RegisterStudentSerializer,
@@ -186,6 +188,22 @@ class MeView(APIView):
     serializer_class = MeSerializer
 
     def get(self, request):
+        return Response(MeSerializer(request.user).data)
+
+
+class MeProfileView(APIView):
+    """``PATCH /users/me/profile/`` — edit own name, email and phone. Only for holders of
+    ``update_own_profile`` (the director by default, anyone else once an administrator grants it);
+    everybody else gets 403. ``/users/me/`` itself stays read-only."""
+
+    serializer_class = MeUpdateSerializer
+
+    def patch(self, request):
+        if not rbac.has_perm(request.user, UPDATE_OWN_PROFILE):
+            raise PermissionDenied("O'z profilingizni tahrirlashga ruxsatingiz yo'q.")
+        serializer = MeUpdateSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(MeSerializer(request.user).data)
 
 
