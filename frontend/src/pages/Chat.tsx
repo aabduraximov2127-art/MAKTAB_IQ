@@ -3,6 +3,7 @@ import { ArrowLeft, MessagesSquare, Pencil, School, Search, Send, Users } from "
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
+import { useAccess } from "../lib/access"
 import { useAuthStore } from "../store/auth"
 import { Avatar } from "../components/ui/Avatar"
 import { Button } from "../components/ui/Button"
@@ -24,9 +25,9 @@ const ROOM_TYPE_LABEL: Record<ChatRoom["room_type"], string> = {
 }
 
 export default function ChatPage() {
-  const user = useAuthStore((s) => s.user)
-  const canMessageParent = user?.role === "ADMIN" || user?.role === "SUPERADMIN"
-  const isStudent = user?.role === "STUDENT"
+  const { can } = useAccess()
+  const canMessageParent = can("moderate_chat")
+  const isStudent = can("view_classmates")
   const { data: rooms, loading, refetch } = useFetch<Paginated<ChatRoom>>("/chat/?page_size=100")
   const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null)
   const [mobileThread, setMobileThread] = useState(false)

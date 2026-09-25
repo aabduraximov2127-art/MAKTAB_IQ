@@ -4,7 +4,7 @@ import { AlertTriangle, Megaphone, Plus, Siren } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
@@ -28,8 +28,9 @@ const TARGET_LABELS: Record<Announcement["target"], string> = {
 }
 
 export default function AnnouncementsPage() {
-  const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN"
+  const { can, canAny } = useAccess()
+  const canSendAll = can("send_announcements") // whole school / any audience + emergency messages
+  const canSend = canAny("send_announcements", "send_class_announcement") // a class teacher: own class only
   const [tab, setTab] = useState<"normal" | "emergency">("normal")
   const [addOpen, setAddOpen] = useState(false)
   const [emergencyOpen, setEmergencyOpen] = useState(false)
@@ -45,12 +46,14 @@ export default function AnnouncementsPage() {
         title={t("E'lonlar")}
         description={t("Maktab bo'ylab e'lonlar va muhim xabarlar")}
         actions={
-          isAdmin && (
+          canSend && (
             <div className="flex gap-2">
               {tab === "emergency" ? (
-                <Button variant="danger" onClick={() => setEmergencyOpen(true)}>
-                  <Siren className="h-4 w-4" /> Favqulodda xabar
-                </Button>
+                canSendAll && (
+                  <Button variant="danger" onClick={() => setEmergencyOpen(true)}>
+                    <Siren className="h-4 w-4" /> Favqulodda xabar
+                  </Button>
+                )
               ) : (
                 <Button onClick={() => setAddOpen(true)}>
                   <Plus className="h-4 w-4" /> Yangi e'lon
@@ -138,7 +141,15 @@ export default function AnnouncementsPage() {
         </div>
       )}
 
-      <AddAnnouncementModal open={addOpen} onClose={() => setAddOpen(false)} onDone={() => { setAddOpen(false); refetch() }} />
+      <AddAnnouncementModal
+        open={addOpen}
+        classOnly={!canSendAll}
+        onClose={() => setAddOpen(false)}
+        onDone={() => {
+          setAddOpen(false)
+          refetch()
+        }}
+      />
       <AddEmergencyModal
         open={emergencyOpen}
         onClose={() => setEmergencyOpen(false)}
@@ -196,9 +207,23 @@ function AddEmergencyModal({ open, onClose, onDone }: { open: boolean; onClose: 
   )
 }
 
-function AddAnnouncementModal({ open, onClose, onDone }: { open: boolean; onClose: () => void; onDone: () => void }) {
-  const { data: classes } = useFetch<Paginated<ClassRoom>>(open ? "/classes/?page_size=100" : null)
-  const [form, setForm] = useState({ title: "", content: "", priority: "NORMAL", target: "ALL", target_class: "" })
+function AddAnnouncementModal({
+  open,
+  classOnly,
+  onClose,
+  onDone,
+}: {
+  open: boolean
+  /** A class teacher may only address the class they curate. */
+  classOnly: boolean
+  onClose: () => void
+  onDone: () => void
+}) {
+  const { user } = useAccess()
+  const { data: allClasses } = useFetch<Paginated<ClassRoom>>(open ? "/classes/?page_size=100" : null)
+  const curated = new Set((user?.curated_classes ?? []).map((c) => c.id))
+  const classes = allClasses ? { ...allClasses, results: classOnly ? allClasses.results.filter((c) => curated.has(c.id)) : allClasses.results } : allClasses
+  const [form, setForm] = useState({ title: "", content: "", priority: "NORMAL", target: classOnly ? "CLASS" : "ALL", target_class: "" })
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
@@ -234,11 +259,13 @@ function AddAnnouncementModal({ open, onClose, onDone }: { open: boolean; onClos
         <div className="grid grid-cols-2 gap-4">
           <Field label={t("Kimga")}>
             <Select value={form.target} onChange={(e) => setForm((f) => ({ ...f, target: e.target.value }))}>
-              {Object.entries(TARGET_LABELS).map(([key, label]) => (
+              {Object.entries(TARGET_LABELS)
+                .filter(([key]) => !classOnly || key === "CLASS")
+                .map(([key, label]) => (
                 <option key={key} value={key}>
                   {label}
                 </option>
-              ))}
+                ))}
             </Select>
           </Field>
           <Field label={t("Muhimlik")}>

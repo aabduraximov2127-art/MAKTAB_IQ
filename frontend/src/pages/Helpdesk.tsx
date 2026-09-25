@@ -3,7 +3,7 @@ import { Headset, Plus } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
@@ -36,8 +36,8 @@ const STATUS_LABELS: Record<HelpDeskTicket["status"], string> = {
 const PRIORITY_LABELS: Record<HelpDeskTicket["priority"], string> = { LOW: t("Past"), MEDIUM: t("O'rtacha"), HIGH: t("Yuqori") }
 
 export default function HelpdeskPage() {
-  const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN"
+  const { can } = useAccess()
+  const isAdmin = can("manage_helpdesk")
   const [addOpen, setAddOpen] = useState(false)
   const [selected, setSelected] = useState<HelpDeskTicket | null>(null)
 

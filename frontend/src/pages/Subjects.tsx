@@ -4,7 +4,7 @@ import { BookOpen, Plus } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
@@ -25,8 +25,8 @@ const GRADIENTS = [
 ]
 
 export default function SubjectsPage() {
-  const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN"
+  const { can } = useAccess()
+  const isAdmin = can("manage_subjects")
   const [addOpen, setAddOpen] = useState(false)
   const { data, loading, refetch } = useFetch<Paginated<Subject>>("/subjects/?page_size=100")
 

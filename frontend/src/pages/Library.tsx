@@ -4,7 +4,7 @@ import { BookOpen, ExternalLink, FileText, LibraryBig, Link2, Plus, Video } from
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
@@ -26,9 +26,9 @@ const TYPE_META: Record<LibraryMaterial["material_type"], { label: string; icon:
 }
 
 export default function LibraryPage() {
-  const user = useAuthStore((s) => s.user)
-  // SUPERADMIN can only browse the library, never upload — that's ADMIN/TEACHER's job.
-  const canManage = user?.role === "TEACHER" || user?.role === "ADMIN"
+  const { can } = useAccess()
+  // Only people with manage_library upload (teacher, admin) — SUPERADMIN can only browse.
+  const canManage = can("manage_library")
   const [typeFilter, setTypeFilter] = useState("")
   const [addOpen, setAddOpen] = useState(false)
 

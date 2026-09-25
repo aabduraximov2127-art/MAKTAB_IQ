@@ -3,7 +3,7 @@ import { ArrowRightLeft, Pencil, Plus, Search, UserRound } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Field, Input } from "../components/ui/Input"
@@ -22,9 +22,10 @@ import { t } from "../i18n"
 const PAGE_SIZE = 10
 
 export default function StudentsPage() {
-  const user = useAuthStore((s) => s.user)
-  const canManage = user?.role === "ADMIN" || user?.role === "SUPERADMIN" || user?.role === "TEACHER"
-  const canEdit = canManage || user?.role === "PARENT"
+  const { can, canAny } = useAccess()
+  const canManage = can("manage_students") // create / delete students
+  const canTransfer = can("transfer_students")
+  const canEdit = canAny("manage_students", "manage_class_students", "update_child_profile")
 
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -118,7 +119,7 @@ export default function StudentsPage() {
                   <Pencil className="h-4 w-4" /> Tahrirlash
                 </Button>
               )}
-              {canManage && (
+              {canTransfer && (
                 <Button variant="outline" className="w-full" onClick={() => setTransferOpen(true)}>
                   <ArrowRightLeft className="h-4 w-4" /> Sinfga o'tkazish
                 </Button>

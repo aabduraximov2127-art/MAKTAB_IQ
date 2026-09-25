@@ -4,7 +4,7 @@ import { CalendarClock, CheckCircle2, ListChecks, Paperclip, Plus, Send } from "
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
@@ -21,9 +21,9 @@ import type { Assignment, AssignmentSubmission, Lesson, Paginated } from "../typ
 import { t } from "../i18n"
 
 export default function HomeworkPage() {
-  const user = useAuthStore((s) => s.user)
-  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN" || user?.role === "SUPERADMIN"
-  const isStudent = user?.role === "STUDENT"
+  const { canAny } = useAccess()
+  const isTeacher = canAny("create_homework", "manage_class_homework")
+  const isStudent = canAny("submit_homework")
 
   const [addOpen, setAddOpen] = useState(false)
   const [selected, setSelected] = useState<Assignment | null>(null)
@@ -86,9 +86,9 @@ export default function HomeworkPage() {
 }
 
 function AssignmentDrawer({ assignment, onClose }: { assignment: Assignment | null; onClose: () => void }) {
-  const user = useAuthStore((s) => s.user)
-  const isStudent = user?.role === "STUDENT"
-  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN" || user?.role === "SUPERADMIN"
+  const { canAny } = useAccess()
+  const isStudent = canAny("submit_homework")
+  const isTeacher = canAny("create_homework", "manage_class_homework", "grade_submissions")
 
   return (
     <Drawer open={!!assignment} onClose={onClose} title={assignment?.title} subtitle={assignment ? t("Muddat: {date}", { date: formatDateTime(assignment.deadline) }) : ""}>

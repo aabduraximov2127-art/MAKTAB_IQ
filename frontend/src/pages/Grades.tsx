@@ -3,7 +3,7 @@ import { ChevronRight, GraduationCap, Plus, School } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
@@ -28,10 +28,34 @@ import type {
 import { t } from "../i18n"
 
 export default function GradesPage() {
-  const user = useAuthStore((s) => s.user)
-  if (user?.role === "SUPERADMIN") return <DrillDownGradesView />
-  const isStaffOrTeacher = user?.role === "ADMIN" || user?.role === "TEACHER"
-  return isStaffOrTeacher ? <ManageGradesView /> : <MyGradesView />
+  const { can, canAny } = useAccess()
+  const canWrite = can("create_grade")
+  const seesOwn = canAny("view_own_grades", "view_child_grades")
+
+  // Oversight-only accounts (superadmin, director, deputy director) browse class -> student -> subject.
+  if (can("view_all_grades") && !canWrite && !seesOwn) return <DrillDownGradesView />
+  // A teacher who is also a parent gets both: grading tools and their own child's grades.
+  if (canWrite && seesOwn) return <TeacherAndFamilyGrades />
+  return canWrite ? <ManageGradesView /> : <MyGradesView />
+}
+
+function TeacherAndFamilyGrades() {
+  const [tab, setTab] = useState<"manage" | "mine">("manage")
+  return (
+    <div>
+      <div className="mb-4">
+        <Tabs
+          tabs={[
+            { key: "manage", label: t("Baho qo'yish") },
+            { key: "mine", label: t("Farzandlarim baholari") },
+          ]}
+          active={tab}
+          onChange={(k) => setTab(k as "manage" | "mine")}
+        />
+      </div>
+      {tab === "manage" ? <ManageGradesView /> : <MyGradesView />}
+    </div>
+  )
 }
 
 /* ------------------------------ Student/Parent ------------------------------- */

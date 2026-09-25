@@ -20,12 +20,13 @@ import {
   ClipboardCheck,
   GraduationCap,
   School,
+  ShieldCheck,
   Sparkles,
   UserRound,
   Users,
   UsersRound,
 } from "lucide-react"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { useFetch } from "../hooks/useFetch"
 import { StatCard } from "../components/ui/StatCard"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card"
@@ -34,6 +35,7 @@ import { EmptyState } from "../components/ui/EmptyState"
 import { Skeleton, CardSkeleton } from "../components/ui/Skeleton"
 import { LessonRow, LessonRowSkeleton } from "../components/shared/LessonRow"
 import { Badge } from "../components/ui/Badge"
+import { Button } from "../components/ui/Button"
 import { todayISO, weekdayUz } from "../lib/date"
 import { fullName, formatDate, gradeColor } from "../lib/format"
 import type {
@@ -47,19 +49,35 @@ import type {
 } from "../types"
 import { t } from "../i18n"
 
+/** Which dashboard a user lands on. A user with several roles gets the most senior one;
+ * everything else stays reachable through the menu (which is permission driven). */
+const DASHBOARD_PRIORITY = ["SUPERADMIN", "ADMIN", "DIRECTOR", "DEPUTY_DIRECTOR", "TEACHER", "PARENT", "STUDENT"] as const
+
 export default function DashboardPage() {
-  const user = useAuthStore((s) => s.user)
+  const { user, roles } = useAccess()
   if (!user) return null
 
-  if (user.role === "ADMIN" || user.role === "SUPERADMIN") return <AdminDashboard />
-  if (user.role === "TEACHER") return <TeacherDashboard />
-  if (user.role === "STUDENT") return <StudentDashboard />
-  return <ParentDashboard />
+  const primary = DASHBOARD_PRIORITY.find((r) => roles.includes(r)) ?? user.role
+  switch (primary) {
+    case "SUPERADMIN":
+    case "ADMIN":
+      return <AdminDashboard />
+    case "DIRECTOR":
+      return <AdminDashboard variant="director" />
+    case "DEPUTY_DIRECTOR":
+      return <AdminDashboard variant="deputy" />
+    case "TEACHER":
+      return <TeacherDashboard />
+    case "STUDENT":
+      return <StudentDashboard />
+    default:
+      return <ParentDashboard />
+  }
 }
 
 /* ------------------------------- ADMIN -------------------------------- */
 
-function AdminDashboard() {
+function AdminDashboard({ variant = "admin" }: { variant?: "admin" | "director" | "deputy" }) {
   const { data, loading } = useFetch<AdminAnalytics>("/analytics/admin/")
   const { data: announcements } = useFetch<Paginated<Announcement>>("/notifications/announcements/?page_size=4")
 
@@ -79,7 +97,19 @@ function AdminDashboard() {
 
   return (
     <div>
-      <PageHeader title={t("Boshqaruv paneli")} description={t("Maktabingizning umumiy holati bir qarashda")} />
+      <PageHeader
+        title={variant === "director" ? t("Direktor paneli") : variant === "deputy" ? t("O'quv jarayoni paneli") : t("Boshqaruv paneli")}
+        description={t("Maktabingizning umumiy holati bir qarashda")}
+        actions={
+          variant !== "admin" && (
+            <Link to="/education">
+              <Button variant="outline">
+                <ShieldCheck className="h-4 w-4" /> {t("O'quv jarayoni")}
+              </Button>
+            </Link>
+          )
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {loading || !data ? (
@@ -183,6 +213,24 @@ function MiniStat({ label, value, tone }: { label: string; value: string | numbe
 
 /* ------------------------------ TEACHER -------------------------------- */
 
+function ClassTeacherBanner() {
+  const { hasRole, user } = useAccess()
+  if (!hasRole("CLASS_TEACHER")) return null
+  const names = (user?.curated_classes ?? []).map((c) => c.name).join(", ")
+  return (
+    <Link
+      to="/my-class"
+      className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-brand-500/30 bg-brand-500/10 px-4 py-3 text-sm text-ink-800 transition-colors hover:bg-brand-500/15 dark:text-ink-100"
+    >
+      <span>
+        {t("Siz sinf rahbarisiz")}
+        {names ? `: ${names}` : ""}
+      </span>
+      <span className="font-medium text-brand-600 dark:text-brand-400">{t("Sinf boshqaruvi")} →</span>
+    </Link>
+  )
+}
+
 function TeacherDashboard() {
   const { data: lessons, loading: lessonsLoading } = useFetch<Paginated<Lesson>>(
     `/lessons/?date=${todayISO()}&ordering=start_time`
@@ -195,6 +243,8 @@ function TeacherDashboard() {
         title={t("Xush kelibsiz")}
         description={t("Bugun {day}, {date}", { day: weekdayUz(todayISO()), date: formatDate(todayISO()) })}
       />
+
+      <ClassTeacherBanner />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard label={t("Bugungi darslar")} value={lessons?.count ?? "—"} icon={CalendarDays} tone="brand" />

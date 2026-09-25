@@ -4,7 +4,7 @@ import { Plus, School, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
-import { useAuthStore } from "../store/auth"
+import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Card, CardContent } from "../components/ui/Card"
@@ -20,8 +20,8 @@ import type { AcademicYear, ClassRoom, Paginated, School as SchoolType, StudentP
 import { t } from "../i18n"
 
 export default function ClassesPage() {
-  const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN"
+  const { can } = useAccess()
+  const isAdmin = can("manage_classes")
   const [addOpen, setAddOpen] = useState(false)
   const [selected, setSelected] = useState<ClassRoom | null>(null)
 
