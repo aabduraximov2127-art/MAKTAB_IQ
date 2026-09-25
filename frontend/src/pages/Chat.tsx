@@ -336,6 +336,9 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
   const [sending, setSending] = useState(false)
   const [connected, setConnected] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  // Mirrors of the input state so several emojis picked in quick succession never overwrite each other.
+  const textRef = useRef("")
+  const caretRef = useRef<number | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Add messages we don't have yet (WebSocket push, REST reply and polling can all deliver the same one).
@@ -421,7 +424,7 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
       // REST is the reliable path; the server also pushes the message to everyone connected via WebSocket.
       const { data } = await api.post<Message>("/chat/messages/", { chat_room: room.id, text: trimmed })
       merge([data])
-      setText("")
+      updateText("")
       inputRef.current?.focus()
     } catch (err) {
       toast.error(getErrorMessage(err, t("Xabar yuborilmadi")))
@@ -430,15 +433,23 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
     }
   }
 
+  function updateText(value: string, caret: number | null = null) {
+    textRef.current = value
+    caretRef.current = caret
+    setText(value)
+  }
+
   function insertEmoji(emoji: string) {
     const el = inputRef.current
-    const start = el?.selectionStart ?? text.length
-    const end = el?.selectionEnd ?? text.length
-    setText(text.slice(0, start) + emoji + text.slice(end))
+    const current = textRef.current
+    const start = caretRef.current ?? el?.selectionStart ?? current.length
+    const end = caretRef.current ?? el?.selectionEnd ?? current.length
     const caret = start + emoji.length
+    updateText(current.slice(0, start) + emoji + current.slice(end), caret)
     requestAnimationFrame(() => {
       el?.focus()
       el?.setSelectionRange(caret, caret)
+      caretRef.current = null // from now on the real selection is authoritative again
     })
   }
 
@@ -492,7 +503,7 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
         <input
           ref={inputRef}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => updateText(e.target.value)}
           placeholder={t("Xabar yozing...")}
           maxLength={2000}
           autoComplete="off"
