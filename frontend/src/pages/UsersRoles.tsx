@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Search, ShieldCheck, X } from "lucide-react"
+import { Search, ShieldCheck, Trash2, X } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
@@ -65,6 +65,7 @@ const CATEGORY_LABELS: Record<string, string> = {
  * SUPERADMIN or system-level permissions); the disabled controls here only mirror them.
  */
 export default function UsersRolesPage() {
+  const { can } = useAccess()
   const [search, setSearch] = useState("")
   const [role, setRole] = useState("")
   const [page, setPage] = useState(1)
@@ -120,8 +121,12 @@ export default function UsersRolesPage() {
   return (
     <div>
       <PageHeader
-        title={t("Foydalanuvchilar va rollar")}
-        description={t("Rollar berish, ruxsatlarni boshqarish va hisoblarni faollashtirish")}
+        title={can("manage_roles") ? t("Foydalanuvchilar va rollar") : t("Foydalanuvchilar")}
+        description={
+          can("manage_roles")
+            ? t("Rollar berish, ruxsatlarni boshqarish va hisoblarni faollashtirish")
+            : t("Maktabingiz hisoblarini ko'rish va faollashtirish")
+        }
       />
 
       <div className="mb-4 flex flex-wrap gap-3">
@@ -178,12 +183,20 @@ function AccessDrawer({
   onClose: () => void
   onChanged: () => void
 }) {
-  const { user: me, hasRole } = useAccess()
+  const { user: me, hasRole, can } = useAccess()
   const isSuperadmin = hasRole("SUPERADMIN")
   const isSelf = !!user && !!me && user.id === me.id
+  // Roles and global permissions are the SuperAdmin's; a school admin only sees them and blocks / unblocks
+  // the accounts of its own school (never another administrator's).
+  const canRoles = can("manage_roles")
+  const canPermissions = can("manage_permissions")
+  const canDelete = can("delete_users") && !isSelf
+  const targetIsAdministrator = !!user && (user.roles.includes("ADMIN") || user.roles.includes("SUPERADMIN"))
+  const canBlock = !isSelf && (isSuperadmin || !targetIsAdministrator)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const { data: access, loading, refetch } = useFetch<AccessInfo>(user ? `/users/${user.id}/access/` : null)
-  const { data: catalogue } = useFetch<PermissionDef[]>(user ? "/permissions/" : null)
+  const { data: catalogue } = useFetch<PermissionDef[]>(user && canPermissions ? "/permissions/" : null)
   const [newRole, setNewRole] = useState("")
   const [primary, setPrimary] = useState("")
   const [newPermission, setNewPermission] = useState("")
@@ -215,6 +228,20 @@ function AccessDrawer({
     run(() => api.post(`/users/${user!.id}/permissions/`, { permission: code }), t("Ruxsat berildi"))
   const revokePermission = (code: string) =>
     run(() => api.delete(`/users/${user!.id}/permissions/${code}/`), t("Ruxsat olib tashlandi"))
+  const deleteAccount = async () => {
+    setBusy(true)
+    try {
+      await api.delete(`/users/${user!.id}/`)
+      toast.success(t("Hisob o'chirildi"))
+      setConfirmDelete(false)
+      onChanged()
+      onClose()
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
   const toggleActive = () =>
     run(
       () => api.post(`/auth/users/${user!.id}/${user!.is_active ? "deactivate" : "activate"}/`),
@@ -239,6 +266,21 @@ function AccessDrawer({
             </p>
           )}
 
+          {!canRoles && (
+            <section>
+              <p className="eyebrow mb-2 text-ink-400">{t("Rollar")}</p>
+              <div className="flex flex-wrap gap-2">
+                {access.roles.map((r, i) => (
+                  <Badge key={r} tone={i === 0 ? "brand" : "info"}>
+                    {ROLE_LABELS[r]}
+                  </Badge>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-ink-400">{t("Rollarni faqat SuperAdmin o'zgartira oladi.")}</p>
+            </section>
+          )}
+
+          {canRoles && (
           <section>
             <p className="eyebrow mb-2 text-ink-400">{t("Asosiy rol")}</p>
             <div className="flex gap-2">
@@ -258,7 +300,9 @@ function AccessDrawer({
               </Button>
             </div>
           </section>
+          )}
 
+          {canRoles && (
           <section>
             <p className="eyebrow mb-2 text-ink-400">{t("Qo'shimcha rollar")}</p>
             <div className="mb-3 flex flex-wrap gap-2">
@@ -294,7 +338,9 @@ function AccessDrawer({
               </Button>
             </div>
           </section>
+          )}
 
+          {canPermissions && (
           <section>
             <p className="eyebrow mb-2 text-ink-400">{t("Alohida ruxsatlar")}</p>
             <p className="mb-3 text-xs text-ink-400">
@@ -328,6 +374,7 @@ function AccessDrawer({
               </Button>
             </div>
           </section>
+          )}
 
           <section>
             <p className="eyebrow mb-2 flex items-center gap-1.5 text-ink-400">
@@ -353,9 +400,27 @@ function AccessDrawer({
             </div>
           </section>
 
-          <Button variant={user.is_active ? "danger" : "primary"} className="w-full" disabled={isSelf || busy} onClick={toggleActive}>
+          {!canBlock && !isSelf && (
+            <p className="rounded-2xl bg-ink-100 px-4 py-3 text-xs text-ink-500 dark:bg-ink-800 dark:text-ink-300">
+              {t("Adminlarni faqat SuperAdmin boshqara oladi.")}
+            </p>
+          )}
+
+          <Button variant={user.is_active ? "danger" : "primary"} className="w-full" disabled={!canBlock || busy} onClick={toggleActive}>
             {user.is_active ? t("Hisobni faolsizlantirish") : t("Hisobni faollashtirish")}
           </Button>
+
+          {canDelete && !access.roles.includes("SUPERADMIN") && (
+            <Button
+              variant={confirmDelete ? "danger" : "outline"}
+              className="w-full"
+              disabled={busy}
+              onClick={() => (confirmDelete ? deleteAccount() : setConfirmDelete(true))}
+              onBlur={() => setConfirmDelete(false)}
+            >
+              <Trash2 className="h-4 w-4" /> {confirmDelete ? t("Ishonchingiz komilmi? Hisob butunlay o'chadi") : t("Hisobni o'chirish")}
+            </Button>
+          )}
         </div>
       )}
     </Drawer>

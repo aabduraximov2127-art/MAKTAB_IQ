@@ -1894,5 +1894,33 @@
  "«Yangi dars» tugmasi bilan dars qo'shing": {
   "ru": "Добавьте урок кнопкой «Новый урок»",
   "en": "Add a lesson with the «New lesson» button"
+ },
+ "Adminlarni faqat SuperAdmin boshqara oladi.": {
+  "ru": "Администраторов может настраивать только суперадминистратор.",
+  "en": "Only the SuperAdmin can manage administrators."
+ },
+ "Foydalanuvchilar": {
+  "ru": "Пользователи",
+  "en": "Users"
+ },
+ "Hisob o'chirildi": {
+  "ru": "Аккаунт удалён",
+  "en": "Account deleted"
+ },
+ "Hisobni o'chirish": {
+  "ru": "Удалить аккаунт",
+  "en": "Delete account"
+ },
+ "Ishonchingiz komilmi? Hisob butunlay o'chadi": {
+  "ru": "Вы уверены? Аккаунт будет удалён навсегда",
+  "en": "Are you sure? The account is deleted for good"
+ },
+ "Maktabingiz hisoblarini ko'rish va faollashtirish": {
+  "ru": "Просмотр и активация аккаунтов вашей школы",
+  "en": "View and activate your school's accounts"
+ },
+ "Rollarni faqat SuperAdmin o'zgartira oladi.": {
+  "ru": "Роли может менять только суперадминистратор.",
+  "en": "Only the SuperAdmin can change roles."
  }
 }
