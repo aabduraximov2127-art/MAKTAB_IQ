@@ -101,10 +101,25 @@ docker compose up --build
 python manage.py test --settings=config.settings.test
 ```
 
-## Rollar
+## Rollar va ruxsatlar (RBAC)
 
-`SUPERADMIN`, `ADMIN`, `TEACHER`, `STUDENT`, `PARENT` — barcha permissionlar backend
-tomonidan (`common/permissions.py` va har bir app'ning `permissions.py`) tekshiriladi.
+Rollar: `SUPERADMIN`, `ADMIN`, `DIRECTOR`, `DEPUTY_DIRECTOR`, `TEACHER`, `STUDENT`, `PARENT`
+va hisoblanadigan `CLASS_TEACHER` (foydalanuvchi biror sinfning `curator`i bo'lsa avtomatik).
+
+- **Yangi model yo'q.** Asosiy rol — `User.role`; qo'shimcha rollar — `User.groups` (guruh nomi = rol kodi);
+  foydalanuvchiga individual ruxsat — `User.user_permissions`. Bir foydalanuvchida bir nechta rol bo'lishi mumkin
+  (masalan `TEACHER + CLASS_TEACHER`, `TEACHER + PARENT`) — ruxsatlar birlashtiriladi (union).
+- `common/rbac.py` — 83 ta standart permission (`view_own_grades`, `create_grade`, `manage_users`, ...) va
+  `ROLE_PERMISSIONS` (rol → default permissionlar).
+- `common/access.py` — permission *turini* beradi, scope esa *qaysi obyektlarga* ekanini belgilaydi
+  (o'zining / farzandi / biriktirilgan / sinf / maktab / global). Boshqa birovning obyekti → `403`,
+  tokensiz → `401`.
+- `common/permissions.py` — `RBACPermission` va `require("codename", ...)` (DRF permission).
+- Admin API: `GET /roles/`, `GET /permissions/`, `GET /users/{id}/access/`, `POST|DELETE /users/{id}/roles/[ROL]`,
+  `POST|DELETE /users/{id}/permissions/[codename]`.
+- Frontend: `useAccess()` (`frontend/src/lib/access.ts`) — menyu, route va tugmalar `permissions`ga qarab chiqadi;
+  bularning barchasi faqat qulaylik uchun, haqiqiy tekshiruv backendda.
+- Testlar: `apps/users/test_rbac.py`.
 
 ## Muhim endpointlar
 
