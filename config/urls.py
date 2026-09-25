@@ -17,6 +17,8 @@ api_v1_patterns = [
     path("students/", include((users_urls.students_urlpatterns, "students"))),
     path("teachers/", include((users_urls.teachers_urlpatterns, "teachers"))),
     path("parents/", include((users_urls.parents_urlpatterns, "parents"))),
+    path("roles/", include((users_urls.roles_urlpatterns, "roles"))),
+    path("permissions/", include((users_urls.permissions_urlpatterns, "permissions"))),
     path("schools/", include("apps.schools.urls")),
     path("classes/", include("apps.classes.urls")),
     path("subjects/", include("apps.subjects.urls")),

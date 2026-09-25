@@ -10,8 +10,18 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from rest_framework.exceptions import PermissionDenied
 
+from common import access, rbac
 from common.audit import get_client_ip, log_action
-from common.permissions import IsAdmin, IsAdminOrTeacher, IsStaff, user_role
+from common.permissions import RBACPermission, require
+from common.rbac import (
+    MANAGE_STUDENTS,
+    MANAGE_TEACHERS,
+    MANAGE_USERS,
+    VIEW_ALL_STUDENTS,
+    VIEW_ASSIGNED_STUDENTS,
+    VIEW_CLASS_STUDENTS,
+    VIEW_OWN_PROFILE,
+)
 
 from .models import (
     ParentProfile,
@@ -21,16 +31,19 @@ from .models import (
     StudentTransferHistory,
     TeacherProfile,
 )
+from .access_api import UserAccessMixin
 from .permissions import (
+    STUDENT_LIST_PERMISSIONS,
     CanAccessStudentProfile,
     CanEditStudentProfile,
     CanTransferStudent,
     CanViewSensitiveStudentData,
-    IsSelfOrAdmin,
+    can_manage_user,
 )
 from .serializers import (
     EmptySerializer,
     LogoutSerializer,
+    MeSerializer,
     ParentProfileSerializer,
     PasswordResetSerializer,
     RegisterStudentSerializer,
@@ -41,7 +54,7 @@ from .serializers import (
     StudentTransferHistorySerializer,
     StudentTransferRequestSerializer,
     TeacherProfileSerializer,
-    UserSerializer,
+    UserAdminSerializer,
 )
 
 User = get_user_model()
@@ -89,13 +102,13 @@ class LogoutView(APIView):
 
 class RegisterStudentView(generics.CreateAPIView):
     serializer_class = RegisterStudentSerializer
-    permission_classes = [IsAdminOrTeacher]
+    permission_classes = [require(MANAGE_STUDENTS)]
 
     def perform_create(self, serializer):
         requester = self.request.user
-        if user_role(requester) == "ADMIN":
-            # School Admin/Director may only ever create students inside their own
-            # school — TEACHER's create flow (business logic unchanged) skips this.
+        if not rbac.is_global(requester):
+            # Every school-bound account (admin) may only ever create students inside its
+            # own school; only a global SUPERADMIN can choose any school.
             school = serializer.validated_data.get("school")
             if school is not None and school.id != requester.school_id:
                 raise PermissionDenied("Boshqa maktab uchun student yarata olmaysiz.")
@@ -114,13 +127,14 @@ class RegisterStudentView(generics.CreateAPIView):
 
 
 def _deny_cross_school(request, target_user):
-    """ADMIN may only manage accounts in their own school; SUPERADMIN is unrestricted."""
-    if user_role(request.user) == "ADMIN" and target_user.school_id != request.user.school_id:
-        raise PermissionDenied("Boshqa maktab foydalanuvchisini boshqara olmaysiz.")
+    """School-bound admins may only manage accounts of their own school (and never a
+    SUPERADMIN); a global SUPERADMIN is unrestricted."""
+    if not can_manage_user(request.user, target_user):
+        raise PermissionDenied("Bu foydalanuvchini boshqara olmaysiz.")
 
 
 class AccountActivateView(APIView):
-    permission_classes = [IsAdmin]
+    permission_classes = [require(MANAGE_USERS)]
     serializer_class = EmptySerializer
 
     def post(self, request, pk):
@@ -134,7 +148,7 @@ class AccountActivateView(APIView):
 
 
 class AccountDeactivateView(APIView):
-    permission_classes = [IsAdmin]
+    permission_classes = [require(MANAGE_USERS)]
     serializer_class = EmptySerializer
 
     def post(self, request, pk):
@@ -150,7 +164,7 @@ class AccountDeactivateView(APIView):
 class PasswordResetView(APIView):
     """Admin resets another user's password. Students cannot change their own."""
 
-    permission_classes = [IsAdmin]
+    permission_classes = [require(MANAGE_USERS)]
     serializer_class = PasswordResetSerializer
 
     def post(self, request, pk):
@@ -168,10 +182,10 @@ class PasswordResetView(APIView):
 # Users / profiles
 # ---------------------------------------------------------------------------
 class MeView(APIView):
-    serializer_class = UserSerializer
+    serializer_class = MeSerializer
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data)
+        return Response(MeSerializer(request.user).data)
 
 
 class TelegramLinkCodeView(APIView):
@@ -287,17 +301,24 @@ class TelegramWebAppLoginView(APIView):
         return Response({"access": str(refresh.access_token), "refresh": str(refresh)})
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = UserSerializer
-    permission_classes = [IsAdmin]
+class UserViewSet(UserAccessMixin, viewsets.ReadOnlyModelViewSet):
+    """Read-only user directory for user administrators (``manage_users``). Roles and
+    permissions are changed through the dedicated actions in ``access_api.py`` — there is
+    deliberately no PATCH/PUT that accepts a ``role`` field."""
+
+    serializer_class = UserAdminSerializer
+    permission_classes = [require(MANAGE_USERS)]
     search_fields = ["username", "first_name", "last_name", "email"]
     filterset_fields = ["role", "school", "is_active"]
 
     def get_queryset(self):
-        qs = User.objects.all().order_by("-date_joined")
-        if user_role(self.request.user) == "ADMIN":
-            return qs.filter(school=self.request.user.school)
-        return qs
+        qs = User.objects.all().order_by("-date_joined").prefetch_related("groups", "user_permissions")
+        if rbac.is_global(self.request.user):
+            return qs
+        if not self.request.user.school_id:
+            return qs.none()
+        # school-bound admins: their own school only, and never SUPERADMIN accounts
+        return qs.filter(school=self.request.user.school).exclude(role=rbac.SUPERADMIN)
 
 
 class StudentViewSet(viewsets.ModelViewSet):
@@ -317,31 +338,12 @@ class StudentViewSet(viewsets.ModelViewSet):
             # Detail actions rely on object-level permission checks (CanAccessStudentProfile)
             # so that unauthorized access returns 403 instead of leaking existence via 404.
             return qs
-
-        user = self.request.user
-        role = user_role(user)
-
-        if role == "SUPERADMIN":
-            return qs
-        if role == "ADMIN":
-            return qs.filter(school=user.school)
-        if role == "STUDENT":
-            # A student may browse their own classmates (needed to start a class chat),
-            # but object-level retrieve (CanAccessStudentProfile) still stays self-only.
-            class_room_id = getattr(getattr(user, "student_profile", None), "class_room_id", None)
-            if class_room_id:
-                return qs.filter(class_room_id=class_room_id)
-            return qs.filter(user=user)
-        if role == "PARENT":
-            return qs.filter(parent_links__parent__user=user).distinct()
-        if role == "TEACHER":
-            return (
-                qs.filter(class_room__lessons__teacher__user=user) | qs.filter(class_room__curator__user=user)
-            ).distinct()
-        return qs.none()
+        return access.students_scope(self.request.user, qs)
 
     def get_permissions(self):
-        if self.action in {"retrieve", "list", "me"}:
+        if self.action == "list":
+            return [require(*STUDENT_LIST_PERMISSIONS)()]
+        if self.action in {"retrieve", "me"}:
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
 
@@ -365,12 +367,11 @@ class StudentViewSet(viewsets.ModelViewSet):
         new_class = serializer.validated_data["new_class"]
         old_class = student.class_room
 
-        if user_role(request.user) == "ADMIN":
-            # School Admin/Director may only transfer their own school's students,
-            # and only into a class that also belongs to their own school.
-            admin_school_id = request.user.school_id
-            if student.school_id != admin_school_id or new_class.school_id != admin_school_id:
-                self.permission_denied(request)
+        # transfer_students + the right relation to *this* student (own school for admin /
+        # director, own class for a class teacher, assigned pupils for a teacher who was
+        # explicitly granted the permission) and a destination in the same school.
+        if not access.can_transfer_student(request.user, student, new_class):
+            self.permission_denied(request)
 
         student.class_room = new_class
         student.save(update_fields=["class_room"])
@@ -400,29 +401,28 @@ class TeacherViewSet(viewsets.ModelViewSet):
     filterset_fields = ["school", "subjects"]
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        role = user_role(self.request.user)
-        # STUDENT only sees teachers actually teaching their class (subject teachers
-        # or curator). Every other role keeps the existing unrestricted behavior.
-        if role == "STUDENT":
-            student_profile = getattr(self.request.user, "student_profile", None)
-            class_room_id = getattr(student_profile, "class_room_id", None)
-            if class_room_id is None:
-                return qs.none()
-            return (
-                qs.filter(lessons__class_room_id=class_room_id)
-                | qs.filter(curated_classes__id=class_room_id)
-            ).distinct()
-        # ADMIN (School Admin/Director) is confined to their own school; SUPERADMIN,
-        # TEACHER and PARENT keep the existing unrestricted behavior.
-        if role == "ADMIN":
-            return qs.filter(school=self.request.user.school)
-        return qs
+        # Who sees which teachers: administrators/supervisors their school's; a student the
+        # teachers of their own class; a parent their children's teachers; a class teacher the
+        # teachers of their class; a teacher themself. See common.access.teachers_scope.
+        return access.teachers_scope(self.request.user, super().get_queryset())
 
     def get_permissions(self):
         if self.request.method not in permissions.SAFE_METHODS:
-            return [IsAdmin()]
+            return [require(MANAGE_TEACHERS)()]
         return [permissions.IsAuthenticated()]
+
+    def _enforce_own_school(self, serializer):
+        school = serializer.validated_data.get("school")
+        if not rbac.is_global(self.request.user) and school is not None and school.id != self.request.user.school_id:
+            raise PermissionDenied("Boshqa maktab uchun o'qituvchi yarata/o'zgartira olmaysiz.")
+
+    def perform_create(self, serializer):
+        self._enforce_own_school(serializer)
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self._enforce_own_school(serializer)
+        serializer.save()
 
     @action(detail=False, methods=["get"])
     def me(self, request):
@@ -436,18 +436,11 @@ class ParentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        role = user_role(self.request.user)
-        if role == "SUPERADMIN":
-            return super().get_queryset()
-        if role == "ADMIN":
-            return super().get_queryset().filter(user__school=self.request.user.school)
-        if role == "PARENT":
-            return super().get_queryset().filter(user=self.request.user)
-        return ParentProfile.objects.none()
+        return access.parents_scope(self.request.user, super().get_queryset())
 
     def get_permissions(self):
         if self.request.method not in permissions.SAFE_METHODS:
-            return [IsAdmin()]
+            return [require(MANAGE_USERS)()]
         return [permissions.IsAuthenticated()]
 
     @action(detail=False, methods=["get"])
@@ -457,12 +450,15 @@ class ParentViewSet(viewsets.ModelViewSet):
 
 
 class StudentTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """Class-transfer log. Staff only, and only for students the user may open."""
+
     serializer_class = StudentTransferHistorySerializer
-    permission_classes = [IsAdminOrTeacher]
+    permission_classes = [require(VIEW_ALL_STUDENTS, VIEW_ASSIGNED_STUDENTS, VIEW_CLASS_STUDENTS)]
     filterset_fields = ["student"]
 
     def get_queryset(self):
-        return StudentTransferHistory.objects.select_related("student", "old_class", "new_class")
+        qs = StudentTransferHistory.objects.select_related("student", "old_class", "new_class")
+        return access.transfer_history_scope(self.request.user, qs)
 
 
 class StudentDocumentViewSet(viewsets.ModelViewSet):
@@ -471,22 +467,18 @@ class StudentDocumentViewSet(viewsets.ModelViewSet):
     filterset_fields = ["student", "document_type"]
 
     def get_queryset(self):
-        role = user_role(self.request.user)
         qs = StudentDocument.objects.select_related("student__user")
-        if role in {"ADMIN", "SUPERADMIN"}:
-            return qs
-        if role == "STUDENT":
-            return qs.filter(student__user=self.request.user)
-        if role == "PARENT":
-            return qs.filter(student__parent_links__parent__user=self.request.user)
-        return qs.none()
+        return access.student_documents_scope(self.request.user, qs)
 
     def get_permissions(self):
         if self.request.method not in permissions.SAFE_METHODS:
-            return [IsAdmin()]
+            return [require(MANAGE_STUDENTS)()]
         return [permissions.IsAuthenticated()]
 
     def perform_create(self, serializer):
+        student = serializer.validated_data.get("student")
+        if student is not None and not access.can_edit_student(self.request.user, student):
+            raise PermissionDenied("Bu o'quvchi uchun hujjat yuklay olmaysiz.")
         serializer.save(uploaded_by=self.request.user)
 
 
@@ -496,10 +488,19 @@ class SchoolHealthRecordViewSet(viewsets.ModelViewSet):
     filterset_fields = ["student"]
 
     def get_queryset(self):
-        return SchoolHealthRecord.objects.select_related("student__user")
+        return access.health_records_scope(
+            self.request.user, SchoolHealthRecord.objects.select_related("student__user")
+        )
+
+    def _check_student(self, serializer):
+        student = serializer.validated_data.get("student")
+        if student is not None and not access.can_view_student(self.request.user, student):
+            raise PermissionDenied("Bu o'quvchining sog'liq ma'lumotlarini boshqara olmaysiz.")
 
     def perform_create(self, serializer):
+        self._check_student(serializer)
         serializer.save(updated_by=self.request.user)
 
     def perform_update(self, serializer):
+        self._check_student(serializer)
         serializer.save(updated_by=self.request.user)

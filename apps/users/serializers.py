@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from apps.classes.models import ClassRoom
 from apps.schools.models import School
+from common import rbac
 from common.permissions import user_role
 from common.validators import normalize_uz_phone
 
@@ -53,6 +54,50 @@ class UserSerializer(PhoneValidationMixin, serializers.ModelSerializer):
             "telegram_linked",
         )
         read_only_fields = ("id", "role", "is_deactivated", "date_joined", "telegram_linked")
+
+
+class MeSerializer(UserSerializer):
+    """The signed-in user's own payload: ``UserSerializer`` plus everything the frontend needs
+    to decide what to show — the *effective* roles (primary + extra + derived class teacher),
+    the resulting permission codenames, and the classes they curate."""
+
+    primary_role = serializers.CharField(source="role", read_only=True)
+    roles = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
+    curated_classes = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ("primary_role", "roles", "permissions", "curated_classes")
+        read_only_fields = fields
+
+    def get_roles(self, obj):
+        roles = rbac.effective_roles(obj)
+        return [role for role in rbac.ALL_ROLES if role in roles]
+
+    def get_permissions(self, obj):
+        return sorted(rbac.user_permissions(obj))
+
+    def get_curated_classes(self, obj):
+        return list(ClassRoom.objects.filter(curator__user=obj).values("id", "name"))
+
+
+class UserAdminSerializer(UserSerializer):
+    """What an administrator sees in the users list: the stored roles (primary first, then
+    extra ones held through groups) and any permissions granted to this one user."""
+
+    roles = serializers.SerializerMethodField()
+    extra_permissions = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ("roles", "extra_permissions")
+        read_only_fields = fields
+
+    def get_roles(self, obj):
+        extra = [g.name for g in obj.groups.all() if g.name in rbac.STORED_ROLES and g.name != obj.role]
+        return [obj.role, *sorted(extra)]
+
+    def get_extra_permissions(self, obj):
+        return sorted(p.codename for p in obj.user_permissions.all() if p.codename in rbac.PERMISSIONS)
 
 
 class RegisterStudentSerializer(PhoneValidationMixin, serializers.ModelSerializer):

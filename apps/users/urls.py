@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+from .access_api import PermissionListView, RoleListView
 from .views import (
     MeView,
     ParentViewSet,
@@ -39,3 +40,5 @@ urlpatterns = [
 students_urlpatterns = students_router.urls
 teachers_urlpatterns = teachers_router.urls
 parents_urlpatterns = parents_router.urls
+roles_urlpatterns = [path("", RoleListView.as_view(), name="role-list")]
+permissions_urlpatterns = [path("", PermissionListView.as_view(), name="permission-list")]
