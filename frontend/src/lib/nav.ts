@@ -2,6 +2,7 @@ import {
   BarChart3,
   BookOpen,
   Bot,
+  Building2,
   CalendarDays,
   ClipboardCheck,
   GraduationCap,
@@ -16,6 +17,7 @@ import {
   ShieldCheck,
   Ticket,
   User,
+  UserCog,
   Users,
   UsersRound,
   Workflow,
@@ -108,6 +110,8 @@ export const NAV_ITEMS: NavItem[] = [
     section: t("Boshqaruv"),
     roles: ["DIRECTOR", "DEPUTY_DIRECTOR"],
   },
+  { to: "/schools", label: t("Maktablar"), icon: Building2, section: t("Boshqaruv"), anyPerm: ["manage_schools"] },
+  { to: "/admins", label: t("Adminlar"), icon: UserCog, section: t("Boshqaruv"), anyPerm: ["manage_admins"] },
   { to: "/users", label: t("Foydalanuvchilar va rollar"), icon: UsersRound, section: t("Boshqaruv"), anyPerm: ["manage_users"] },
 
   {

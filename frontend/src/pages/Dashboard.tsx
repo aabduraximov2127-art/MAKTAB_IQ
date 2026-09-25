@@ -34,6 +34,7 @@ import { PageHeader } from "../components/ui/PageHeader"
 import { EmptyState } from "../components/ui/EmptyState"
 import { Skeleton, CardSkeleton } from "../components/ui/Skeleton"
 import { LessonRow, LessonRowSkeleton } from "../components/shared/LessonRow"
+import { SystemDashboard } from "../components/dashboard/SystemDashboard"
 import { Badge } from "../components/ui/Badge"
 import { Button } from "../components/ui/Button"
 import { todayISO, weekdayUz } from "../lib/date"
@@ -54,12 +55,14 @@ import { t } from "../i18n"
 const DASHBOARD_PRIORITY = ["SUPERADMIN", "ADMIN", "DIRECTOR", "DEPUTY_DIRECTOR", "TEACHER", "PARENT", "STUDENT"] as const
 
 export default function DashboardPage() {
-  const { user, roles } = useAccess()
+  const { user, roles, can } = useAccess()
   if (!user) return null
 
   const primary = DASHBOARD_PRIORITY.find((r) => roles.includes(r)) ?? user.role
   switch (primary) {
     case "SUPERADMIN":
+      // the whole system and every school; a SuperAdmin without the system view falls back to one school
+      return can("view_system_stats") ? <SystemDashboard /> : <AdminDashboard />
     case "ADMIN":
       return <AdminDashboard />
     case "DIRECTOR":

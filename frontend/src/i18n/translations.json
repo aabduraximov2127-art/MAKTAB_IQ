@@ -1922,5 +1922,133 @@
  "Rollarni faqat SuperAdmin o'zgartira oladi.": {
   "ru": "Роли может менять только суперадминистратор.",
   "en": "Only the SuperAdmin can change roles."
+ },
+ "Tizim paneli": {
+  "ru": "Панель системы",
+  "en": "System dashboard"
+ },
+ "Butun tizim va barcha maktablar bir qarashda": {
+  "ru": "Вся система и все школы на одном экране",
+  "en": "The whole system and every school at a glance"
+ },
+ "Maktablar": {
+  "ru": "Школы",
+  "en": "Schools"
+ },
+ "Maktablar bo'yicha": {
+  "ru": "По школам",
+  "en": "By school"
+ },
+ "Maktab topilmadi": {
+  "ru": "Школа не найдена",
+  "en": "No school found"
+ },
+ "Tizimdagi barcha maktablar": {
+  "ru": "Все школы системы",
+  "en": "Every school in the system"
+ },
+ "Yangi maktab": {
+  "ru": "Новая школа",
+  "en": "New school"
+ },
+ "Nomi yoki manzili bo'yicha qidirish...": {
+  "ru": "Поиск по названию или адресу...",
+  "en": "Search by name or address..."
+ },
+ "Manzil": {
+  "ru": "Адрес",
+  "en": "Address"
+ },
+ "Maktab qo'shildi": {
+  "ru": "Школа добавлена",
+  "en": "School added"
+ },
+ "Maktab yangilandi": {
+  "ru": "Школа обновлена",
+  "en": "School updated"
+ },
+ "Maktab o'chirildi": {
+  "ru": "Школа удалена",
+  "en": "School deleted"
+ },
+ "Maktabni o'chirish": {
+  "ru": "Удалить школу",
+  "en": "Delete school"
+ },
+ "Maktabda hali ma'lumotlar bor:": {
+  "ru": "В школе ещё есть данные:",
+  "en": "The school still has data:"
+ },
+ "{classes} sinf, {students} o'quvchi, {teachers} o'qituvchi, {users} hisob": {
+  "ru": "Классов: {classes}, учеников: {students}, учителей: {teachers}, аккаунтов: {users}",
+  "en": "{classes} classes, {students} students, {teachers} teachers, {users} accounts"
+ },
+ "O'chirilsa sinflar va ularning darslari, davomati, baholari yo'qoladi; hisoblar maktabsiz qoladi.": {
+  "ru": "При удалении пропадут классы, их уроки, посещаемость и оценки; аккаунты останутся без школы.",
+  "en": "Deleting removes the classes with their lessons, attendance and grades; accounts are left without a school."
+ },
+ "Baribir o'chirish": {
+  "ru": "Всё равно удалить",
+  "en": "Delete anyway"
+ },
+ "Adminlar": {
+  "ru": "Администраторы",
+  "en": "Administrators"
+ },
+ "Admin": {
+  "ru": "Администратор",
+  "en": "Administrator"
+ },
+ "Yangi admin": {
+  "ru": "Новый администратор",
+  "en": "New administrator"
+ },
+ "Admin topilmadi": {
+  "ru": "Администратор не найден",
+  "en": "No administrator found"
+ },
+ "Admin yaratildi": {
+  "ru": "Администратор создан",
+  "en": "Administrator created"
+ },
+ "Admin yangilandi": {
+  "ru": "Администратор обновлён",
+  "en": "Administrator updated"
+ },
+ "Admin bloklandi": {
+  "ru": "Администратор заблокирован",
+  "en": "Administrator blocked"
+ },
+ "Admin faollashtirildi": {
+  "ru": "Администратор активирован",
+  "en": "Administrator activated"
+ },
+ "Adminni bloklash": {
+  "ru": "Заблокировать администратора",
+  "en": "Block administrator"
+ },
+ "Adminni faollashtirish": {
+  "ru": "Активировать администратора",
+  "en": "Activate administrator"
+ },
+ "Adminni o'chirish": {
+  "ru": "Удалить администратора",
+  "en": "Delete administrator"
+ },
+ "Maktab adminlarini yaratish, tahrirlash, bloklash va maktabga biriktirish": {
+  "ru": "Создание, редактирование и блокировка администраторов школ, привязка к школе",
+  "en": "Create, edit and block school administrators and assign them to a school"
+ },
+ "Bloklangan": {
+  "ru": "Заблокирован",
+  "en": "Blocked"
+ },
+ "Login": {
+  "ru": "Логин",
+  "en": "Username"
+ },
+ "Barcha maktablar": {
+  "ru": "Все школы",
+  "en": "All schools"
  }
 }

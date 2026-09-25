@@ -30,6 +30,8 @@ import ProfilePage from "./pages/Profile"
 import ClassManagementPage from "./pages/ClassManagement"
 import EducationManagementPage from "./pages/EducationManagement"
 import UsersRolesPage from "./pages/UsersRoles"
+import SchoolsPage from "./pages/Schools"
+import AdminsPage from "./pages/Admins"
 import NotFoundPage from "./pages/NotFound"
 
 const ATTENDANCE_PERMS = ["view_own_attendance", "view_child_attendance", "view_assigned_attendance", "view_all_attendance", "view_class_reports"]
@@ -96,6 +98,13 @@ export default function App() {
             </Route>
             <Route element={<RoleGuard perms={["manage_users"]} />}>
               <Route path="/users" element={<UsersRolesPage />} />
+            </Route>
+            {/* System level — the SuperAdmin's schools and administrator accounts. */}
+            <Route element={<RoleGuard perms={["manage_schools"]} />}>
+              <Route path="/schools" element={<SchoolsPage />} />
+            </Route>
+            <Route element={<RoleGuard perms={["manage_admins"]} />}>
+              <Route path="/admins" element={<AdminsPage />} />
             </Route>
 
             {/* SUPERADMIN is an oversight role: it holds no attendance, homework or quiz

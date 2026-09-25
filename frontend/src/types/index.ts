@@ -298,6 +298,40 @@ export interface AdminAnalytics {
   teacher_attendance_percentage: number
 }
 
+/** One row of GET /analytics/system/ — a school's headline figures. */
+export interface SchoolStats {
+  id: number
+  name: string
+  students: number
+  teachers: number
+  classes: number
+  admins: number
+  attendance_percentage: number
+  average_grades: number
+}
+
+/** GET /analytics/system/ (SuperAdmin): the whole system plus one row per school. */
+export interface SystemAnalytics extends AdminAnalytics {
+  total_schools: number
+  total_admins: number
+  schools: SchoolStats[]
+}
+
+/** An account as the user directory lists it (GET /users/). */
+export interface AdminAccount {
+  id: number
+  username: string
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  role: Role
+  roles: Role[]
+  school: number | null
+  is_active: boolean
+  date_joined: string
+}
+
 export interface Paginated<T> {
   success: boolean
   count: number
