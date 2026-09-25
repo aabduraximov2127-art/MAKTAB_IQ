@@ -1,4 +1,4 @@
-import type { Role } from "./types"
+import type { EffectiveRole, User } from "./types"
 
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10)
@@ -20,10 +20,19 @@ export function fullName(user?: { first_name?: string; last_name?: string } | nu
   return [user.first_name, user.last_name].filter(Boolean).join(" ") || "—"
 }
 
-export const ROLE_LABELS: Record<Role, string> = {
+export const ROLE_LABELS: Record<EffectiveRole, string> = {
   SUPERADMIN: "Superadmin",
   ADMIN: "Admin",
+  DIRECTOR: "Direktor",
+  DEPUTY_DIRECTOR: "Direktor o'rinbosari",
+  CLASS_TEACHER: "Sinf rahbari",
   TEACHER: "O'qituvchi",
   STUDENT: "O'quvchi",
   PARENT: "Ota-ona",
+}
+
+/** "O'qituvchi · Sinf rahbari" — every role the user effectively holds. */
+export function roleLabels(user: Pick<User, "role" | "roles">): string {
+  const roles = user.roles && user.roles.length > 0 ? user.roles : [user.role]
+  return roles.map((r) => ROLE_LABELS[r]).join(" · ")
 }

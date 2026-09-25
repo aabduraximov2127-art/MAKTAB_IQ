@@ -2,7 +2,7 @@ import { api, clearTokens } from "../api"
 import { getTelegram } from "../telegram"
 import { useApi } from "../useApi"
 import { Section, Row, EmptyRow } from "../components/Section"
-import { formatDate, formatTime, fullName, ROLE_LABELS, todayISO } from "../format"
+import { formatDate, formatTime, fullName, roleLabels, todayISO } from "../format"
 import type {
   AdminAnalytics,
   Announcement,
@@ -34,22 +34,24 @@ function Header({ user }: { user: User }) {
     <div className="app-header">
       <div className="greeting">Salom, {user.first_name || user.username} 👋</div>
       <div className="subtitle">{formatDate(new Date().toISOString())}</div>
-      <span className="role-badge">{ROLE_LABELS[user.role]}</span>
+      <span className="role-badge">{roleLabels(user)}</span>
     </div>
   )
 }
 
+/** A user can hold several roles (e.g. Teacher + Parent) — show one block per role family. */
 function RoleSections({ user }: { user: User }) {
-  switch (user.role) {
-    case "STUDENT":
-      return <StudentSections />
-    case "TEACHER":
-      return <TeacherSections />
-    case "PARENT":
-      return <ParentSections />
-    default:
-      return <AdminSections />
-  }
+  const roles = new Set<string>(user.roles && user.roles.length > 0 ? user.roles : [user.role])
+  const isAdminLike = ["SUPERADMIN", "ADMIN", "DIRECTOR", "DEPUTY_DIRECTOR"].some((r) => roles.has(r))
+
+  return (
+    <>
+      {roles.has("STUDENT") && <StudentSections />}
+      {roles.has("TEACHER") && <TeacherSections />}
+      {roles.has("PARENT") && <ParentSections />}
+      {isAdminLike && <AdminSections />}
+    </>
+  )
 }
 
 /* --------------------------------- STUDENT --------------------------------- */

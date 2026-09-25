@@ -1,4 +1,6 @@
-export type Role = "SUPERADMIN" | "ADMIN" | "TEACHER" | "STUDENT" | "PARENT"
+export type Role = "SUPERADMIN" | "ADMIN" | "DIRECTOR" | "DEPUTY_DIRECTOR" | "TEACHER" | "STUDENT" | "PARENT"
+/** Effective roles also include CLASS_TEACHER, derived from being a class curator. */
+export type EffectiveRole = Role | "CLASS_TEACHER"
 
 export interface User {
   id: number
@@ -8,6 +10,8 @@ export interface User {
   email: string
   phone: string
   role: Role
+  roles?: EffectiveRole[]
+  permissions?: string[]
   telegram_linked?: boolean
 }
 
