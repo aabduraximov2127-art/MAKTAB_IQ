@@ -27,6 +27,22 @@ def moderate_message(message):
         return None
 
 
+def deletion_snapshot(message):
+    """Everything the "message deleted" notification needs — taken BEFORE the row is removed."""
+    from django.utils import timezone
+
+    text = message.text or ""
+    return {
+        "sender_id": message.sender_id,
+        "room_id": message.chat_room_id,
+        "text": text[:500],
+        "created_at": message.created_at.isoformat(),
+        "deleted_at": timezone.now().isoformat(),
+        "flagged": bool(find_profanity(text)),
+        "had_attachment": bool(message.attachment),
+    }
+
+
 STAFF_ROOM_NAME = "O'qituvchilar xonasi"
 # Roles (stored or extra) that share the staff room and can be picked in "Ustozga yozish".
 STAFF_ROOM_ROLES = ("TEACHER", "DIRECTOR")

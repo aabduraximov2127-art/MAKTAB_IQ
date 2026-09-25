@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets
@@ -6,13 +8,17 @@ from rest_framework.response import Response
 
 from common import access, rbac
 from common.rbac import CREATE_CHAT_ROOMS, CREATE_PRIVATE_CHAT, MODERATE_CHAT, USE_STAFF_CHAT, VIEW_CLASSMATES
-from common.realtime import push_message_to_chat
+from common.audit import log_action
+from common.realtime import push_message_deleted_to_chat, push_message_to_chat
 from common.guards import ForbidOutOfScopeMixin
 
 from .models import ChatMember, ChatRoom, Message
-from .permissions import CanCreateChatRoom, CanUseChat, IsChatMember
-from .services import moderate_message, staff_members, sync_staff_room
+from .permissions import CanCreateChatRoom, CanUseChat, IsChatMember, IsMessageAuthor
+from .services import deletion_snapshot, moderate_message, staff_members, sync_staff_room
 from .serializers import ChatMemberSerializer, ChatRoomSerializer, MessageSerializer
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChatRoomViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
@@ -138,9 +144,15 @@ class ChatRoomViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
 
 
 class MessageViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
+    """Chat messages: members read and send; the AUTHOR may delete their own message (and only
+    theirs). Editing is not offered — a text changed after posting would dodge the swearing check.
+    Deleting tells the school director and the class teacher (curator) on Telegram — and only them —
+    what was deleted, by whom and in which chat; the other members just see the message disappear."""
+
     serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated, CanUseChat, IsChatMember]
+    permission_classes = [permissions.IsAuthenticated, CanUseChat, IsChatMember, IsMessageAuthor]
     filterset_fields = ["chat_room"]
+    http_method_names = ["get", "post", "delete", "head", "options"]
 
     def get_queryset(self):
         user = self.request.user
@@ -169,3 +181,29 @@ class MessageViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
             },
         )
         moderate_message(message)
+
+    def perform_destroy(self, instance):
+        from apps.notifications.tasks import notify_message_deleted
+
+        snapshot = deletion_snapshot(instance)  # the text is gone with the row, so keep it for the alert
+        room_id, message_id = instance.chat_room_id, instance.id
+        if instance.attachment:
+            instance.attachment.delete(save=False)
+        instance.delete()
+
+        log_action(
+            self.request.user,
+            "CHAT_MESSAGE_DELETED",
+            target=f"chat {room_id}",
+            description=f"message={message_id} flagged={snapshot['flagged']}",
+            request=self.request,
+        )
+        # The message is already gone: a failing live push or alert must not turn the delete into an error.
+        try:
+            push_message_deleted_to_chat(room_id, message_id)
+        except Exception:  # noqa: BLE001
+            logger.exception("Could not push the deletion of message %s to the chat room", message_id)
+        try:
+            notify_message_deleted.delay(snapshot)
+        except Exception:  # noqa: BLE001
+            logger.exception("Could not send the 'message deleted' alert for message %s", message_id)

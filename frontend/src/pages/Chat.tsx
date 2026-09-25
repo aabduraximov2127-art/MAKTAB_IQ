@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react"
-import { ArrowLeft, Briefcase, MessagesSquare, Pencil, School, Search, Send, Users } from "lucide-react"
+import { ArrowLeft, Briefcase, MessagesSquare, Pencil, School, Search, Send, Trash2, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
@@ -430,7 +430,12 @@ function NewParentMessageModal({
 function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
   const user = useAuthStore((s) => s.user)
   const accessToken = useAuthStore((s) => s.accessToken)
+  const { hasRole } = useAccess()
   const [messages, setMessages] = useState<Message[]>([])
+  const messagesRef = useRef<Message[]>([]) // what was on screen when a request left — tells "deleted" from "not fetched yet"
+  const [toDelete, setToDelete] = useState<Message | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -450,13 +455,33 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
     })
   }, [])
 
+  // Somebody (maybe us, in another tab) deleted a message: take it off the screen.
+  const drop = useCallback((id: number) => {
+    setMessages((prev) => (prev.some((m) => m.id === id) ? prev.filter((m) => m.id !== id) : prev))
+  }, [])
+
   const fetchMessages = useCallback(async () => {
+    const shown = new Set(messagesRef.current.map((m) => m.id))
     const res = await api.get<Paginated<Message>>(`/chat/messages/?chat_room=${room.id}&page_size=200`)
-    merge(res.data.results)
+    const { results, count } = res.data
+    merge(results)
+    if (count === results.length) {
+      // The whole thread came back, so anything we were showing that is missing from it has been deleted
+      // (a message that appeared while the request was in flight was not shown yet, so it stays).
+      const alive = new Set(results.map((m) => m.id))
+      setMessages((prev) =>
+        prev.some((m) => shown.has(m.id) && !alive.has(m.id)) ? prev.filter((m) => alive.has(m.id) || !shown.has(m.id)) : prev
+      )
+    }
   }, [room.id, merge])
 
   useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+
+  useEffect(() => {
     setLoading(true)
+    messagesRef.current = []
     setMessages([])
     fetchMessages()
       .catch(() => undefined)
@@ -481,7 +506,9 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
       }
       socket.onmessage = (event) => {
         try {
-          merge([JSON.parse(event.data) as Message])
+          const payload = JSON.parse(event.data)
+          if (payload.type === "message_deleted") drop(payload.id)
+          else merge([payload as Message])
         } catch {
           /* ignore malformed payloads */
         }
@@ -501,7 +528,7 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
       clearTimeout(retryTimer)
       socket?.close()
     }
-  }, [room.id, accessToken, fetchMessages, merge])
+  }, [room.id, accessToken, fetchMessages, merge, drop])
 
   // No live socket -> poll so the conversation still updates.
   useEffect(() => {
@@ -531,6 +558,28 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
       setSending(false)
     }
   }
+
+  async function confirmDelete() {
+    if (!toDelete || deleting) return
+    setDeleting(true)
+    try {
+      await api.delete(`/chat/messages/${toDelete.id}/`)
+      drop(toDelete.id)
+      setConfirmOpen(false)
+      toast.success(t("Xabar o'chirildi"))
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("Xabar o'chirilmadi")))
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  // The director and the class teacher hear about every deletion (the director about everyone else's) — say so.
+  const deletionNote = hasRole("DIRECTOR")
+    ? null
+    : hasRole("STUDENT", "PARENT")
+      ? t("Direktor va sinf rahbari o'chirilgan xabar haqida Telegram orqali xabardor qilinadi")
+      : t("Direktor o'chirilgan xabar haqida Telegram orqali xabardor qilinadi")
 
   function updateText(value: string, caret: number | null = null) {
     textRef.current = value
@@ -590,6 +639,20 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
                   <p className="whitespace-pre-wrap break-words">{m.text}</p>
                   <p className={cn("mt-1 text-[10px]", mine ? "text-brand-100" : "text-ink-400")}>{formatRelative(m.created_at)}</p>
                 </div>
+                {mine && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setToDelete(m)
+                      setConfirmOpen(true)
+                    }}
+                    aria-label={t("Xabarni o'chirish")}
+                    title={t("Xabarni o'chirish")}
+                    className="mb-0.5 shrink-0 rounded-full p-2 text-ink-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-ink-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             )
           })
@@ -617,6 +680,21 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
           <Send className="h-4.5 w-4.5" />
         </button>
       </form>
+
+      <Modal open={confirmOpen} onClose={() => !deleting && setConfirmOpen(false)} title={t("Xabarni o'chirish")} size="sm">
+        <p className="line-clamp-4 whitespace-pre-wrap break-words rounded-xl bg-ink-50 px-3.5 py-2.5 text-sm text-ink-700 dark:bg-ink-800 dark:text-ink-200">
+          {toDelete?.text}
+        </p>
+        {deletionNote && <p className="mt-3 text-sm text-ink-500 dark:text-ink-400">{deletionNote}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setConfirmOpen(false)} disabled={deleting}>
+            {t("Bekor qilish")}
+          </Button>
+          <Button variant="danger" onClick={confirmDelete} loading={deleting}>
+            {t("O'chirish")}
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }

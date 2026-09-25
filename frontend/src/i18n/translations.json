@@ -2126,5 +2126,25 @@
  "Yangi o'qituvchi": {
   "ru": "Новый учитель",
   "en": "New teacher"
+ },
+ "Xabarni o'chirish": {
+  "ru": "Удалить сообщение",
+  "en": "Delete message"
+ },
+ "Xabar o'chirildi": {
+  "ru": "Сообщение удалено",
+  "en": "Message deleted"
+ },
+ "Xabar o'chirilmadi": {
+  "ru": "Не удалось удалить сообщение",
+  "en": "Could not delete the message"
+ },
+ "Direktor va sinf rahbari o'chirilgan xabar haqida Telegram orqali xabardor qilinadi": {
+  "ru": "Директор и классный руководитель получат уведомление об удалённом сообщении в Telegram",
+  "en": "The director and the class teacher will be told about the deleted message on Telegram"
+ },
+ "Direktor o'chirilgan xabar haqida Telegram orqali xabardor qilinadi": {
+  "ru": "Директор получит уведомление об удалённом сообщении в Telegram",
+  "en": "The director will be told about the deleted message on Telegram"
  }
 }

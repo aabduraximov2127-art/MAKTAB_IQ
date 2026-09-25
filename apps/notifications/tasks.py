@@ -221,18 +221,125 @@ def _moderation_recipients(incident):
     return list(recipients.values())
 
 
-def _describe_targets(incident):
+def _describe_room(room, sender_id):
+    """Who a chat is with / what it is, from the point of view of ``sender_id``."""
     from apps.chat.models import ChatRoom
 
-    room = incident.chat_room
     if room.room_type == ChatRoom.RoomType.CLASS_GENERAL:
         return f"Sinf chati ({room.name or room.class_room})"
+    if room.room_type == ChatRoom.RoomType.STAFF_GENERAL:
+        return room.name or "O'qituvchilar xonasi"
     names = [
         m.user.get_full_name() or m.user.username
         for m in room.members.select_related("user")
-        if m.user_id != incident.sender_id
+        if m.user_id != sender_id
     ]
     return ", ".join(names[:5]) or (room.name or "Shaxsiy chat")
+
+
+def _describe_targets(incident):
+    return _describe_room(incident.chat_room, incident.sender_id)
+
+
+def _who(sender):
+    """"Aziz Karimov (9-A, O'quvchi)" — name, class and role."""
+    sender_class = _class_of(sender)
+    extra = ROLE_LABELS_UZ.get(sender.role, sender.role)
+    if sender_class:
+        extra = f"{sender_class.name}, {extra}"
+    return f"{sender.get_full_name() or sender.username} ({extra})"
+
+
+def _director_detail_lines(sender):
+    """What the director gets on top: the writer's login and phone, and their class teacher."""
+    sender_class = _class_of(sender)
+    lines = [f"Login: @{sender.username}"]
+    if sender.phone:
+        lines.append(f"Telefon: {sender.phone}")
+    if sender_class and sender_class.curator_id:
+        curator_user = sender_class.curator.user
+        curator = curator_user.get_full_name() or curator_user.username
+        if curator_user.phone:
+            curator += f", {curator_user.phone}"
+        lines.append(f"Sinf rahbari: {curator}")
+    return lines
+
+
+def _curators_of(user):
+    """The class teacher(s) responsible for ``user``: a pupil's own class, or the classes of a parent's children."""
+    classes = []
+    own = _class_of(user)
+    if own:
+        classes.append(own)
+    parent = getattr(user, "parent_profile", None)
+    if parent:
+        for link in parent.children_links.select_related("student__class_room__curator__user"):
+            if link.student.class_room_id:
+                classes.append(link.student.class_room)
+    return [c.curator.user for c in classes if c.curator_id]
+
+
+def _deletion_recipients(sender, room):
+    """Only the school director(s) and the class teacher (curator) — the sender's own (a pupil's
+    class, a parent's children's classes) and, in a class chat, that class's — hear about a deleted
+    message. Nobody else: not the other members of the chat, not other teachers, not the admins."""
+    recipients = {}
+
+    def add(user):
+        if user is not None and user.id != sender.id and user.is_active:
+            recipients[user.id] = user
+
+    for director in _directors_of(sender):
+        add(director)
+    for curator in _curators_of(sender):
+        add(curator)
+    if room.class_room_id and room.class_room.curator_id:
+        add(room.class_room.curator.user)
+    return list(recipients.values())
+
+
+@shared_task
+def notify_message_deleted(snapshot):
+    """Tell the director and the class teacher that somebody deleted a chat message.
+
+    ``snapshot`` is taken by the chat view before the row is removed (see
+    ``apps.chat.services.deletion_snapshot``), because the text no longer exists afterwards."""
+    from datetime import datetime
+
+    from django.utils import timezone
+
+    from apps.chat.models import ChatRoom
+    from apps.users.models import User
+
+    sender = User.objects.filter(pk=snapshot["sender_id"]).first()
+    room = ChatRoom.objects.select_related("class_room").filter(pk=snapshot["room_id"]).first()
+    if sender is None or room is None:
+        return
+    recipients = _deletion_recipients(sender, room)
+    if not recipients:
+        return
+
+    def clock(iso):
+        return timezone.localtime(datetime.fromisoformat(iso)).strftime("%d.%m.%Y %H:%M")
+
+    lines = [
+        f"Kim o'chirdi: {_who(sender)}",
+        f"Chat: {_describe_room(room, sender.id)}",
+        f"Xabar: «{snapshot['text']}»",
+        f"Yozilgan: {clock(snapshot['created_at'])}",
+        f"O'chirilgan: {clock(snapshot['deleted_at'])}",
+    ]
+    if snapshot.get("flagged"):
+        lines.append("⚠️ Xabarda so'kinish / haqorat bor edi.")
+    if snapshot.get("had_attachment"):
+        lines.append("📎 Xabarda fayl ham bor edi.")
+
+    title = "🗑 Chatda xabar o'chirildi"
+    body = "\n".join(lines)
+    director_ids = {d.id for d in _directors_of(sender)}
+    director_body = "\n".join([lines[0], *_director_detail_lines(sender), *lines[1:]])
+    for user in recipients:
+        _deliver(user, title, director_body if user.id in director_ids else body, NotificationType.CHAT_MESSAGE)
 
 
 @shared_task

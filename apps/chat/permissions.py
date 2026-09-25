@@ -10,6 +10,18 @@ class IsChatMember(BasePermission):
         return chat_room.members.filter(user=request.user).exists()
 
 
+class IsMessageAuthor(BasePermission):
+    """Only the person who wrote a message may delete it (nobody edits messages: a text changed
+    after posting would slip past the swearing check)."""
+
+    def has_object_permission(self, request, view, obj):
+        if obj.__class__.__name__ == "ChatRoom":  # perform_create checks the room it posts into
+            return True
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.sender_id == request.user.id
+
+
 class CanUseChat(BasePermission):
     """Chat is for signed-in users holding ``use_chat`` (every role by default)."""
 
