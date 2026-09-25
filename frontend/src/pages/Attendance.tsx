@@ -14,7 +14,7 @@ import { Avatar } from "../components/ui/Avatar"
 import { AttendanceCalendar } from "../components/attendance/AttendanceCalendar"
 import { ClassTeacherAttendance } from "../components/attendance/ClassTeacherAttendance"
 import { DirectorAttendance } from "../components/attendance/DirectorAttendance"
-import { ATTENDANCE_COLORS, fullName } from "../lib/format"
+import { ATTENDANCE_SOLID, fullName } from "../lib/format"
 import { todayISO } from "../lib/date"
 import { cn } from "../lib/cn"
 import type { Attendance, AttendanceStatus, ClassRoom, Paginated, StudentProfile } from "../types"
@@ -148,7 +148,7 @@ function MarkAttendanceView() {
                       className={cn(
                         "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
                         record?.status === opt.status
-                          ? cn(ATTENDANCE_COLORS[opt.status], "border-transparent")
+                          ? cn(ATTENDANCE_SOLID[opt.status], "border-transparent shadow-sm")
                           : "border-ink-200 text-ink-500 hover:bg-ink-50 dark:border-ink-700 dark:text-ink-400 dark:hover:bg-ink-800"
                       )}
                     >

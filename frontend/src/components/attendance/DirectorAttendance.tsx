@@ -7,13 +7,13 @@ import { Select } from "../ui/Select"
 import { Input } from "../ui/Input"
 import { Tabs } from "../ui/Tabs"
 import { Avatar } from "../ui/Avatar"
-import { Badge } from "../ui/Badge"
+import { CountChip } from "./CountChip"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card"
 import { EmptyState } from "../ui/EmptyState"
 import { Skeleton } from "../ui/Skeleton"
 import { ClassStudentPicker, type PickerSelection } from "../shared/ClassStudentPicker"
 import { AttendanceCalendar, MONTHS_UZ } from "./AttendanceCalendar"
-import { ATTENDANCE_COLORS, ATTENDANCE_LABELS, fullName } from "../../lib/format"
+import { ATTENDANCE_LABELS, ATTENDANCE_SOLID, ATTENDANCE_UNMARKED, fullName } from "../../lib/format"
 import { cn } from "../../lib/cn"
 import type { AttendanceStatus, Paginated, TeacherAttendance, TeacherProfile } from "../../types"
 import { t } from "../../i18n"
@@ -83,7 +83,7 @@ function TeachersAttendance() {
 
 function StatusPill({ status, note }: { status: AttendanceStatus; note?: string }) {
   return (
-    <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", ATTENDANCE_COLORS[status])} title={note || undefined}>
+    <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", ATTENDANCE_SOLID[status])} title={note || undefined}>
       {ATTENDANCE_LABELS[status]}
     </span>
   )
@@ -119,22 +119,12 @@ function TeachersOnDate({ date, teachers, onOpen }: { date: string; teachers: Te
 
   return (
     <>
-      <div className="mb-5 flex flex-wrap gap-2 text-xs font-medium">
-        <Badge tone="success">
-          {ATTENDANCE_LABELS.PRESENT}: {totals.PRESENT}
-        </Badge>
-        <Badge tone="warning">
-          {ATTENDANCE_LABELS.LATE}: {totals.LATE}
-        </Badge>
-        <Badge tone="danger">
-          {ATTENDANCE_LABELS.ABSENT}: {totals.ABSENT}
-        </Badge>
-        <Badge tone="info">
-          {ATTENDANCE_LABELS.EXCUSED}: {totals.EXCUSED}
-        </Badge>
-        <Badge tone="neutral">
-          {t("Belgilanmagan")}: {totals.unmarked}
-        </Badge>
+      <div className="mb-5 flex flex-wrap gap-2">
+        <CountChip status="PRESENT" label={ATTENDANCE_LABELS.PRESENT} count={totals.PRESENT} />
+        <CountChip status="LATE" label={ATTENDANCE_LABELS.LATE} count={totals.LATE} />
+        <CountChip status="ABSENT" label={ATTENDANCE_LABELS.ABSENT} count={totals.ABSENT} />
+        <CountChip status="EXCUSED" label={ATTENDANCE_LABELS.EXCUSED} count={totals.EXCUSED} />
+        <CountChip label={t("Belgilanmagan")} count={totals.unmarked} />
       </div>
 
       <div className="space-y-2.5">
@@ -154,7 +144,11 @@ function TeachersOnDate({ date, teachers, onOpen }: { date: string; teachers: Te
                   {record?.reason && <span className="block truncate text-xs text-ink-400">{record.reason}</span>}
                 </span>
               </span>
-              {record ? <StatusPill status={record.status} note={record.reason} /> : <Badge tone="neutral">{t("Belgilanmagan")}</Badge>}
+              {record ? (
+                <StatusPill status={record.status} note={record.reason} />
+              ) : (
+                <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", ATTENDANCE_UNMARKED)}>{t("Belgilanmagan")}</span>
+              )}
             </button>
           )
         })}
@@ -203,7 +197,7 @@ function TeacherMonth({ teacherId, name }: { teacherId: number; name: string }) 
           {name} · {MONTHS_UZ[month - 1]} {year}
         </CardTitle>
         <div className="flex items-center gap-2">
-          <span className="hidden rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400 sm:inline">
+          <span className={cn("hidden rounded-full px-3 py-1 text-xs font-semibold sm:inline", ATTENDANCE_SOLID.PRESENT)}>
             {t("Davomat")}: {pct}%
           </span>
           <Button variant="outline" size="icon" onClick={() => changeMonth(-1)}>
@@ -226,8 +220,8 @@ function TeacherMonth({ teacherId, name }: { teacherId: number; name: string }) 
                   key={day}
                   title={record ? `${ATTENDANCE_LABELS[record.status]}${record.reason ? ` — ${record.reason}` : ""}` : undefined}
                   className={cn(
-                    "flex h-11 items-center justify-center rounded-lg border text-xs font-medium",
-                    record ? cn(ATTENDANCE_COLORS[record.status], "border-transparent") : "border-dashed border-ink-200 text-ink-300 dark:border-ink-800"
+                    "flex h-11 items-center justify-center rounded-lg border text-xs font-semibold",
+                    record ? cn(ATTENDANCE_SOLID[record.status], "border-transparent shadow-sm") : "border-dashed border-ink-300 text-ink-500 dark:border-ink-600 dark:text-ink-400"
                   )}
                 >
                   <span className="font-display font-semibold leading-none">{day}</span>
@@ -238,8 +232,8 @@ function TeacherMonth({ teacherId, name }: { teacherId: number; name: string }) 
         )}
         <div className="mt-5 flex flex-wrap gap-3 text-xs">
           {(["PRESENT", "ABSENT", "LATE", "EXCUSED"] as AttendanceStatus[]).map((s) => (
-            <div key={s} className="flex items-center gap-1.5">
-              <span className={cn("h-3 w-3 rounded-full", ATTENDANCE_COLORS[s].split(" ")[0])} />
+            <div key={s} className="flex items-center gap-1.5 font-medium text-ink-700 dark:text-ink-200">
+              <span className={cn("h-3.5 w-3.5 rounded-full", ATTENDANCE_SOLID[s].split(" ")[0])} />
               {ATTENDANCE_LABELS[s]}
             </div>
           ))}

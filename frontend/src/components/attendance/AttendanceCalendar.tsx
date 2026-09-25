@@ -10,7 +10,7 @@ import { Field, Input } from "../ui/Input"
 import { Modal } from "../ui/Modal"
 import { EmptyState } from "../ui/EmptyState"
 import { Skeleton } from "../ui/Skeleton"
-import { ATTENDANCE_COLORS, ATTENDANCE_LABELS, attendanceLabel } from "../../lib/format"
+import { ATTENDANCE_LABELS, ATTENDANCE_SOLID, attendanceLabel } from "../../lib/format"
 import { cn } from "../../lib/cn"
 import type { Attendance, AttendanceStatus, Paginated } from "../../types"
 import { t } from "../../i18n"
@@ -67,7 +67,7 @@ export function AttendanceCalendar({ studentId }: { studentId: number }) {
             {MONTHS_UZ[month - 1]} {year}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="hidden rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400 sm:inline">
+            <span className={cn("hidden rounded-full px-3 py-1 text-xs font-semibold sm:inline", ATTENDANCE_SOLID.PRESENT)}>
               Davomat: {summary.pct}%
             </span>
             <Button variant="outline" size="icon" onClick={() => changeMonth(-1)}>
@@ -92,10 +92,10 @@ export function AttendanceCalendar({ studentId }: { studentId: number }) {
                     disabled={!record || record.status !== "ABSENT"}
                     onClick={() => record && setReasonTarget({ date: record.date })}
                     className={cn(
-                      "flex h-11 flex-col items-center justify-center gap-0.5 rounded-lg border text-xs font-medium transition-transform",
+                      "flex h-11 flex-col items-center justify-center gap-0.5 rounded-lg border text-xs font-semibold transition-transform",
                       d.status
-                        ? cn(ATTENDANCE_COLORS[d.status], "border-transparent")
-                        : "border-dashed border-ink-200 text-ink-300 dark:border-ink-800",
+                        ? cn(ATTENDANCE_SOLID[d.status], "border-transparent shadow-sm")
+                        : "border-dashed border-ink-300 text-ink-500 dark:border-ink-600 dark:text-ink-400",
                       record?.status === "ABSENT" && "cursor-pointer hover:scale-105"
                     )}
                   >
@@ -109,8 +109,8 @@ export function AttendanceCalendar({ studentId }: { studentId: number }) {
 
           <div className="mt-5 flex flex-wrap gap-3 text-xs">
             {(["PRESENT", "ABSENT", "LATE", "EXCUSED"] as AttendanceStatus[]).map((s) => (
-              <div key={s} className="flex items-center gap-1.5">
-                <span className={cn("h-3 w-3 rounded-full", ATTENDANCE_COLORS[s].split(" ")[0])} />
+              <div key={s} className="flex items-center gap-1.5 font-medium text-ink-700 dark:text-ink-200">
+                <span className={cn("h-3.5 w-3.5 rounded-full", ATTENDANCE_SOLID[s].split(" ")[0])} />
                 {ATTENDANCE_LABELS[s]}
               </div>
             ))}

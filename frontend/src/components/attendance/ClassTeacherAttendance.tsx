@@ -19,10 +19,10 @@ import { PageHeader } from "../ui/PageHeader"
 import { Select } from "../ui/Select"
 import { Input } from "../ui/Input"
 import { Avatar } from "../ui/Avatar"
-import { Badge } from "../ui/Badge"
+import { CountChip } from "./CountChip"
 import { EmptyState } from "../ui/EmptyState"
 import { Skeleton } from "../ui/Skeleton"
-import { ABSENCE_REASON_LABELS, ATTENDANCE_COLORS, attendanceLabel, fullName } from "../../lib/format"
+import { ABSENCE_REASON_LABELS, ATTENDANCE_SOLID, ATTENDANCE_UNMARKED, attendanceLabel, fullName } from "../../lib/format"
 import { cn } from "../../lib/cn"
 import type { AbsenceReason, Attendance, AttendanceStatus, Paginated, StudentProfile } from "../../types"
 import { t } from "../../i18n"
@@ -164,22 +164,12 @@ export function ClassTeacherAttendance() {
         />
       </div>
 
-      <div className="mb-5 flex flex-wrap gap-2 text-xs font-medium">
-        <Badge tone="success">
-          {t("Keldi")}: {totals.present}
-        </Badge>
-        <Badge tone="warning">
-          {t("Kechikdi")}: {totals.late}
-        </Badge>
-        <Badge tone="danger">
-          {t("Sababsiz")}: {totals.unexcused}
-        </Badge>
-        <Badge tone="info">
-          {t("Sababli")}: {totals.excused}
-        </Badge>
-        <Badge tone="neutral">
-          {t("Belgilanmagan")}: {totals.unmarked}
-        </Badge>
+      <div className="mb-5 flex flex-wrap gap-2">
+        <CountChip status="PRESENT" label={t("Keldi")} count={totals.present} />
+        <CountChip status="LATE" label={t("Kechikdi")} count={totals.late} />
+        <CountChip status="ABSENT" label={t("Sababsiz")} count={totals.unexcused} />
+        <CountChip status="EXCUSED" label={t("Sababli")} count={totals.excused} />
+        <CountChip label={t("Belgilanmagan")} count={totals.unmarked} />
       </div>
 
       {loading ? (
@@ -215,16 +205,11 @@ export function ClassTeacherAttendance() {
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
                     {record ? (
-                      <span
-                        className={cn(
-                          "rounded-full px-2.5 py-1 text-xs font-medium",
-                          ATTENDANCE_COLORS[record.status]
-                        )}
-                      >
+                      <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", ATTENDANCE_SOLID[record.status])}>
                         {attendanceLabel(record.status, record.absence_reason)}
                       </span>
                     ) : (
-                      <Badge tone="neutral">{t("Belgilanmagan")}</Badge>
+                      <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", ATTENDANCE_UNMARKED)}>{t("Belgilanmagan")}</span>
                     )}
                     <ChevronDown className={cn("h-4 w-4 text-ink-400 transition-transform", open && "rotate-180")} />
                   </span>
@@ -296,7 +281,7 @@ function ChoiceGroup({
               className={cn(
                 "flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors disabled:opacity-50",
                 active
-                  ? cn(ATTENDANCE_COLORS[choice.status], "border-transparent")
+                  ? cn(ATTENDANCE_SOLID[choice.status], "border-transparent shadow-sm")
                   : "border-ink-200 text-ink-600 hover:bg-ink-50 dark:border-ink-700 dark:text-ink-300 dark:hover:bg-ink-800"
               )}
             >

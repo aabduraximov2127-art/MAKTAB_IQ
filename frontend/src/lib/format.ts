@@ -59,12 +59,25 @@ export function attendanceLabel(status: AttendanceStatus, reason?: AbsenceReason
   return ATTENDANCE_LABELS[status]
 }
 
+/** Soft tint with an outline — for text-sized markers; strong enough to read on both themes. */
 export const ATTENDANCE_COLORS: Record<AttendanceStatus, string> = {
-  PRESENT: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
-  ABSENT: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400",
-  LATE: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
-  EXCUSED: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
+  PRESENT: "bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-300 dark:bg-emerald-500/25 dark:text-emerald-200 dark:ring-emerald-400/40",
+  ABSENT: "bg-rose-100 text-rose-800 ring-1 ring-inset ring-rose-300 dark:bg-rose-500/25 dark:text-rose-200 dark:ring-rose-400/40",
+  LATE: "bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-300 dark:bg-amber-500/25 dark:text-amber-200 dark:ring-amber-400/40",
+  EXCUSED: "bg-sky-100 text-sky-800 ring-1 ring-inset ring-sky-300 dark:bg-sky-500/25 dark:text-sky-200 dark:ring-sky-400/40",
 }
+
+/** Solid, saturated fills — calendar days, legend dots, counters, the chosen outcome. The first
+ * class is always the background, so ``.split(" ")[0]`` gives a plain dot colour. */
+export const ATTENDANCE_SOLID: Record<AttendanceStatus, string> = {
+  PRESENT: "bg-emerald-600 text-white",
+  ABSENT: "bg-rose-600 text-white",
+  LATE: "bg-amber-400 text-amber-950",
+  EXCUSED: "bg-sky-600 text-white",
+}
+
+/** "Not marked yet" — clearly grey, never confusable with a status colour. */
+export const ATTENDANCE_UNMARKED = "bg-ink-200 text-ink-700 dark:bg-ink-700 dark:text-ink-100"
 
 export const NOTIFICATION_ICON_LABEL: Record<NotificationType, string> = {
   GRADE: t("Yangi baho"),
