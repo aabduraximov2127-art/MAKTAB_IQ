@@ -1834,5 +1834,65 @@
  "Bekor qilish": {
   "ru": "Отмена",
   "en": "Cancel"
+ },
+ "Barcha sinflar": {
+  "ru": "Все классы",
+  "en": "All classes"
+ },
+ "Bu kunda dars yo'q": {
+  "ru": "В этот день уроков нет",
+  "en": "No lessons on this day"
+ },
+ "Darsni o'chirish": {
+  "ru": "Удалить урок",
+  "en": "Delete lesson"
+ },
+ "Fan nomini yozing...": {
+  "ru": "Начните вводить название предмета...",
+  "en": "Start typing a subject..."
+ },
+ "Fan, o'qituvchi yoki xona bo'yicha qidirish...": {
+  "ru": "Поиск по предмету, учителю или кабинету...",
+  "en": "Search by subject, teacher or room..."
+ },
+ "Fanni tanlang": {
+  "ru": "Выберите предмет",
+  "en": "Select a subject"
+ },
+ "Haftalik": {
+  "ru": "По неделям",
+  "en": "Weekly"
+ },
+ "Ishonchingiz komilmi?": {
+  "ru": "Вы уверены?",
+  "en": "Are you sure?"
+ },
+ "Ism yozing...": {
+  "ru": "Начните вводить имя...",
+  "en": "Start typing a name..."
+ },
+ "Kun": {
+  "ru": "День",
+  "en": "Day"
+ },
+ "Kunlik": {
+  "ru": "По дням",
+  "en": "Daily"
+ },
+ "Qidirish": {
+  "ru": "Поиск",
+  "en": "Search"
+ },
+ "Qidiruv so'zini o'zgartirib ko'ring": {
+  "ru": "Попробуйте изменить запрос",
+  "en": "Try a different search"
+ },
+ "Tozalash": {
+  "ru": "Очистить",
+  "en": "Clear"
+ },
+ "«Yangi dars» tugmasi bilan dars qo'shing": {
+  "ru": "Добавьте урок кнопкой «Новый урок»",
+  "en": "Add a lesson with the «New lesson» button"
  }
 }
