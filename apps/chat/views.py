@@ -1,16 +1,17 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from common import access, rbac
-from common.rbac import CREATE_CHAT_ROOMS, CREATE_PRIVATE_CHAT, MODERATE_CHAT, VIEW_CLASSMATES
+from common.rbac import CREATE_CHAT_ROOMS, CREATE_PRIVATE_CHAT, MODERATE_CHAT, USE_STAFF_CHAT, VIEW_CLASSMATES
 from common.realtime import push_message_to_chat
 from common.guards import ForbidOutOfScopeMixin
 
 from .models import ChatMember, ChatRoom, Message
 from .permissions import CanCreateChatRoom, CanUseChat, IsChatMember
-from .services import moderate_message
+from .services import moderate_message, staff_members, sync_staff_room
 from .serializers import ChatMemberSerializer, ChatRoomSerializer, MessageSerializer
 
 
@@ -21,15 +22,66 @@ class ChatRoomViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         return ChatRoom.objects.filter(members__user=self.request.user).distinct().prefetch_related("members")
 
+    def list(self, request, *args, **kwargs):
+        # Staff always find the shared staff room in their list, with membership kept in step
+        # with the current staff.
+        if rbac.has_perm(request.user, USE_STAFF_CHAT):
+            sync_staff_room(request.user)
+        return super().list(request, *args, **kwargs)
+
     def perform_create(self, serializer):
+        if serializer.validated_data.get("room_type") == ChatRoom.RoomType.STAFF_GENERAL:
+            self.permission_denied(self.request, message="Xodimlar xonasi avtomatik yaratiladi.")
         room = serializer.save()
         ChatMember.objects.get_or_create(chat_room=room, user=self.request.user)
+
+    def _guard_staff_room(self, room):
+        if room.room_type == ChatRoom.RoomType.STAFF_GENERAL and not rbac.has_perm(self.request.user, MODERATE_CHAT):
+            self.permission_denied(self.request, message="Xodimlar xonasini o'zgartirib yoki o'chirib bo'lmaydi.")
+
+    def perform_update(self, serializer):
+        self._guard_staff_room(serializer.instance)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._guard_staff_room(instance)
+        instance.delete()
+
+    @action(detail=False, methods=["get"])
+    def staff(self, request):
+        """Colleagues (staff of the caller's school) a private chat can be started with — the
+        picker behind "Ustozga yozish"."""
+        if not rbac.has_perm(request.user, USE_STAFF_CHAT):
+            self.permission_denied(request)
+        people = staff_members(request.user).exclude(pk=request.user.pk).order_by("first_name", "last_name", "id")
+        search = (request.query_params.get("search") or "").strip()
+        if search:
+            people = people.filter(Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(username__icontains=search))
+        return Response(
+            [
+                {
+                    "id": person.id,
+                    "name": person.get_full_name() or person.username,
+                    "role": "DIRECTOR" if person.role == person.Role.DIRECTOR else "TEACHER",
+                }
+                for person in people
+            ]
+        )
+
+    @action(detail=False, methods=["get"])
+    def staff_room(self, request):
+        """The staff room of the caller's school (created / synced on demand)."""
+        if not rbac.has_perm(request.user, USE_STAFF_CHAT):
+            self.permission_denied(request)
+        return Response(ChatRoomSerializer(sync_staff_room(request.user)).data)
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, CanUseChat])
     def add_member(self, request, pk=None):
         room = get_object_or_404(ChatRoom, pk=pk)
         user = request.user
         target_id = request.data.get("user")
+        if room.room_type == ChatRoom.RoomType.STAFF_GENERAL:
+            self.permission_denied(request, message="Xodimlar xonasi a'zolari avtomatik boshqariladi.")
         is_member = room.members.filter(user=user).exists()
 
         if rbac.has_perm(user, MODERATE_CHAT):

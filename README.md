@@ -109,7 +109,7 @@ va hisoblanadigan `CLASS_TEACHER` (foydalanuvchi biror sinfning `curator`i bo'ls
 - **Yangi model yo'q.** Asosiy rol — `User.role`; qo'shimcha rollar — `User.groups` (guruh nomi = rol kodi);
   foydalanuvchiga individual ruxsat — `User.user_permissions`. Bir foydalanuvchida bir nechta rol bo'lishi mumkin
   (masalan `TEACHER + CLASS_TEACHER`, `TEACHER + PARENT`) — ruxsatlar birlashtiriladi (union).
-- `common/rbac.py` — 83 ta standart permission (`view_own_grades`, `create_grade`, `manage_users`, ...) va
+- `common/rbac.py` — 84 ta standart permission (`view_own_grades`, `create_grade`, `manage_users`, ...) va
   `ROLE_PERMISSIONS` (rol → default permissionlar).
 - `common/access.py` — permission *turini* beradi, scope esa *qaysi obyektlarga* ekanini belgilaydi
   (o'zining / farzandi / biriktirilgan / sinf / maktab / global). Boshqa birovning obyekti → `403`,

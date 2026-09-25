@@ -9,6 +9,7 @@ class ChatRoom(TimeStampedModel):
         PRIVATE = "PRIVATE", "Private chat"
         TEACHER_STUDENT = "TEACHER_STUDENT", "Teacher-student chat"
         PARENT_TEACHER = "PARENT_TEACHER", "Parent-teacher chat"
+        STAFF_GENERAL = "STAFF_GENERAL", "Staff general chat"
 
     room_type = models.CharField(max_length=20, choices=RoomType.choices)
     name = models.CharField(max_length=255, blank=True)

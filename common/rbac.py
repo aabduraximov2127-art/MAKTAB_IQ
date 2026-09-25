@@ -113,6 +113,7 @@ UPDATE_ATTENDANCE = "update_attendance"
 MANAGE_QUIZZES = "manage_quizzes"
 MANAGE_LIBRARY = "manage_library"
 CREATE_CHAT_ROOMS = "create_chat_rooms"
+USE_STAFF_CHAT = "use_staff_chat"
 TRANSFER_STUDENTS = "transfer_students"  # teachers only get it by explicit per-user grant
 
 # -- class teacher (curator): every one of these applies to the curated class(es) only --
@@ -215,6 +216,7 @@ _CATALOG_ROWS = [
     (MANAGE_QUIZZES, "teacher", "Testlarni boshqarish"),
     (MANAGE_LIBRARY, "teacher", "Kutubxona materiallarini boshqarish"),
     (CREATE_CHAT_ROOMS, "teacher", "Chat xonalari yaratish"),
+    (USE_STAFF_CHAT, "teacher", "Xodimlar (o'qituvchilar) umumiy chatidan foydalanish"),
     (TRANSFER_STUDENTS, "teacher", "O'quvchini boshqa sinfga o'tkazish"),
     # -- class teacher --
     (VIEW_CLASS_STUDENTS, "class_teacher", "O'z sinfi o'quvchilarini ko'rish"),
@@ -317,6 +319,7 @@ _TEACHER = _EVERYONE | {
     MANAGE_QUIZZES,
     MANAGE_LIBRARY,
     CREATE_CHAT_ROOMS,
+    USE_STAFF_CHAT,
 }
 
 _CLASS_TEACHER = {
