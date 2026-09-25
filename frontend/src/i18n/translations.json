@@ -1482,5 +1482,237 @@
  "Ovqat": {
   "ru": "Еда",
   "en": "Food"
+ },
+ "Direktor": {
+  "ru": "Директор",
+  "en": "Director"
+ },
+ "Direktor o'rinbosari": {
+  "ru": "Заместитель директора",
+  "en": "Deputy director"
+ },
+ "Sinf rahbari": {
+  "ru": "Классный руководитель",
+  "en": "Class teacher"
+ },
+ "Sinf boshqaruvi": {
+  "ru": "Управление классом",
+  "en": "Class management"
+ },
+ "O'quv jarayoni": {
+  "ru": "Учебный процесс",
+  "en": "Education management"
+ },
+ "Foydalanuvchilar va rollar": {
+  "ru": "Пользователи и роли",
+  "en": "Users & roles"
+ },
+ "Direktor paneli": {
+  "ru": "Панель директора",
+  "en": "Director dashboard"
+ },
+ "O'quv jarayoni paneli": {
+  "ru": "Панель учебного процесса",
+  "en": "Education dashboard"
+ },
+ "Siz sinf rahbarisiz": {
+  "ru": "Вы классный руководитель",
+  "en": "You are a class teacher"
+ },
+ "Farzandlarim baholari": {
+  "ru": "Оценки моих детей",
+  "en": "My children's grades"
+ },
+ "{name} sinfi — o'quvchilar, davomat va hisobot": {
+  "ru": "Класс {name} — ученики, посещаемость и отчёт",
+  "en": "Class {name} — students, attendance and report"
+ },
+ "{name} sinfiga e'lon": {
+  "ru": "Объявление для класса {name}",
+  "en": "Announcement for class {name}"
+ },
+ "Sinfga e'lon": {
+  "ru": "Объявление классу",
+  "en": "Class announcement"
+ },
+ "Sizga sinf rahbarligi biriktirilmagan": {
+  "ru": "Вам не назначено классное руководство",
+  "en": "You have no class assigned"
+ },
+ "O'quvchilar hisoboti": {
+  "ru": "Отчёт по ученикам",
+  "en": "Student report"
+ },
+ "Bugungi davomat": {
+  "ru": "Посещаемость сегодня",
+  "en": "Today's attendance"
+ },
+ "Bugun davomat hali belgilanmagan": {
+  "ru": "Посещаемость на сегодня ещё не отмечена",
+  "en": "Attendance has not been marked today"
+ },
+ "Sinf o'qituvchilari": {
+  "ru": "Учителя класса",
+  "en": "Class teachers"
+ },
+ "Maktab bo'yicha o'quv jarayonini nazorat qilish va dars jadvali": {
+  "ru": "Контроль учебного процесса по школе и расписание",
+  "en": "School-wide supervision of the education process and timetable"
+ },
+ "Hisobot uchun sinfni bosing": {
+  "ru": "Нажмите на класс для отчёта",
+  "en": "Click a class for its report"
+ },
+ "O'qituvchilar bugungi davomati": {
+  "ru": "Посещаемость учителей сегодня",
+  "en": "Teacher attendance today"
+ },
+ "Yangi dars": {
+  "ru": "Новый урок",
+  "en": "New lesson"
+ },
+ "Dars qo'shildi": {
+  "ru": "Урок добавлен",
+  "en": "Lesson added"
+ },
+ "Dars o'chirildi": {
+  "ru": "Урок удалён",
+  "en": "Lesson deleted"
+ },
+ "O'chirish": {
+  "ru": "Удалить",
+  "en": "Delete"
+ },
+ "Xona": {
+  "ru": "Кабинет",
+  "en": "Room"
+ },
+ "Boshlanishi": {
+  "ru": "Начало",
+  "en": "Start"
+ },
+ "Tugashi": {
+  "ru": "Конец",
+  "en": "End"
+ },
+ "{n} o'quvchi": {
+  "ru": "Учеников: {n}",
+  "en": "{n} students"
+ },
+ "Rollar berish, ruxsatlarni boshqarish va hisoblarni faollashtirish": {
+  "ru": "Выдача ролей, управление разрешениями и активация аккаунтов",
+  "en": "Grant roles, manage permissions and activate accounts"
+ },
+ "Ism yoki login bo'yicha qidirish...": {
+  "ru": "Поиск по имени или логину...",
+  "en": "Search by name or username..."
+ },
+ "Barcha rollar": {
+  "ru": "Все роли",
+  "en": "All roles"
+ },
+ "Foydalanuvchi": {
+  "ru": "Пользователь",
+  "en": "User"
+ },
+ "Foydalanuvchi topilmadi": {
+  "ru": "Пользователь не найден",
+  "en": "User not found"
+ },
+ "Rollar": {
+  "ru": "Роли",
+  "en": "Roles"
+ },
+ "Alohida ruxsatlar": {
+  "ru": "Индивидуальные разрешения",
+  "en": "Individual permissions"
+ },
+ "Amaldagi ruxsatlar": {
+  "ru": "Действующие разрешения",
+  "en": "Effective permissions"
+ },
+ "Asosiy rol": {
+  "ru": "Основная роль",
+  "en": "Primary role"
+ },
+ "Qo'shimcha rollar": {
+  "ru": "Дополнительные роли",
+  "en": "Extra roles"
+ },
+ "Belgilash": {
+  "ru": "Назначить",
+  "en": "Set"
+ },
+ "Berish": {
+  "ru": "Выдать",
+  "en": "Grant"
+ },
+ "Olib tashlash": {
+  "ru": "Убрать",
+  "en": "Remove"
+ },
+ "Rol tanlang...": {
+  "ru": "Выберите роль...",
+  "en": "Select a role..."
+ },
+ "Ruxsat tanlang...": {
+  "ru": "Выберите разрешение...",
+  "en": "Select a permission..."
+ },
+ "Rol saqlandi": {
+  "ru": "Роль сохранена",
+  "en": "Role saved"
+ },
+ "Rol olib tashlandi": {
+  "ru": "Роль убрана",
+  "en": "Role removed"
+ },
+ "Ruxsat berildi": {
+  "ru": "Разрешение выдано",
+  "en": "Permission granted"
+ },
+ "Ruxsat olib tashlandi": {
+  "ru": "Разрешение убрано",
+  "en": "Permission removed"
+ },
+ "Hisobni faolsizlantirish": {
+  "ru": "Деактивировать аккаунт",
+  "en": "Deactivate account"
+ },
+ "Hisobni faollashtirish": {
+  "ru": "Активировать аккаунт",
+  "en": "Activate account"
+ },
+ "Hisob faolsizlantirildi": {
+  "ru": "Аккаунт деактивирован",
+  "en": "Account deactivated"
+ },
+ "Hisob faollashtirildi": {
+  "ru": "Аккаунт активирован",
+  "en": "Account activated"
+ },
+ "O'z rolingiz va ruxsatlaringizni o'zgartira olmaysiz.": {
+  "ru": "Вы не можете менять свои роли и разрешения.",
+  "en": "You cannot change your own roles and permissions."
+ },
+ "Rol ruxsatlariga qo'shimcha ravishda faqat shu foydalanuvchiga beriladi.": {
+  "ru": "Выдаётся только этому пользователю сверх разрешений роли.",
+  "en": "Granted to this user only, on top of the role's permissions."
+ },
+ "Sinfga rahbar sifatida biriktirilganda avtomatik hosil bo'ladi": {
+  "ru": "Возникает автоматически при назначении классным руководителем",
+  "en": "Created automatically when assigned as a class curator"
+ },
+ "Shaxsiy ma'lumotlar": {
+  "ru": "Личные данные",
+  "en": "Personal data"
+ },
+ "Farzand": {
+  "ru": "Ребёнок",
+  "en": "Child"
+ },
+ "Maktab bo'yicha": {
+  "ru": "По школе",
+  "en": "School-wide"
  }
 }
