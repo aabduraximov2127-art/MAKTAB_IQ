@@ -1,9 +1,10 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { useAuthStore } from "../store/auth"
 import { t } from "../i18n"
+import { API_BASE } from "./urls"
 
 export const api = axios.create({
-  baseURL: "/api/v1",
+  baseURL: API_BASE,
 })
 
 api.interceptors.request.use((config) => {
@@ -20,7 +21,7 @@ async function refreshAccessToken(): Promise<string | null> {
   const refresh = useAuthStore.getState().refreshToken
   if (!refresh) return null
   try {
-    const { data } = await axios.post("/api/v1/auth/refresh/", { refresh })
+    const { data } = await axios.post(`${API_BASE}/auth/refresh/`, { refresh })
     useAuthStore.getState().setTokens(data.access, refresh)
     return data.access as string
   } catch {

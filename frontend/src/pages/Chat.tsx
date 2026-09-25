@@ -14,6 +14,7 @@ import { Modal } from "../components/ui/Modal"
 import { Skeleton } from "../components/ui/Skeleton"
 import { cn } from "../lib/cn"
 import { formatRelative, fullName } from "../lib/format"
+import { wsUrl } from "../lib/urls"
 import type { ChatRoom, Message, Paginated, ParentProfile, StaffContact, StudentProfile } from "../types"
 import { t } from "../i18n"
 
@@ -472,8 +473,7 @@ function ChatThread({ room, onBack }: { room: ChatRoom; onBack: () => void }) {
 
     function connect() {
       if (cancelled) return
-      const protocol = window.location.protocol === "https:" ? "wss" : "ws"
-      socket = new WebSocket(`${protocol}://${window.location.host}/ws/chat/${room.id}/?token=${accessToken}`)
+      socket = new WebSocket(wsUrl(`/ws/chat/${room.id}/?token=${accessToken}`))
       socket.onopen = () => {
         retryDelay = 1000
         setConnected(true)

@@ -4,6 +4,7 @@ import { useAuthStore } from "../store/auth"
 import { useNotificationStore } from "../store/notifications"
 import type { Notification } from "../types"
 import { NOTIFICATION_ICON_LABEL } from "../lib/format"
+import { wsUrl } from "../lib/urls"
 
 export function useNotificationSocket() {
   const accessToken = useAuthStore((s) => s.accessToken)
@@ -18,8 +19,7 @@ export function useNotificationSocket() {
 
     function connect() {
       if (cancelled) return
-      const protocol = window.location.protocol === "https:" ? "wss" : "ws"
-      const socket = new WebSocket(`${protocol}://${window.location.host}/ws/notifications/?token=${accessToken}`)
+      const socket = new WebSocket(wsUrl(`/ws/notifications/?token=${accessToken}`))
       socketRef.current = socket
 
       socket.onmessage = (event) => {
