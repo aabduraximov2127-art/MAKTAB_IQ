@@ -1,7 +1,12 @@
 import { useState } from "react"
-import { Search } from "lucide-react"
+import { Pencil, Plus, Search, Trash2 } from "lucide-react"
+import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
+import { api, getErrorMessage } from "../lib/api"
 import { useAccess } from "../lib/access"
+import { Button } from "../components/ui/Button"
+import { ConfirmButton } from "../components/ui/ConfirmButton"
+import { TeacherFormModal } from "../components/teachers/TeacherFormModal"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Input } from "../components/ui/Input"
 import { Select } from "../components/ui/Select"
@@ -26,7 +31,9 @@ function isoFromToday(days = 0) {
 }
 
 export default function TeachersPage() {
-  const { hasRole } = useAccess()
+  const { hasRole, can } = useAccess()
+  const canManage = can("manage_teachers") // add / edit / delete teachers
+  const [formTeacher, setFormTeacher] = useState<TeacherProfile | "new" | null>(null)
   // The director can pick any teacher from a list and see how they work: subjects, the coming
   // week's lessons and the last month's attendance.
   const isDirector = hasRole("DIRECTOR")
@@ -38,7 +45,18 @@ export default function TeachersPage() {
   const query = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE) })
   if (search) query.set("search", search)
 
-  const { data, loading } = useFetch<Paginated<TeacherProfile>>(`/teachers/?${query.toString()}`, [page, search])
+  const { data, loading, refetch } = useFetch<Paginated<TeacherProfile>>(`/teachers/?${query.toString()}`, [page, search])
+
+  async function removeTeacher(teacher: TeacherProfile) {
+    try {
+      await api.delete(`/teachers/${teacher.id}/`)
+      toast.success(t("O'qituvchi o'chirildi"))
+      setSelected(null)
+      refetch()
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    }
+  }
 
   const columns: Column<TeacherProfile>[] = [
     {
@@ -65,7 +83,17 @@ export default function TeachersPage() {
 
   return (
     <div>
-      <PageHeader title={t("O'qituvchilar")} description={t("Maktabdagi barcha o'qituvchilar ro'yxati")} />
+      <PageHeader
+        title={t("O'qituvchilar")}
+        description={t("Maktabdagi barcha o'qituvchilar ro'yxati")}
+        actions={
+          canManage && (
+            <Button onClick={() => setFormTeacher("new")}>
+              <Plus className="h-4 w-4" /> {t("Yangi o'qituvchi")}
+            </Button>
+          )
+        }
+      />
 
       {isDirector && (
         <div className="mb-4 max-w-xs">
@@ -117,9 +145,34 @@ export default function TeachersPage() {
             <DetailRow label={t("Telefon")} value={selected.user.phone || "—"} />
             <DetailRow label={t("Email")} value={selected.user.email || "—"} />
             {isDirector && <TeacherWork teacher={selected} />}
+            {canManage && (
+              <div className="space-y-2 border-t border-ink-100 pt-4 dark:border-ink-800">
+                <Button variant="outline" className="w-full" onClick={() => setFormTeacher(selected)}>
+                  <Pencil className="h-4 w-4" /> {t("Tahrirlash")}
+                </Button>
+                <ConfirmButton
+                  className="w-full"
+                  label={t("O'qituvchini o'chirish")}
+                  confirmLabel={t("Ishonchingiz komilmi? Hisob butunlay o'chadi")}
+                  icon={<Trash2 className="h-4 w-4" />}
+                  onConfirm={() => removeTeacher(selected)}
+                />
+              </div>
+            )}
           </div>
         )}
       </Drawer>
+
+      <TeacherFormModal
+        open={formTeacher !== null}
+        teacher={formTeacher === "new" ? null : formTeacher}
+        onClose={() => setFormTeacher(null)}
+        onDone={() => {
+          setFormTeacher(null)
+          setSelected(null)
+          refetch()
+        }}
+      />
     </div>
   )
 }

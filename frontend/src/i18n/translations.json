@@ -2050,5 +2050,81 @@
  "Barcha maktablar": {
   "ru": "Все школы",
   "en": "All schools"
+ },
+ "Avtomatik": {
+  "ru": "Автоматически",
+  "en": "Automatic"
+ },
+ "Fan o'chirildi": {
+  "ru": "Предмет удалён",
+  "en": "Subject deleted"
+ },
+ "Fan yangilandi": {
+  "ru": "Предмет обновлён",
+  "en": "Subject updated"
+ },
+ "Fanni o'chirish": {
+  "ru": "Удалить предмет",
+  "en": "Delete subject"
+ },
+ "Ishonchingiz komilmi? Darslar va davomat ham o'chadi": {
+  "ru": "Вы уверены? Уроки и посещаемость тоже удалятся",
+  "en": "Are you sure? Lessons and attendance go too"
+ },
+ "O'qituvchi kodi": {
+  "ru": "Код учителя",
+  "en": "Teacher code"
+ },
+ "O'qituvchi o'chirildi": {
+  "ru": "Учитель удалён",
+  "en": "Teacher deleted"
+ },
+ "O'qituvchi qo'shildi": {
+  "ru": "Учитель добавлен",
+  "en": "Teacher added"
+ },
+ "O'qituvchi yangilandi": {
+  "ru": "Учитель обновлён",
+  "en": "Teacher updated"
+ },
+ "O'qituvchini o'chirish": {
+  "ru": "Удалить учителя",
+  "en": "Delete teacher"
+ },
+ "O'qituvchini tahrirlash": {
+  "ru": "Редактирование учителя",
+  "en": "Edit teacher"
+ },
+ "O'quvchi o'chirildi": {
+  "ru": "Ученик удалён",
+  "en": "Student deleted"
+ },
+ "O'quvchini o'chirish": {
+  "ru": "Удалить ученика",
+  "en": "Delete student"
+ },
+ "Sinf o'chirildi": {
+  "ru": "Класс удалён",
+  "en": "Class deleted"
+ },
+ "Sinf yangilandi": {
+  "ru": "Класс обновлён",
+  "en": "Class updated"
+ },
+ "Sinfni o'chirish": {
+  "ru": "Удалить класс",
+  "en": "Delete class"
+ },
+ "Tahrirlash": {
+  "ru": "Редактировать",
+  "en": "Edit"
+ },
+ "Tajriba (yil)": {
+  "ru": "Стаж (лет)",
+  "en": "Experience (years)"
+ },
+ "Yangi o'qituvchi": {
+  "ru": "Новый учитель",
+  "en": "New teacher"
  }
 }

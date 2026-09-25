@@ -1,11 +1,12 @@
 import { type FormEvent, useState } from "react"
-import { ArrowRightLeft, Pencil, Plus, Search, UserRound, Users } from "lucide-react"
+import { ArrowRightLeft, Pencil, Plus, Search, Trash2, UserRound, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
 import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
+import { ConfirmButton } from "../components/ui/ConfirmButton"
 import { Field, Input } from "../components/ui/Input"
 import { Select } from "../components/ui/Select"
 import { PhoneInput, isPhoneComplete } from "../components/ui/PhoneInput"
@@ -50,6 +51,17 @@ export default function StudentsPage() {
     waitingForClass ? null : `/students/?${query.toString()}`,
     [page, search, picked.classRoom?.id]
   )
+
+  async function removeStudent(student: StudentProfile) {
+    try {
+      await api.delete(`/students/${student.id}/`)
+      toast.success(t("O'quvchi o'chirildi"))
+      setSelected(null)
+      refetch()
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    }
+  }
 
   const columns: Column<StudentProfile>[] = [
     {
@@ -160,6 +172,15 @@ export default function StudentsPage() {
                 </Button>
               )}
             </div>
+            {canManage && (
+              <ConfirmButton
+                className="w-full"
+                label={t("O'quvchini o'chirish")}
+                confirmLabel={t("Ishonchingiz komilmi? Hisob butunlay o'chadi")}
+                icon={<Trash2 className="h-4 w-4" />}
+                onConfirm={() => removeStudent(selected)}
+              />
+            )}
           </div>
         )}
       </Drawer>

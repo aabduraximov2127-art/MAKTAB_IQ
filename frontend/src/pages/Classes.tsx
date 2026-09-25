@@ -1,12 +1,13 @@
-import { type FormEvent, useState } from "react"
+import { type FormEvent, useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Plus, School, Users } from "lucide-react"
+import { Plus, School, Trash2, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
 import { useAccess } from "../lib/access"
 import { PageHeader } from "../components/ui/PageHeader"
 import { Button } from "../components/ui/Button"
+import { ConfirmButton } from "../components/ui/ConfirmButton"
 import { Card, CardContent } from "../components/ui/Card"
 import { Field, Input } from "../components/ui/Input"
 import { Select } from "../components/ui/Select"
@@ -16,7 +17,7 @@ import { EmptyState } from "../components/ui/EmptyState"
 import { CardSkeleton } from "../components/ui/Skeleton"
 import { Avatar } from "../components/ui/Avatar"
 import { fullName } from "../lib/format"
-import type { AcademicYear, ClassRoom, Paginated, School as SchoolType, StudentProfile } from "../types"
+import type { AcademicYear, ClassRoom, Paginated, School as SchoolType, StudentProfile, TeacherProfile } from "../types"
 import { t } from "../i18n"
 
 export default function ClassesPage() {
@@ -84,13 +85,31 @@ export default function ClassesPage() {
         </div>
       )}
 
-      <ClassDetailDrawer classRoom={selected} onClose={() => setSelected(null)} />
+      <ClassDetailDrawer
+        classRoom={selected}
+        canManage={isAdmin}
+        onClose={() => setSelected(null)}
+        onChanged={() => {
+          setSelected(null)
+          refetch()
+        }}
+      />
       <AddClassModal open={addOpen} onClose={() => setAddOpen(false)} onDone={() => { setAddOpen(false); refetch() }} />
     </div>
   )
 }
 
-function ClassDetailDrawer({ classRoom, onClose }: { classRoom: ClassRoom | null; onClose: () => void }) {
+function ClassDetailDrawer({
+  classRoom,
+  canManage,
+  onClose,
+  onChanged,
+}: {
+  classRoom: ClassRoom | null
+  canManage: boolean
+  onClose: () => void
+  onChanged: () => void
+}) {
   const { data: students, loading } = useFetch<Paginated<StudentProfile>>(
     classRoom ? `/students/?class_room=${classRoom.id}&page_size=100` : null
   )
@@ -104,9 +123,13 @@ function ClassDetailDrawer({ classRoom, onClose }: { classRoom: ClassRoom | null
           ))}
         </div>
       ) : !students || students.results.length === 0 ? (
-        <EmptyState title={t("O'quvchi yo'q")} />
+        <>
+          {canManage && classRoom && <EditClassForm classRoom={classRoom} onChanged={onChanged} />}
+          <EmptyState title={t("O'quvchi yo'q")} />
+        </>
       ) : (
         <div className="space-y-2">
+          {canManage && classRoom && <EditClassForm classRoom={classRoom} onChanged={onChanged} />}
           {students.results.map((s) => (
             <div key={s.id} className="flex items-center gap-3 rounded-xl border border-ink-100 p-3 dark:border-ink-800">
               <Avatar name={fullName(s.user)} src={s.photo} size="sm" />
@@ -119,6 +142,78 @@ function ClassDetailDrawer({ classRoom, onClose }: { classRoom: ClassRoom | null
         </div>
       )}
     </Drawer>
+  )
+}
+
+/** Rename a class, change its grade, assign its curator (class teacher) or delete it. */
+function EditClassForm({ classRoom, onChanged }: { classRoom: ClassRoom; onChanged: () => void }) {
+  const { data: teachers } = useFetch<Paginated<TeacherProfile>>("/teachers/?page_size=100")
+  const [form, setForm] = useState({ name: classRoom.name, grade: String(classRoom.grade), curator: classRoom.curator ? String(classRoom.curator) : "" })
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    setForm({ name: classRoom.name, grade: String(classRoom.grade), curator: classRoom.curator ? String(classRoom.curator) : "" })
+  }, [classRoom])
+
+  async function save(e: FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await api.patch(`/classes/${classRoom.id}/`, { name: form.name, grade: Number(form.grade), curator: form.curator ? Number(form.curator) : null })
+      toast.success(t("Sinf yangilandi"))
+      onChanged()
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function remove() {
+    setLoading(true)
+    try {
+      await api.delete(`/classes/${classRoom.id}/`)
+      toast.success(t("Sinf o'chirildi"))
+      onChanged()
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={save} className="mb-5 space-y-3 rounded-2xl border border-ink-100 p-4 dark:border-ink-800">
+      <div className="grid grid-cols-2 gap-3">
+        <Field label={t("Nomi")}>
+          <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+        </Field>
+        <Field label={t("Sinf raqami")}>
+          <Input type="number" min={1} max={11} value={form.grade} onChange={(e) => setForm((f) => ({ ...f, grade: e.target.value }))} required />
+        </Field>
+      </div>
+      <Field label={t("Sinf rahbari")}>
+        <Select value={form.curator} onChange={(e) => setForm((f) => ({ ...f, curator: e.target.value }))}>
+          <option value="">{t("Biriktirilmagan")}</option>
+          {teachers?.results.map((tp) => (
+            <option key={tp.id} value={tp.id}>
+              {fullName(tp.user)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <Button type="submit" className="w-full" loading={loading}>
+        {t("Saqlash")}
+      </Button>
+      <ConfirmButton
+        className="w-full"
+        label={t("Sinfni o'chirish")}
+        confirmLabel={t("Ishonchingiz komilmi? Darslar va davomat ham o'chadi")}
+        icon={<Trash2 className="h-4 w-4" />}
+        disabled={loading}
+        onConfirm={remove}
+      />
+    </form>
   )
 }
 
