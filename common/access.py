@@ -31,6 +31,7 @@ from .rbac import (
     MANAGE_CLASS_ATTENDANCE,
     MANAGE_CLASS_HOMEWORK,
     MANAGE_CLASS_PARENTS,
+    MANAGE_ACADEMIC_RECORDS,
     MANAGE_CLASS_STUDENTS,
     MANAGE_STUDENTS,
     TRANSFER_STUDENTS,
@@ -497,13 +498,13 @@ def transfer_history_scope(user, qs):
 def can_grade(user, student, subject) -> bool:
     """May ``user`` put a grade for ``student`` in ``subject``?
 
-    * school-wide writers (admin): inside their own school;
+    * a school-wide writer (``manage_academic_records`` — admin): inside their own school;
     * a teacher: the student's class must be one they are assigned to (curator or a lesson
       there) **and** the subject one they teach (``TeacherProfile.subjects`` or a lesson).
     """
     if not rbac.has_perm(user, CREATE_GRADE):
         return False
-    if rbac.has_perm(user, VIEW_ALL_STUDENTS):
+    if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
         return same_school(user, student.school_id)
     return assigned_to_class(user, student.class_room) and teaches_subject(user, subject)
 
@@ -514,7 +515,7 @@ def can_mark_attendance(user, class_room) -> bool:
     if rbac.has_perm(user, MANAGE_CLASS_ATTENDANCE) and curates(user, class_room):
         return True
     if rbac.has_perm(user, rbac.MARK_ATTENDANCE):
-        if rbac.has_perm(user, VIEW_ALL_STUDENTS):
+        if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
             return same_school(user, class_room.school_id)
         return assigned_to_class(user, class_room)
     return False
@@ -526,7 +527,7 @@ def can_write_attendance(user, attendance) -> bool:
         return True
     if not rbac.has_perm(user, UPDATE_ATTENDANCE):
         return False
-    if rbac.has_perm(user, VIEW_ALL_ATTENDANCE):
+    if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
         return same_school(user, room.school_id)
     marked_by = attendance.marked_by
     return (marked_by is not None and marked_by.user_id == user.id) or curates(user, room)
@@ -539,7 +540,7 @@ def can_manage_lesson_homework(user, lesson) -> bool:
         return True
     if not rbac.has_perm(user, rbac.CREATE_HOMEWORK):
         return False
-    if rbac.has_perm(user, VIEW_ALL_HOMEWORK):
+    if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
         return same_school(user, lesson.class_room.school_id)
     return lesson.teacher.user_id == user.id
 

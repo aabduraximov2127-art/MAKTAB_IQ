@@ -2,6 +2,7 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from common import access, rbac
 from common.rbac import (
+    MANAGE_ACADEMIC_RECORDS,
     MANAGE_QUIZZES,
     VIEW_ALL_QUIZZES,
     VIEW_ASSIGNED_QUIZZES,
@@ -24,7 +25,7 @@ def can_write_quiz(user, quiz) -> bool:
     same school."""
     if not rbac.has_perm(user, MANAGE_QUIZZES):
         return False
-    if rbac.has_perm(user, VIEW_ALL_QUIZZES):
+    if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
         return access.same_school(user, quiz.class_room.school_id)
     return quiz.teacher.user_id == user.id
 

@@ -4,6 +4,7 @@ from common import access, rbac
 from common.rbac import (
     CREATE_GRADE,
     DELETE_GRADE,
+    MANAGE_ACADEMIC_RECORDS,
     UPDATE_GRADE,
     VIEW_ALL_GRADES,
     VIEW_ASSIGNED_GRADES,
@@ -47,7 +48,7 @@ class CanManageGrade(BasePermission):
             from .models import Grade
 
             return access.grades_scope(user, Grade.objects.filter(pk=obj.pk)).exists()
-        if rbac.has_perm(user, VIEW_ALL_GRADES):
+        if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
             # school-wide writer (admin): only inside their own school
             return access.same_school(user, obj.student.school_id)
         # a teacher only changes a grade they gave themselves

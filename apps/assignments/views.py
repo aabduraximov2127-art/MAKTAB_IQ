@@ -44,6 +44,15 @@ class AssignmentViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
 
         notify_homework_created.delay(assignment.id)
 
+    def perform_update(self, serializer):
+        lesson = serializer.validated_data.get("lesson", serializer.instance.lesson)
+        # moving homework to another lesson needs the same rights as creating it there
+        if lesson.pk != serializer.instance.lesson_id and not access.can_manage_lesson_homework(
+            self.request.user, lesson
+        ):
+            raise PermissionDenied("Uy vazifasini bu darsga ko'chirishga ruxsatingiz yo'q.")
+        serializer.save()
+
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, require(SUBMIT_HOMEWORK)])
     def submit(self, request, pk=None):
         assignment = get_object_or_404(Assignment, pk=pk)

@@ -10,7 +10,7 @@ from apps.subjects.models import Subject
 from apps.users.models import StudentProfile
 from common.audit import log_action
 from common import access, rbac
-from common.rbac import VIEW_ALL_GRADES
+from common.rbac import MANAGE_ACADEMIC_RECORDS
 from common.guards import ForbidOutOfScopeMixin, StudentParamGuardMixin
 
 from .models import Grade
@@ -63,7 +63,7 @@ class GradeViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.Model
         # A school-wide writer (admin) changing a grade they didn't originally set (e.g. a
         # teacher's entry) is a grade override — permission-gated to their own school
         # (CanManageGrade) and, like every grade change, audit-logged.
-        is_override = rbac.has_perm(requester, VIEW_ALL_GRADES) and instance.teacher_id != getattr(
+        is_override = rbac.has_perm(requester, MANAGE_ACADEMIC_RECORDS) and instance.teacher_id != getattr(
             getattr(requester, "teacher_profile", None), "id", None
         )
         grade = serializer.save()

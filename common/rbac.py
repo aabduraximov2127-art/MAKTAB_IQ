@@ -152,6 +152,7 @@ MANAGE_SCHEDULE = "manage_schedule"
 MANAGE_SCHOOL_SETTINGS = "manage_school_settings"
 SEND_ANNOUNCEMENTS = "send_announcements"
 MANAGE_HELPDESK = "manage_helpdesk"
+MANAGE_ACADEMIC_RECORDS = "manage_academic_records"  # school-wide grade/attendance/homework/quiz override (admin)
 MODERATE_CHAT = "moderate_chat"
 MARK_TEACHER_ATTENDANCE = "mark_teacher_attendance"
 
@@ -250,6 +251,7 @@ _CATALOG_ROWS = [
     (MANAGE_SCHOOL_SETTINGS, "management", "Maktab sozlamalarini boshqarish"),
     (SEND_ANNOUNCEMENTS, "management", "Butun maktabga e'lon yuborish"),
     (MANAGE_HELPDESK, "management", "Yordam murojaatlarini boshqarish"),
+    (MANAGE_ACADEMIC_RECORDS, "management", "Butun maktab bo'yicha baho, davomat, vazifa va testlarni boshqarish"),
     (MODERATE_CHAT, "management", "Chatlarni nazorat qilish"),
     (MARK_TEACHER_ATTENDANCE, "management", "O'qituvchilar ish davomatini belgilash"),
 ]
@@ -366,6 +368,7 @@ _ADMIN = (
         MANAGE_HELPDESK,
         MODERATE_CHAT,
         MARK_TEACHER_ATTENDANCE,
+        MANAGE_ACADEMIC_RECORDS,
         TRANSFER_STUDENTS,
         CREATE_CHAT_ROOMS,
         # inherited operational powers (school-scoped in access.py)

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from common import access, rbac
 from common.permissions import require
-from common.rbac import TAKE_QUIZ, VIEW_ALL_QUIZZES
+from common.rbac import MANAGE_ACADEMIC_RECORDS, TAKE_QUIZ
 from common.guards import ForbidOutOfScopeMixin, StudentParamGuardMixin
 
 from .models import Question, Quiz, QuizAttempt
@@ -39,7 +39,7 @@ class QuizViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
         class_room = serializer.validated_data["class_room"]
         subject = serializer.validated_data["subject"]
         # admin: own school; teacher: a class they are assigned to and a subject they teach
-        if rbac.has_perm(user, VIEW_ALL_QUIZZES):
+        if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
             allowed = access.same_school(user, class_room.school_id)
         else:
             allowed = access.assigned_to_class(user, class_room) and access.teaches_subject(user, subject)

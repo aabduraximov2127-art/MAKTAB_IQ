@@ -58,6 +58,16 @@ class AttendanceViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.
             notify_student_absence.delay(attendance.id)
 
     def perform_update(self, serializer):
+        instance = serializer.instance
+        class_room = serializer.validated_data.get("class_room", instance.class_room)
+        student = serializer.validated_data.get("student", instance.student)
+        # Re-pointing a record at another class/student is a new mark in disguise: the same
+        # rules as creation apply to the new target.
+        if class_room.pk != instance.class_room_id or student.pk != instance.student_id:
+            if not access.can_mark_attendance(self.request.user, class_room):
+                raise PermissionDenied("Bu sinf davomatini belgilashga ruxsatingiz yo'q.")
+            if student.class_room_id != class_room.id:
+                raise PermissionDenied("Bu o'quvchi ko'rsatilgan sinfda o'qimaydi.")
         attendance = serializer.save()
         log_action(
             self.request.user,

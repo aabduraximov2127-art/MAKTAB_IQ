@@ -4,6 +4,7 @@ from common import access, rbac
 from common.rbac import (
     CREATE_HOMEWORK,
     DELETE_HOMEWORK,
+    MANAGE_ACADEMIC_RECORDS,
     MANAGE_CLASS_HOMEWORK,
     UPDATE_HOMEWORK,
     VIEW_ALL_HOMEWORK,
@@ -56,6 +57,6 @@ def can_write_assignment(user, assignment) -> bool:
     lesson = assignment.lesson
     if rbac.has_perm(user, MANAGE_CLASS_HOMEWORK) and access.curates(user, lesson.class_room):
         return True
-    if rbac.has_perm(user, VIEW_ALL_HOMEWORK):
+    if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
         return access.same_school(user, lesson.class_room.school_id)
     return assignment.teacher.user_id == user.id
