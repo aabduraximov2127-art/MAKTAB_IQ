@@ -3,7 +3,8 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from common.permissions import IsStudent
+from common.permissions import require
+from common.rbac import USE_AI_ASSISTANT
 
 from .services import analyze_weak_topics, ask_ai_assistant
 
@@ -20,7 +21,7 @@ class WeakTopicSerializer(serializers.Serializer):
 
 
 class AIAskView(APIView):
-    permission_classes = [IsStudent]
+    permission_classes = [require(USE_AI_ASSISTANT)]
     serializer_class = AskSerializer
 
     def post(self, request):
@@ -40,7 +41,7 @@ class AIAskView(APIView):
 
 
 class WeakTopicsView(APIView):
-    permission_classes = [IsStudent]
+    permission_classes = [require(USE_AI_ASSISTANT)]
     serializer_class = WeakTopicSerializer
 
     def get(self, request):

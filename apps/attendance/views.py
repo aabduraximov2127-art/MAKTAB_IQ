@@ -8,7 +8,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from common.audit import log_action
-from common.permissions import user_role
+from common import access
+from common.guards import ForbidOutOfScopeMixin, StudentParamGuardMixin
 
 from .models import Attendance, AttendanceStatus, TeacherAttendance
 from .permissions import CanAccessTeacherAttendance, CanManageAttendance, CanSubmitParentReason
@@ -24,7 +25,7 @@ class AttendanceFilterSet(django_filters.FilterSet):
         fields = ["student", "class_room", "subject", "date", "status"]
 
 
-class AttendanceViewSet(viewsets.ModelViewSet):
+class AttendanceViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = AttendanceSerializer
     permission_classes = [CanManageAttendance]
     filterset_class = AttendanceFilterSet
@@ -32,24 +33,16 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Attendance.objects.select_related("student__user", "class_room", "subject")
-        role = user_role(self.request.user)
-        user = self.request.user
-
-        if role == "ADMIN":
-            return qs.filter(class_room__school=user.school)
-        if role == "TEACHER":
-            return (qs.filter(marked_by__user=user) | qs.filter(class_room__curator__user=user)).distinct()
-        if role == "STUDENT":
-            return qs.filter(student__user=user)
-        if role == "PARENT":
-            return qs.filter(student__parent_links__parent__user=user)
-        return qs.none()
+        return access.attendance_scope(self.request.user, qs)
 
     def perform_create(self, serializer):
-        if user_role(self.request.user) == "ADMIN":
-            class_room = serializer.validated_data.get("class_room")
-            if class_room is not None and class_room.school_id != self.request.user.school_id:
-                raise PermissionDenied("Boshqa maktabning davomatini boshqara olmaysiz.")
+        class_room = serializer.validated_data.get("class_room")
+        student = serializer.validated_data.get("student")
+        # admin: own school; teacher: a class they are assigned to; class teacher: own class.
+        if class_room is None or not access.can_mark_attendance(self.request.user, class_room):
+            raise PermissionDenied("Bu sinf davomatini belgilashga ruxsatingiz yo'q.")
+        if student is not None and student.class_room_id != class_room.id:
+            raise PermissionDenied("Bu o'quvchi ko'rsatilgan sinfda o'qimaydi.")
         teacher_profile = getattr(self.request.user, "teacher_profile", None)
         attendance = serializer.save(marked_by=teacher_profile)
         log_action(
@@ -106,19 +99,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return Response(AttendanceSerializer(attendance).data)
 
 
-class TeacherAttendanceViewSet(viewsets.ModelViewSet):
+class TeacherAttendanceViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = TeacherAttendanceSerializer
     permission_classes = [CanAccessTeacherAttendance]
     filterset_fields = ["teacher", "date", "status"]
 
     def get_queryset(self):
         qs = TeacherAttendance.objects.select_related("teacher__user")
-        role = user_role(self.request.user)
-        if role == "ADMIN":
-            return qs.filter(teacher__school=self.request.user.school)
-        if role == "TEACHER":
-            return qs.filter(teacher__user=self.request.user)
-        return qs.none()
+        return access.teacher_attendance_scope(self.request.user, qs)
 
     def _notify_if_absent(self, attendance):
         if attendance.status == AttendanceStatus.ABSENT:
@@ -127,10 +115,9 @@ class TeacherAttendanceViewSet(viewsets.ModelViewSet):
             notify_teacher_absence.delay(attendance.id)
 
     def perform_create(self, serializer):
-        if user_role(self.request.user) == "ADMIN":
-            teacher = serializer.validated_data.get("teacher")
-            if teacher is not None and teacher.school_id != self.request.user.school_id:
-                raise PermissionDenied("Boshqa maktab o'qituvchisining davomatini boshqara olmaysiz.")
+        teacher = serializer.validated_data.get("teacher")
+        if teacher is not None and not access.same_school_or_unassigned(self.request.user, teacher.school_id):
+            raise PermissionDenied("Boshqa maktab o'qituvchisining davomatini boshqara olmaysiz.")
         attendance = serializer.save()
         log_action(
             self.request.user,

@@ -1,20 +1,18 @@
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from common import access, rbac
 from common.audit import log_action
-from common.permissions import IsStudent, user_role
-
-
-def _same_school_or_denied(request, view, school_id):
-    role = user_role(request.user)
-    if role == "ADMIN" and (not request.user.school_id or request.user.school_id != school_id):
-        view.permission_denied(request)
+from common.permissions import require
+from common.rbac import GRADE_SUBMISSIONS, MANAGE_CLASS_HOMEWORK, SUBMIT_HOMEWORK, VIEW_ALL_HOMEWORK
+from common.guards import ForbidOutOfScopeMixin, StudentParamGuardMixin
 
 from .models import Assignment, AssignmentSubmission
-from .permissions import CanManageAssignment
+from .permissions import CanManageAssignment, can_write_assignment
 from .serializers import (
     AssignmentSerializer,
     AssignmentSubmissionSerializer,
@@ -22,28 +20,23 @@ from .serializers import (
 )
 
 
-class AssignmentViewSet(viewsets.ModelViewSet):
+class AssignmentViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = AssignmentSerializer
     permission_classes = [CanManageAssignment]
     filterset_fields = ["lesson", "teacher"]
 
     def get_queryset(self):
         qs = Assignment.objects.select_related("lesson__class_room", "teacher__user")
-        role = user_role(self.request.user)
-        user = self.request.user
-
-        if role == "ADMIN":
-            return qs.filter(lesson__class_room__school=user.school)
-        if role == "TEACHER":
-            return qs.filter(teacher__user=user)
-        if role == "STUDENT":
-            return qs.filter(lesson__class_room__students__user=user)
-        if role == "PARENT":
-            return qs.filter(lesson__class_room__students__parent_links__parent__user=user)
-        return qs.none()
+        return access.assignments_scope(self.request.user, qs)
 
     def perform_create(self, serializer):
-        teacher_profile = getattr(self.request.user, "teacher_profile", None)
+        lesson = serializer.validated_data["lesson"]
+        # Homework hangs off a lesson: only that lesson's teacher, the class teacher of its
+        # class, or an admin of the same school may add it.
+        if not access.can_manage_lesson_homework(self.request.user, lesson):
+            raise PermissionDenied("Bu dars uchun uy vazifasi yaratishga ruxsatingiz yo'q.")
+        # An admin has no teacher profile: the homework is recorded under the lesson's teacher.
+        teacher_profile = getattr(self.request.user, "teacher_profile", None) or lesson.teacher
         assignment = serializer.save(teacher=teacher_profile)
         log_action(self.request.user, "HOMEWORK_CREATED", target=assignment.title, request=self.request)
 
@@ -51,7 +44,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
 
         notify_homework_created.delay(assignment.id)
 
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, IsStudent])
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, require(SUBMIT_HOMEWORK)])
     def submit(self, request, pk=None):
         assignment = get_object_or_404(Assignment, pk=pk)
         student_profile = getattr(request.user, "student_profile", None)
@@ -59,6 +52,9 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             return Response(
                 {"success": False, "message": "Student profile topilmadi", "errors": {}}, status=400
             )
+        # a student may only hand in homework given to their own class
+        if student_profile.class_room_id != assignment.lesson.class_room_id:
+            self.permission_denied(request)
 
         is_late = timezone.now() > assignment.deadline
         submission, _created = AssignmentSubmission.objects.update_or_create(
@@ -73,33 +69,25 @@ class AssignmentViewSet(viewsets.ModelViewSet):
         return Response(AssignmentSubmissionSerializer(submission).data, status=status.HTTP_201_CREATED)
 
 
-class AssignmentSubmissionViewSet(viewsets.ReadOnlyModelViewSet):
+class AssignmentSubmissionViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = AssignmentSubmissionSerializer
     permission_classes = [CanManageAssignment]
     filterset_fields = ["assignment", "student", "status"]
 
     def get_queryset(self):
         qs = AssignmentSubmission.objects.select_related("assignment__teacher__user", "student__user")
-        role = user_role(self.request.user)
-        user = self.request.user
+        return access.submissions_scope(self.request.user, qs)
 
-        if role == "ADMIN":
-            return qs.filter(assignment__lesson__class_room__school=user.school)
-        if role == "TEACHER":
-            return qs.filter(assignment__teacher__user=user)
-        if role == "STUDENT":
-            return qs.filter(student__user=user)
-        if role == "PARENT":
-            return qs.filter(student__parent_links__parent__user=user)
-        return qs.none()
-
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, require(GRADE_SUBMISSIONS, MANAGE_CLASS_HOMEWORK)],
+    )
     def grade(self, request, pk=None):
         submission = get_object_or_404(AssignmentSubmission, pk=pk)
-        role = user_role(request.user)
-        if role == "ADMIN":
-            _same_school_or_denied(request, self, submission.assignment.lesson.class_room.school_id)
-        elif submission.assignment.teacher.user_id != request.user.id:
+        # same people who may edit the assignment: its teacher, the class teacher, or an
+        # admin of the same school
+        if not can_write_assignment(request.user, submission.assignment):
             self.permission_denied(request)
 
         serializer = SubmissionGradeSerializer(data=request.data)

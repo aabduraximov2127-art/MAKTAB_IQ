@@ -27,6 +27,11 @@ class GradePermissionTests(APITestCase):
             username="teacher1", password="Str0ngPass!23", role=User.Role.TEACHER
         )
         self.teacher = TeacherProfile.objects.create(user=self.teacher_user, teacher_id="T-0001")
+        # The teacher is assigned to this class (as its curator) and to this subject — grades
+        # may only be put inside one's own assignment (see common.access.can_grade).
+        self.class_a.curator = self.teacher
+        self.class_a.save(update_fields=["curator"])
+        self.teacher.subjects.add(self.subject)
 
         self.student1_user = User.objects.create_user(
             username="student1", password="Str0ngPass!23", role=User.Role.STUDENT
@@ -103,8 +108,8 @@ class GradePermissionTests(APITestCase):
         response = self.client.get(
             f"/api/v1/grades/annual/?student={self.student1.id}&academic_year={self.academic_year.id}"
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["results"], [])
+        # Asking for another student's grades is refused outright (403), not answered with [].
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_superadmin_can_view_but_not_create_grade(self):
         superadmin = User.objects.create_user(

@@ -39,11 +39,12 @@ class QuizSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "teacher", "created_at")
 
     def get_questions(self, obj):
-        from common.permissions import user_role
+        from common import rbac
 
         request = self.context.get("request")
-        role = user_role(request.user) if request else None
-        serializer_cls = QuestionSerializer if role in {"ADMIN", "SUPERADMIN", "TEACHER"} else QuestionPublicSerializer
+        # correct answers are only shown to people who manage or supervise quizzes
+        privileged = bool(request) and rbac.has_any_perm(request.user, rbac.MANAGE_QUIZZES, rbac.VIEW_ALL_QUIZZES)
+        serializer_cls = QuestionSerializer if privileged else QuestionPublicSerializer
         return serializer_cls(obj.questions.all(), many=True).data
 
 

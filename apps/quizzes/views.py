@@ -1,13 +1,17 @@
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, serializers as drf_serializers, viewsets
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from common.permissions import IsStudent, user_role
+from common import access, rbac
+from common.permissions import require
+from common.rbac import TAKE_QUIZ, VIEW_ALL_QUIZZES
+from common.guards import ForbidOutOfScopeMixin, StudentParamGuardMixin
 
 from .models import Question, Quiz, QuizAttempt
-from .permissions import CanAccessQuiz
+from .permissions import CanAccessQuiz, can_write_quiz
 from .serializers import (
     QuestionSerializer,
     QuizAttemptSerializer,
@@ -16,41 +20,45 @@ from .serializers import (
 )
 
 
-class QuizViewSet(viewsets.ModelViewSet):
+class QuizViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = QuizSerializer
     permission_classes = [CanAccessQuiz]
     filterset_fields = ["subject", "class_room", "teacher"]
 
     def get_queryset(self):
         qs = Quiz.objects.select_related("subject", "class_room", "teacher__user").prefetch_related("questions")
-        role = user_role(self.request.user)
-        user = self.request.user
-
-        if role == "ADMIN":
-            return qs
-        if role == "TEACHER":
-            return qs.filter(teacher__user=user)
-        if role == "STUDENT":
-            return qs.filter(class_room__students__user=user)
-        if role == "PARENT":
-            return qs.filter(class_room__students__parent_links__parent__user=user)
-        return qs.none()
+        return access.quizzes_scope(self.request.user, qs)
 
     def get_permissions(self):
         if self.action == "submit":
-            return [permissions.IsAuthenticated(), IsStudent()]
+            return [permissions.IsAuthenticated(), require(TAKE_QUIZ)()]
         return super().get_permissions()
 
     def perform_create(self, serializer):
-        teacher_profile = getattr(self.request.user, "teacher_profile", None)
+        user = self.request.user
+        class_room = serializer.validated_data["class_room"]
+        subject = serializer.validated_data["subject"]
+        # admin: own school; teacher: a class they are assigned to and a subject they teach
+        if rbac.has_perm(user, VIEW_ALL_QUIZZES):
+            allowed = access.same_school(user, class_room.school_id)
+        else:
+            allowed = access.assigned_to_class(user, class_room) and access.teaches_subject(user, subject)
+        if not allowed:
+            raise PermissionDenied("Bu sinf va fan uchun test yaratishga ruxsatingiz yo'q.")
+        teacher_profile = getattr(user, "teacher_profile", None)
+        if teacher_profile is None:
+            raise drf_serializers.ValidationError({"teacher": "Test yaratish uchun o'qituvchi profili kerak."})
         serializer.save(teacher=teacher_profile)
 
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, IsStudent])
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, require(TAKE_QUIZ)])
     def submit(self, request, pk=None):
         quiz = get_object_or_404(Quiz, pk=pk)
         student_profile = getattr(request.user, "student_profile", None)
         if student_profile is None:
             return Response({"success": False, "message": "Student profile topilmadi", "errors": {}}, status=400)
+        # a student may only take quizzes set for their own class
+        if student_profile.class_room_id != quiz.class_room_id:
+            self.permission_denied(request)
 
         serializer = QuizAttemptSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -77,29 +85,28 @@ class QuizViewSet(viewsets.ModelViewSet):
         return Response(QuizAttemptSerializer(attempt).data, status=201)
 
 
-class QuestionViewSet(viewsets.ModelViewSet):
+class QuestionViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     queryset = Question.objects.select_related("quiz")
     serializer_class = QuestionSerializer
     permission_classes = [CanAccessQuiz]
     filterset_fields = ["quiz"]
 
+    def get_queryset(self):
+        visible = access.quizzes_scope(self.request.user, Quiz.objects.all())
+        return super().get_queryset().filter(quiz__in=visible)
 
-class QuizAttemptViewSet(viewsets.ReadOnlyModelViewSet):
+    def perform_create(self, serializer):
+        quiz = serializer.validated_data["quiz"]
+        if not can_write_quiz(self.request.user, quiz):
+            raise PermissionDenied("Bu testga savol qo'shishga ruxsatingiz yo'q.")
+        serializer.save()
+
+
+class QuizAttemptViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = QuizAttemptSerializer
     permission_classes = [CanAccessQuiz]
     filterset_fields = ["quiz", "student"]
 
     def get_queryset(self):
         qs = QuizAttempt.objects.select_related("quiz", "student__user")
-        role = user_role(self.request.user)
-        user = self.request.user
-
-        if role == "ADMIN":
-            return qs
-        if role == "TEACHER":
-            return qs.filter(quiz__teacher__user=user)
-        if role == "STUDENT":
-            return qs.filter(student__user=user)
-        if role == "PARENT":
-            return qs.filter(student__parent_links__parent__user=user)
-        return qs.none()
+        return access.quiz_attempts_scope(self.request.user, qs)

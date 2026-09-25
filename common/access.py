@@ -130,6 +130,12 @@ def same_school(user, school_id) -> bool:
     return bool(user.school_id) and user.school_id == school_id
 
 
+def same_school_or_unassigned(user, school_id) -> bool:
+    """Like ``same_school`` but a school-less user may also act on school-less rows — the
+    equality semantics the teacher-attendance endpoints have always had."""
+    return rbac.is_global(user) or user.school_id == school_id
+
+
 # ---------------------------------------------------------------------------
 # The scoping engine
 # ---------------------------------------------------------------------------

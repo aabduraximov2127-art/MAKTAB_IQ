@@ -23,7 +23,7 @@ class HelpDeskTicketTests(APITestCase):
         ticket = HelpDeskTicket.objects.create(user=self.student1, title="T1", description="D1")
         self.client.force_authenticate(self.student2)
         response = self.client.get(f"/api/v1/helpdesk/{ticket.id}/")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_sees_all_tickets(self):
         HelpDeskTicket.objects.create(user=self.student1, title="T1", description="D1")

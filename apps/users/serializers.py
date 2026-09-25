@@ -4,7 +4,6 @@ from rest_framework import serializers
 from apps.classes.models import ClassRoom
 from apps.schools.models import School
 from common import rbac
-from common.permissions import user_role
 from common.validators import normalize_uz_phone
 
 from .models import (
@@ -173,8 +172,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         request = self.context.get("request")
         if request is not None:
-            role = user_role(request.user)
-            can_see_sensitive = role in {"ADMIN", "SUPERADMIN"} or request.user.has_perm(
+            can_see_sensitive = rbac.has_perm(request.user, rbac.VIEW_SENSITIVE_STUDENT_DATA) or request.user.has_perm(
                 "users.view_sensitive_student_data"
             )
             if not can_see_sensitive:
@@ -183,7 +181,8 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
 
 class StudentProfileUpdateSerializer(PhoneValidationMixin, serializers.ModelSerializer):
-    """Used for PATCH/PUT by ADMIN/SUPERADMIN/TEACHER/PARENT (see CanEditStudentProfile).
+    """Used for PATCH/PUT by student administrators, the class teacher, a linked parent (or the
+    student themself when ``update_own_profile`` was granted) — see CanEditStudentProfile.
     Deliberately excludes school/class_room/student_code/passport_number — class changes
     only ever happen through the `transfer` action, and identifiers stay admin-managed."""
 

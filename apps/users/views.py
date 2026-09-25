@@ -22,6 +22,7 @@ from common.rbac import (
     VIEW_CLASS_STUDENTS,
     VIEW_OWN_PROFILE,
 )
+from common.guards import ForbidOutOfScopeMixin
 
 from .models import (
     ParentProfile,
@@ -301,7 +302,7 @@ class TelegramWebAppLoginView(APIView):
         return Response({"access": str(refresh.access_token), "refresh": str(refresh)})
 
 
-class UserViewSet(UserAccessMixin, viewsets.ReadOnlyModelViewSet):
+class UserViewSet(ForbidOutOfScopeMixin, UserAccessMixin, viewsets.ReadOnlyModelViewSet):
     """Read-only user directory for user administrators (``manage_users``). Roles and
     permissions are changed through the dedicated actions in ``access_api.py`` — there is
     deliberately no PATCH/PUT that accepts a ``role`` field."""
@@ -393,7 +394,7 @@ class StudentViewSet(viewsets.ModelViewSet):
         return Response(StudentTransferHistorySerializer(history).data, status=status.HTTP_201_CREATED)
 
 
-class TeacherViewSet(viewsets.ModelViewSet):
+class TeacherViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     queryset = TeacherProfile.objects.select_related("user", "school").prefetch_related("subjects")
     serializer_class = TeacherProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -430,7 +431,7 @@ class TeacherViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(profile).data)
 
 
-class ParentViewSet(viewsets.ModelViewSet):
+class ParentViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     queryset = ParentProfile.objects.select_related("user")
     serializer_class = ParentProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -449,7 +450,7 @@ class ParentViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(profile).data)
 
 
-class StudentTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+class StudentTransferHistoryViewSet(ForbidOutOfScopeMixin, viewsets.ReadOnlyModelViewSet):
     """Class-transfer log. Staff only, and only for students the user may open."""
 
     serializer_class = StudentTransferHistorySerializer
@@ -461,7 +462,7 @@ class StudentTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         return access.transfer_history_scope(self.request.user, qs)
 
 
-class StudentDocumentViewSet(viewsets.ModelViewSet):
+class StudentDocumentViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = StudentDocumentSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ["student", "document_type"]
@@ -482,7 +483,7 @@ class StudentDocumentViewSet(viewsets.ModelViewSet):
         serializer.save(uploaded_by=self.request.user)
 
 
-class SchoolHealthRecordViewSet(viewsets.ModelViewSet):
+class SchoolHealthRecordViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = SchoolHealthRecordSerializer
     permission_classes = [CanViewSensitiveStudentData]
     filterset_fields = ["student"]

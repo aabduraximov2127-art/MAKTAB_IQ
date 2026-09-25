@@ -3,16 +3,18 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from common.permissions import user_role
+from common import access, rbac
+from common.rbac import CREATE_CHAT_ROOMS, CREATE_PRIVATE_CHAT, MODERATE_CHAT, VIEW_CLASSMATES
 from common.realtime import push_message_to_chat
+from common.guards import ForbidOutOfScopeMixin
 
 from .models import ChatMember, ChatRoom, Message
-from .permissions import CanCreateChatRoom, IsChatMember
+from .permissions import CanCreateChatRoom, CanUseChat, IsChatMember
 from .services import moderate_message
 from .serializers import ChatMemberSerializer, ChatRoomSerializer, MessageSerializer
 
 
-class ChatRoomViewSet(viewsets.ModelViewSet):
+class ChatRoomViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = ChatRoomSerializer
     permission_classes = [permissions.IsAuthenticated, CanCreateChatRoom]
 
@@ -23,20 +25,25 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         room = serializer.save()
         ChatMember.objects.get_or_create(chat_room=room, user=self.request.user)
 
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, CanUseChat])
     def add_member(self, request, pk=None):
         room = get_object_or_404(ChatRoom, pk=pk)
-        role = user_role(request.user)
+        user = request.user
         target_id = request.data.get("user")
+        is_member = room.members.filter(user=user).exists()
 
-        if role not in {"ADMIN", "SUPERADMIN", "TEACHER"}:
-            if role != "STUDENT" or not room.members.filter(user=request.user).exists():
+        if rbac.has_perm(user, MODERATE_CHAT):
+            pass  # admin / superadmin manage any room (existing behaviour)
+        elif rbac.has_perm(user, CREATE_CHAT_ROOMS):
+            # a teacher builds and manages rooms they are part of — not arbitrary ones
+            if not is_member:
+                self.permission_denied(request)
+        else:
+            if not rbac.has_perm(user, CREATE_PRIVATE_CHAT) or not is_member:
                 self.permission_denied(request)
             from apps.users.models import StudentProfile
 
-            class_room_id = getattr(
-                getattr(request.user, "student_profile", None), "class_room_id", None
-            )
+            class_room_id = access.own_class_id(user)
             is_classmate = bool(class_room_id) and StudentProfile.objects.filter(
                 user_id=target_id, class_room_id=class_room_id
             ).exists()
@@ -51,7 +58,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         """Get-or-create the student's own class group chat and make sure every
         current classmate is a member. STUDENT-only — everyone else's chat
         management is untouched."""
-        if user_role(request.user) != "STUDENT":
+        if not rbac.has_perm(request.user, VIEW_CLASSMATES):
             self.permission_denied(request)
 
         from apps.users.models import StudentProfile
@@ -78,24 +85,21 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         return Response(ChatRoomSerializer(room).data)
 
 
-class MessageViewSet(viewsets.ModelViewSet):
+class MessageViewSet(ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated, IsChatMember]
+    permission_classes = [permissions.IsAuthenticated, CanUseChat, IsChatMember]
     filterset_fields = ["chat_room"]
 
     def get_queryset(self):
-        role = user_role(self.request.user)
-        if role == "SUPERADMIN":
-            return Message.objects.select_related("sender", "chat_room")
-        if role == "ADMIN":
-            # Moderation view: messages in any chat that has at least one member
-            # from the Admin/Director's own school.
-            return Message.objects.filter(
-                chat_room__members__user__school=self.request.user.school
-            ).distinct().select_related("sender", "chat_room")
-        return Message.objects.filter(chat_room__members__user=self.request.user).select_related(
-            "sender", "chat_room"
-        )
+        user = self.request.user
+        base = Message.objects.select_related("sender", "chat_room")
+        if rbac.has_perm(user, MODERATE_CHAT):
+            if rbac.is_global(user):
+                return base
+            # Moderation view: messages in any chat that has at least one member from the
+            # admin's own school.
+            return base.filter(chat_room__members__user__school=user.school).distinct()
+        return base.filter(chat_room__members__user=user)
 
     def perform_create(self, serializer):
         chat_room = serializer.validated_data["chat_room"]

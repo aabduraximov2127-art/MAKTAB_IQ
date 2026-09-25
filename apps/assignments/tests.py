@@ -114,4 +114,5 @@ class AssignmentSubmissionTests(APITestCase):
         )
         self.client.force_authenticate(self.student_user)
         response = self.client.get(f"/api/v1/submissions/{other_submission.id}/")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        # Someone else's object: refused (403), not disguised as "not found".
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

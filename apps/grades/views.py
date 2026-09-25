@@ -9,14 +9,16 @@ from rest_framework.response import Response
 from apps.subjects.models import Subject
 from apps.users.models import StudentProfile
 from common.audit import log_action
-from common.permissions import user_role
+from common import access, rbac
+from common.rbac import VIEW_ALL_GRADES
+from common.guards import ForbidOutOfScopeMixin, StudentParamGuardMixin
 
 from .models import Grade
 from .permissions import CanManageGrade
 from .serializers import GradeSerializer
 
 
-class GradeViewSet(viewsets.ModelViewSet):
+class GradeViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.ModelViewSet):
     serializer_class = GradeSerializer
     permission_classes = [CanManageGrade]
     filterset_fields = ["student", "subject", "quarter", "academic_year", "grade_type"]
@@ -24,27 +26,16 @@ class GradeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Grade.objects.select_related("student__user", "subject", "teacher__user", "quarter")
-        role = user_role(self.request.user)
-        user = self.request.user
-
-        if role == "SUPERADMIN":
-            return qs
-        if role == "ADMIN":
-            return qs.filter(student__school=user.school)
-        if role == "TEACHER":
-            return qs.filter(teacher__user=user)
-        if role == "STUDENT":
-            return qs.filter(student__user=user)
-        if role == "PARENT":
-            return qs.filter(student__parent_links__parent__user=user)
-        return qs.none()
+        return access.grades_scope(self.request.user, qs)
 
     def perform_create(self, serializer):
         requester = self.request.user
-        if user_role(requester) == "ADMIN":
-            student = serializer.validated_data.get("student")
-            if student is not None and student.school_id != requester.school_id:
-                raise PermissionDenied("Boshqa maktab studentiga baho qo'ya olmaysiz.")
+        student = serializer.validated_data["student"]
+        subject = serializer.validated_data["subject"]
+        # admin: own school only. Teacher: the student's class must be one they teach or
+        # curate, and the subject one they are assigned to.
+        if not access.can_grade(requester, student, subject):
+            raise PermissionDenied("Bu o'quvchiga shu fandan baho qo'yishga ruxsatingiz yo'q.")
         teacher_profile = getattr(requester, "teacher_profile", None)
         grade = serializer.save(teacher=teacher_profile)
         log_action(
@@ -60,10 +51,19 @@ class GradeViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         requester = self.request.user
-        # An ADMIN changing a grade they didn't originally set (e.g. a teacher's
-        # entry) is a grade override — this is already permission-gated to ADMIN's
-        # own school (CanManageGrade) and, like every grade change, audit-logged.
-        is_override = user_role(requester) == "ADMIN" and serializer.instance.teacher_id != getattr(
+        instance = serializer.instance
+        # Re-pointing a grade at another student/subject is a new grade in disguise:
+        # apply the same rules as creation to the new target.
+        student = serializer.validated_data.get("student", instance.student)
+        subject = serializer.validated_data.get("subject", instance.subject)
+        if (student.pk != instance.student_id or subject.pk != instance.subject_id) and not access.can_grade(
+            requester, student, subject
+        ):
+            raise PermissionDenied("Bahoni boshqa o'quvchi yoki fanga o'tkaza olmaysiz.")
+        # A school-wide writer (admin) changing a grade they didn't originally set (e.g. a
+        # teacher's entry) is a grade override — permission-gated to their own school
+        # (CanManageGrade) and, like every grade change, audit-logged.
+        is_override = rbac.has_perm(requester, VIEW_ALL_GRADES) and instance.teacher_id != getattr(
             getattr(requester, "teacher_profile", None), "id", None
         )
         grade = serializer.save()
