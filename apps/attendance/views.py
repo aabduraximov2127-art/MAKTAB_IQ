@@ -59,6 +59,7 @@ class AttendanceViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.
 
     def perform_update(self, serializer):
         instance = serializer.instance
+        previous_status = instance.status
         class_room = serializer.validated_data.get("class_room", instance.class_room)
         student = serializer.validated_data.get("student", instance.student)
         # Re-pointing a record at another class/student is a new mark in disguise: the same
@@ -76,6 +77,11 @@ class AttendanceViewSet(StudentParamGuardMixin, ForbidOutOfScopeMixin, viewsets.
             description=f"{attendance.date}: {attendance.status}",
             request=self.request,
         )
+        # Marking a pupil absent by *correcting* an earlier mark must tell the parents too.
+        if attendance.status == AttendanceStatus.ABSENT and previous_status != AttendanceStatus.ABSENT:
+            from apps.notifications.tasks import notify_student_absence
+
+            notify_student_absence.delay(attendance.id)
 
     @action(detail=False, methods=["get"])
     def calendar(self, request):

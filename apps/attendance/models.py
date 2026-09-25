@@ -10,6 +10,16 @@ class AttendanceStatus(models.TextChoices):
     EXCUSED = "EXCUSED", "Excused"
 
 
+class AbsenceReason(models.TextChoices):
+    """Why a pupil was away — set by the class teacher when the status is EXCUSED
+    (ABSENT means "sababsiz": no valid reason)."""
+
+    SICK = "SICK", "Kasallik"
+    FAMILY = "FAMILY", "Oilaviy sabab"
+    COMPETITION = "COMPETITION", "Musobaqa / olimpiada"
+    OTHER = "OTHER", "Boshqa sabab"
+
+
 class Attendance(TimeStampedModel):
     student = models.ForeignKey("users.StudentProfile", on_delete=models.CASCADE, related_name="attendances")
     class_room = models.ForeignKey("classes.ClassRoom", on_delete=models.CASCADE, related_name="attendances")
@@ -24,6 +34,7 @@ class Attendance(TimeStampedModel):
     marked_by = models.ForeignKey(
         "users.TeacherProfile", on_delete=models.SET_NULL, null=True, related_name="marked_attendances"
     )
+    absence_reason = models.CharField(max_length=12, choices=AbsenceReason.choices, blank=True)
     parent_reason = models.TextField(blank=True, help_text="Parent tomonidan yuborilgan sabab")
     parent_reason_submitted_at = models.DateTimeField(null=True, blank=True)
 
