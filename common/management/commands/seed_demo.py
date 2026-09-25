@@ -55,6 +55,8 @@ class Command(BaseCommand):
         subjects = self.seed_subjects()
         superadmin = self.seed_user("superadmin", "Sardor", "Rahimov", User.Role.SUPERADMIN, school, is_superuser=True)
         admin = self.seed_user("admin", "Gulnora", "Yoqubova", User.Role.ADMIN, school, is_staff=True)
+        self.seed_user("director", "Akmal", "Nurmatov", User.Role.DIRECTOR, school)
+        self.seed_user("deputy", "Malika", "Tursunova", User.Role.DEPUTY_DIRECTOR, school)
 
         classes = self.seed_classes(school, academic_year)
         teachers = self.seed_teachers(school, subjects)
@@ -402,7 +404,12 @@ class Command(BaseCommand):
         self.stdout.write(self.style.WARNING(f"  {DEMO_PASSWORD}"))
         self.stdout.write("")
         self.stdout.write(self.style.MIGRATE_HEADING("Login qilish uchun hisoblar:"))
-        rows = [("SUPERADMIN", superadmin.username), ("ADMIN", admin.username)]
+        rows = [
+            ("SUPERADMIN", superadmin.username),
+            ("ADMIN", admin.username),
+            ("DIRECTOR", "director"),
+            ("DEPUTY_DIRECTOR", "deputy"),
+        ]
         rows += [("TEACHER", t.user.username) for t in teachers.values()]
         rows += [("STUDENT", s.user.username) for s in students[:3]]
         rows += [("PARENT", p.user.username) for p in parents]
