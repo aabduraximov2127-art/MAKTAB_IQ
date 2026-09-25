@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react"
-import { ArrowLeft, MessagesSquare, Pencil, School, Search, Send, Users } from "lucide-react"
+import { ArrowLeft, Briefcase, MessagesSquare, Pencil, School, Search, Send, Users } from "lucide-react"
 import toast from "react-hot-toast"
 import { useFetch } from "../hooks/useFetch"
 import { api, getErrorMessage } from "../lib/api"
@@ -14,7 +14,7 @@ import { Modal } from "../components/ui/Modal"
 import { Skeleton } from "../components/ui/Skeleton"
 import { cn } from "../lib/cn"
 import { formatRelative, fullName } from "../lib/format"
-import type { ChatRoom, Message, Paginated, ParentProfile, StudentProfile } from "../types"
+import type { ChatRoom, Message, Paginated, ParentProfile, StaffContact, StudentProfile } from "../types"
 import { t } from "../i18n"
 
 const ROOM_TYPE_LABEL: Record<ChatRoom["room_type"], string> = {
@@ -22,12 +22,15 @@ const ROOM_TYPE_LABEL: Record<ChatRoom["room_type"], string> = {
   PRIVATE: t("Shaxsiy"),
   TEACHER_STUDENT: t("O'qituvchi-o'quvchi"),
   PARENT_TEACHER: t("Ota-ona-o'qituvchi"),
+  STAFF_GENERAL: t("O'qituvchilar xonasi"),
 }
 
 export default function ChatPage() {
-  const { can } = useAccess()
+  const { can, hasRole } = useAccess()
   const canMessageParent = can("moderate_chat")
   const isStudent = can("view_classmates")
+  // A class teacher can also write to any colleague and shares the teachers' room with them.
+  const canMessageStaff = hasRole("CLASS_TEACHER") && can("use_staff_chat")
   const { data: rooms, loading, refetch } = useFetch<Paginated<ChatRoom>>("/chat/?page_size=100")
   const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null)
   const [mobileThread, setMobileThread] = useState(false)
@@ -68,10 +71,10 @@ export default function ChatPage() {
                 <School className="h-4 w-4" />
               </button>
             )}
-            {(canMessageParent || isStudent) && (
+            {(canMessageParent || isStudent || canMessageStaff) && (
               <button
                 onClick={() => setNewMessageOpen(true)}
-                title={isStudent ? t("Sinfdoshga yozish") : t("Ota-onaga yozish")}
+                title={isStudent ? t("Sinfdoshga yozish") : canMessageStaff ? t("Ustozga yozish") : t("Ota-onaga yozish")}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-brand-600 transition-colors hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-500/10"
               >
                 <Pencil className="h-4 w-4" />
@@ -91,7 +94,9 @@ export default function ChatPage() {
               <EmptyState icon={MessagesSquare} title={t("Chat mavjud emas")} />
             </div>
           ) : (
-            rooms.results.map((room) => (
+            [...rooms.results]
+              .sort((a, b) => Number(b.room_type === "STAFF_GENERAL") - Number(a.room_type === "STAFF_GENERAL"))
+              .map((room) => (
               <button
                 key={room.id}
                 onClick={() => openRoom(room)}
@@ -101,7 +106,7 @@ export default function ChatPage() {
                 )}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white">
-                  <Users className="h-4.5 w-4.5" />
+                  {room.room_type === "STAFF_GENERAL" ? <Briefcase className="h-4.5 w-4.5" /> : <Users className="h-4.5 w-4.5" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink-800 dark:text-ink-100">
@@ -139,6 +144,18 @@ export default function ChatPage() {
           }}
         />
       )}
+      {canMessageStaff && (
+        <NewStaffMessageModal
+          open={newMessageOpen}
+          onClose={() => setNewMessageOpen(false)}
+          existingRooms={rooms?.results ?? []}
+          onOpened={(room) => {
+            setNewMessageOpen(false)
+            refetch()
+            openRoom(room)
+          }}
+        />
+      )}
       {isStudent && (
         <NewClassmateMessageModal
           open={newMessageOpen}
@@ -152,6 +169,88 @@ export default function ChatPage() {
         />
       )}
     </div>
+  )
+}
+
+function NewStaffMessageModal({
+  open,
+  onClose,
+  existingRooms,
+  onOpened,
+}: {
+  open: boolean
+  onClose: () => void
+  existingRooms: ChatRoom[]
+  onOpened: (room: ChatRoom) => void
+}) {
+  const user = useAuthStore((s) => s.user)
+  const [search, setSearch] = useState("")
+  const [startingId, setStartingId] = useState<number | null>(null)
+
+  const { data: colleagues, loading } = useFetch<StaffContact[]>(
+    open ? `/chat/staff/?search=${encodeURIComponent(search)}` : null,
+    [open, search]
+  )
+
+  async function startConversation(colleague: StaffContact) {
+    setStartingId(colleague.id)
+    try {
+      const existing = existingRooms.find(
+        (r) => r.room_type === "PRIVATE" && r.members.length === 2 && r.members.some((m) => m.user === colleague.id)
+      )
+      if (existing) {
+        onOpened(existing)
+        return
+      }
+      // Both people see the same title, so it names both of them.
+      const { data: room } = await api.post<ChatRoom>("/chat/", {
+        room_type: "PRIVATE",
+        name: `${fullName(user)} — ${colleague.name}`,
+      })
+      await api.post(`/chat/${room.id}/add_member/`, { user: colleague.id })
+      onOpened(room)
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setStartingId(null)
+    }
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title={t("Ustozga yozish")}>
+      <div className="space-y-4">
+        <Input
+          icon={<Search className="h-4 w-4" />}
+          placeholder={t("Ustoz ismi bo'yicha qidirish...")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          autoFocus
+        />
+        <div className="max-h-80 space-y-1.5 overflow-y-auto">
+          {loading && !colleagues ? (
+            <Skeleton className="h-40 w-full" />
+          ) : !colleagues || colleagues.length === 0 ? (
+            <EmptyState title={t("Ustoz topilmadi")} />
+          ) : (
+            colleagues.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => startConversation(c)}
+                disabled={startingId === c.id}
+                className="flex w-full items-center gap-3 rounded-xl border border-ink-100 p-3 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/50 disabled:opacity-60 dark:border-ink-800 dark:hover:border-brand-500/40 dark:hover:bg-brand-500/5"
+              >
+                <Avatar name={c.name} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-ink-800 dark:text-ink-100">{c.name}</p>
+                  <p className="truncate text-xs text-ink-400">{c.role === "DIRECTOR" ? t("Direktor") : t("O'qituvchi")}</p>
+                </div>
+                {startingId === c.id && <Button size="sm" loading />}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </Modal>
   )
 }
 

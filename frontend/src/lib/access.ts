@@ -43,6 +43,8 @@ export function useAccess() {
     canAny: (...codenames: string[]) => codenames.some((c) => permissions.has(c)),
     /** Holds at least one of these roles (primary, extra or derived). */
     hasRole: (...wanted: EffectiveRole[]) => wanted.some((r) => roles.includes(r)),
+    /** The one class this user curates (a curator has exactly one class in practice). */
+    curatedClasses: user?.curated_classes ?? [],
   }
 }
 

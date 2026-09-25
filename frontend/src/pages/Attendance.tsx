@@ -14,15 +14,18 @@ import { EmptyState } from "../components/ui/EmptyState"
 import { Skeleton } from "../components/ui/Skeleton"
 import { Tabs } from "../components/ui/Tabs"
 import { Avatar } from "../components/ui/Avatar"
-import { ATTENDANCE_COLORS, ATTENDANCE_LABELS, fullName } from "../lib/format"
+import { ClassTeacherAttendance } from "../components/attendance/ClassTeacherAttendance"
+import { ATTENDANCE_COLORS, ATTENDANCE_LABELS, attendanceLabel, fullName } from "../lib/format"
 import { todayISO } from "../lib/date"
 import { cn } from "../lib/cn"
 import type { Attendance, AttendanceStatus, ClassRoom, Paginated, StudentProfile } from "../types"
 import { t } from "../i18n"
 
 export default function AttendancePage() {
-  const { canAny } = useAccess()
+  const { canAny, hasRole } = useAccess()
   const canMark = canAny("mark_attendance", "manage_class_attendance")
+  // A class teacher keeps the register of their own class only (with the reason for each absence).
+  if (hasRole("CLASS_TEACHER")) return <ClassTeacherAttendance />
   return canMark ? <MarkAttendanceView /> : <MyAttendanceView />
 }
 
@@ -122,6 +125,7 @@ function AttendanceCalendar({ studentId }: { studentId: number }) {
                 return (
                   <button
                     key={d.day}
+                    title={record ? attendanceLabel(record.status, record.absence_reason) : undefined}
                     disabled={!record || record.status !== "ABSENT"}
                     onClick={() => record && setReasonTarget({ date: record.date })}
                     className={cn(

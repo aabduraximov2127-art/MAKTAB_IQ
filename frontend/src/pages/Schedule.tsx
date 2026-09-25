@@ -6,9 +6,11 @@ import { Button } from "../components/ui/Button"
 import { Card } from "../components/ui/Card"
 import { EmptyState } from "../components/ui/EmptyState"
 import { Skeleton } from "../components/ui/Skeleton"
+import { Tabs } from "../components/ui/Tabs"
+import { useAccess } from "../lib/access"
 import { cn } from "../lib/cn"
 import { shortName } from "../lib/format"
-import type { Lesson, Paginated } from "../types"
+import type { Lesson, Paginated, TeacherProfile } from "../types"
 import { localeTag, t } from "../i18n"
 
 const DAY_LABELS = [t("Dushanba"), t("Seshanba"), t("Chorshanba"), t("Payshanba"), t("Juma"), t("Shanba"), t("Yakshanba")]
@@ -27,8 +29,8 @@ function toISO(d: Date) {
 }
 
 export default function SchedulePage() {
+  const { hasRole } = useAccess()
   const [weekOffset, setWeekOffset] = useState(0)
-  const { data, loading } = useFetch<Paginated<Lesson>>("/lessons/?page_size=500&ordering=date,start_time")
 
   const monday = startOfWeek(weekOffset)
   const weekDays = useMemo(
@@ -40,17 +42,6 @@ export default function SchedulePage() {
       }),
     [monday]
   )
-
-  const todayISO = toISO(new Date())
-  const lessonsByDate = useMemo(() => {
-    const map = new Map<string, Lesson[]>()
-    for (const lesson of data?.results ?? []) {
-      const list = map.get(lesson.date) ?? []
-      list.push(lesson)
-      map.set(lesson.date, list)
-    }
-    return map
-  }, [data])
 
   return (
     <div>
@@ -72,6 +63,77 @@ export default function SchedulePage() {
         }
       />
 
+      {hasRole("CLASS_TEACHER") ? <ClassTeacherSchedule weekDays={weekDays} /> : <LessonsBoard query="" weekDays={weekDays} />}
+    </div>
+  )
+}
+
+/**
+ * A class teacher gets two tabs: their own lessons, and the timetable of their ONE class —
+ * nothing else (the API scopes the lessons the same way).
+ */
+function ClassTeacherSchedule({ weekDays }: { weekDays: Date[] }) {
+  const { curatedClasses } = useAccess()
+  const { data: me } = useFetch<TeacherProfile>("/teachers/me/")
+  const [tab, setTab] = useState<"mine" | "class">("mine")
+  const [classId, setClassId] = useState<number | null>(curatedClasses[0]?.id ?? null)
+
+  const hasOwnLessons = !!me
+  const active = hasOwnLessons ? tab : "class"
+  const className = curatedClasses.find((c) => c.id === classId)?.name ?? ""
+
+  const tabs = [
+    ...(hasOwnLessons ? [{ key: "mine", label: t("Mening darslarim") }] : []),
+    { key: "class", label: className ? `${t("Mening sinfim")} · ${className}` : t("Mening sinfim") },
+  ]
+
+  return (
+    <>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <Tabs tabs={tabs} active={active} onChange={(key) => setTab(key as "mine" | "class")} />
+        {active === "class" && curatedClasses.length > 1 && (
+          <select
+            value={classId ?? ""}
+            onChange={(e) => setClassId(Number(e.target.value))}
+            className="h-10 rounded-xl border border-ink-200 bg-white px-3 text-sm dark:border-ink-700 dark:bg-ink-900 dark:text-white"
+          >
+            {curatedClasses.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {active === "mine" && me ? (
+        <LessonsBoard key="mine" query={`&teacher=${me.id}`} weekDays={weekDays} />
+      ) : classId ? (
+        <LessonsBoard key={`class-${classId}`} query={`&class_room=${classId}`} weekDays={weekDays} />
+      ) : (
+        <EmptyState title={t("Sizga sinf biriktirilmagan")} />
+      )}
+    </>
+  )
+}
+
+/** The Monday-to-Sunday board. ``query`` narrows the lessons (e.g. ``&teacher=3``). */
+function LessonsBoard({ query, weekDays }: { query: string; weekDays: Date[] }) {
+  const { data, loading } = useFetch<Paginated<Lesson>>(`/lessons/?page_size=500&ordering=date,start_time${query}`, [query])
+
+  const todayISO = toISO(new Date())
+  const lessonsByDate = useMemo(() => {
+    const map = new Map<string, Lesson[]>()
+    for (const lesson of data?.results ?? []) {
+      const list = map.get(lesson.date) ?? []
+      list.push(lesson)
+      map.set(lesson.date, list)
+    }
+    return map
+  }, [data])
+
+  return (
+    <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
         {weekDays.map((d, i) => {
           const iso = toISO(d)
@@ -129,6 +191,6 @@ export default function SchedulePage() {
           <EmptyState title={t("Dars jadvali bo'sh")} description={t("Hozircha darslar kiritilmagan")} />
         </div>
       )}
-    </div>
+    </>
   )
 }

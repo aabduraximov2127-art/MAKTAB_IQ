@@ -1714,5 +1714,77 @@
  "Maktab bo'yicha": {
   "ru": "По школе",
   "en": "School-wide"
+ },
+ "Belgilanmagan": {
+  "ru": "Не отмечено",
+  "en": "Not marked"
+ },
+ "Sababsiz": {
+  "ru": "Без причины",
+  "en": "Unexcused"
+ },
+ "Kasal": {
+  "ru": "Болеет",
+  "en": "Sick"
+ },
+ "Oilaviy sabab": {
+  "ru": "Семейные обстоятельства",
+  "en": "Family reasons"
+ },
+ "Musobaqa / olimpiada": {
+  "ru": "Соревнование / олимпиада",
+  "en": "Competition / olympiad"
+ },
+ "Boshqa sabab": {
+  "ru": "Другая причина",
+  "en": "Other reason"
+ },
+ "Sinf davomatini belgilash": {
+  "ru": "Отметка посещаемости класса",
+  "en": "Mark class attendance"
+ },
+ "{name} sinfi — faqat o'z sinfingiz davomatini belgilay olasiz": {
+  "ru": "Класс {name} — вы можете отмечать посещаемость только своего класса",
+  "en": "Class {name} — you can only mark attendance for your own class"
+ },
+ "Sizga sinf biriktirilmagan": {
+  "ru": "За вами не закреплён класс",
+  "en": "No class is assigned to you"
+ },
+ "Davomat faqat sinf rahbari tomonidan belgilanadi": {
+  "ru": "Посещаемость отмечает только классный руководитель",
+  "en": "Attendance is marked by the class teacher only"
+ },
+ "Mening darslarim": {
+  "ru": "Мои уроки",
+  "en": "My lessons"
+ },
+ "Mening sinfim": {
+  "ru": "Мой класс",
+  "en": "My class"
+ },
+ "O'qituvchilar xonasi": {
+  "ru": "Комната учителей",
+  "en": "Teachers' room"
+ },
+ "Ustozga yozish": {
+  "ru": "Написать коллеге",
+  "en": "Message a colleague"
+ },
+ "Ustoz ismi bo'yicha qidirish...": {
+  "ru": "Поиск коллеги по имени...",
+  "en": "Search colleagues by name..."
+ },
+ "Ustoz topilmadi": {
+  "ru": "Коллега не найден",
+  "en": "No colleague found"
+ },
+ "O'quvchini tanlang...": {
+  "ru": "Выберите ученика...",
+  "en": "Select a student..."
+ },
+ "Yuklanmoqda...": {
+  "ru": "Загрузка...",
+  "en": "Loading..."
  }
 }

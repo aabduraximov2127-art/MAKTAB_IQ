@@ -125,6 +125,8 @@ export interface Grade {
 }
 
 export type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED"
+/** Why an EXCUSED ("sababli") absence happened; ABSENT means "sababsiz" and carries none. */
+export type AbsenceReason = "SICK" | "FAMILY" | "COMPETITION" | "OTHER"
 
 export interface Attendance {
   id: number
@@ -135,6 +137,7 @@ export interface Attendance {
   lesson: number | null
   date: string
   status: AttendanceStatus
+  absence_reason: AbsenceReason | ""
   marked_by: number | null
   parent_reason: string
   parent_reason_submitted_at: string | null
@@ -242,7 +245,7 @@ export interface Announcement {
 
 export interface ChatRoom {
   id: number
-  room_type: "CLASS_GENERAL" | "PRIVATE" | "TEACHER_STUDENT" | "PARENT_TEACHER"
+  room_type: "CLASS_GENERAL" | "PRIVATE" | "TEACHER_STUDENT" | "PARENT_TEACHER" | "STAFF_GENERAL"
   name: string
   class_room: number | null
   members: { id: number; user: number; user_name: string }[]
@@ -301,4 +304,11 @@ export interface Paginated<T> {
   next: string | null
   previous: string | null
   results: T[]
+}
+
+/** A colleague a staff member can start a private chat with (GET /chat/staff/). */
+export interface StaffContact {
+  id: number
+  name: string
+  role: "DIRECTOR" | "TEACHER"
 }

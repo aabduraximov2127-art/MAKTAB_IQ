@@ -1,6 +1,6 @@
 import { format, formatDistanceToNow, parseISO } from "date-fns"
 import { enUS, ru, uz } from "date-fns/locale"
-import type { AttendanceStatus, EffectiveRole, NotificationType, User } from "../types"
+import type { AbsenceReason, AttendanceStatus, EffectiveRole, NotificationType, User } from "../types"
 import { getLang, t } from "../i18n"
 
 export function fullName(user?: { first_name?: string; last_name?: string; username?: string } | null) {
@@ -43,6 +43,20 @@ export const ATTENDANCE_LABELS: Record<AttendanceStatus, string> = {
   ABSENT: t("Kelmadi"),
   LATE: t("Kechikdi"),
   EXCUSED: t("Sababli"),
+}
+
+export const ABSENCE_REASON_LABELS: Record<AbsenceReason, string> = {
+  SICK: t("Kasal"),
+  FAMILY: t("Oilaviy sabab"),
+  COMPETITION: t("Musobaqa / olimpiada"),
+  OTHER: t("Boshqa sabab"),
+}
+
+/** "Sababli · Kasal" for an excused absence, plain label otherwise. */
+export function attendanceLabel(status: AttendanceStatus, reason?: AbsenceReason | "" | null) {
+  if (status === "ABSENT") return t("Sababsiz")
+  if (status === "EXCUSED" && reason) return `${ATTENDANCE_LABELS.EXCUSED} · ${ABSENCE_REASON_LABELS[reason]}`
+  return ATTENDANCE_LABELS[status]
 }
 
 export const ATTENDANCE_COLORS: Record<AttendanceStatus, string> = {
