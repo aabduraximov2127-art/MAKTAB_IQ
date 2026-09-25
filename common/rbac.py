@@ -346,7 +346,40 @@ _SUPERVISION = _EVERYONE | {
     VIEW_REPORTS,
     MANAGE_SCHEDULE,
 }
-_DEPUTY_DIRECTOR = _SUPERVISION
+# Deputy director: oversees the learning process of ONE school. Read-only apart from the
+# timetable; no grade / attendance / homework / quiz writing and no user, role, permission or
+# settings administration (that stays with the admin).
+#
+# It is spelled out here rather than aliasing the shared ``_SUPERVISION`` base, so the deputy's
+# rights cannot drift when the director's or the admin's set is edited. The requested
+# capabilities map onto the existing codenames — no new permission was needed:
+#   students (profile, grades, attendance, homework, class) .. view_all_students, view_all_grades,
+#                                                               view_all_attendance, view_all_homework
+#   teachers (profile, subjects, classes, schedule, attendance) view_all_teachers, view_all_subjects,
+#                                                               view_all_classes, view_all_schedule,
+#                                                               view_all_attendance
+#   classes (students, teachers, subjects, schedule, attendance) view_all_classes, view_class_students,
+#                                                               view_class_teachers, view_all_schedule
+#   reports (student, teacher, class, attendance, grades) ..... view_reports, view_class_reports
+#   timetable (view / manage / update) ....................... view_all_schedule, manage_schedule
+# Everything is confined to the deputy's own school by the scope helpers in common/access.py.
+_DEPUTY_DIRECTOR = _EVERYONE | {
+    VIEW_ALL_STUDENTS,
+    VIEW_ALL_TEACHERS,
+    VIEW_ALL_CLASSES,
+    VIEW_ALL_SUBJECTS,
+    VIEW_ALL_GRADES,
+    VIEW_ALL_ATTENDANCE,
+    VIEW_ALL_HOMEWORK,
+    VIEW_ALL_QUIZZES,
+    VIEW_ALL_SCHEDULE,
+    VIEW_ALL_ANNOUNCEMENTS,
+    VIEW_REPORTS,
+    VIEW_CLASS_STUDENTS,
+    VIEW_CLASS_TEACHERS,
+    VIEW_CLASS_REPORTS,
+    MANAGE_SCHEDULE,
+}
 _DIRECTOR = _SUPERVISION | {TRANSFER_STUDENTS}
 
 # Admin keeps everything it could already do before this permission system existed
