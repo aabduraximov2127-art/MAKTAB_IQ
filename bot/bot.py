@@ -15,6 +15,7 @@ Ishga tushirish: `python -m bot.bot` (loyiha ildizidan, .env'da TELEGRAM_BOT_TOK
 
 import os
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import django
@@ -182,8 +183,18 @@ def main():
     application.add_handler(CommandHandler("app", open_app))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, plain_code))
 
-    logger.info("MaktabIQ bot polling boshlandi...")
-    application.run_polling()
+    # During a Render redeploy the old and new container briefly overlap, so Telegram's
+    # long-poll can reject one of them with a Conflict error — that's transient, not
+    # fatal, and run_polling() doesn't retry it on its own. Keep the process (and the
+    # health-check port that keeps Render from marking it dead) alive across it.
+    while True:
+        try:
+            logger.info("MaktabIQ bot polling boshlandi...")
+            application.run_polling(close_loop=False)
+            break
+        except Exception:
+            logger.exception("Bot polling crashed, 5 soniyadan keyin qayta urinaman")
+            time.sleep(5)
 
 
 if __name__ == "__main__":
