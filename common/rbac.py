@@ -123,6 +123,7 @@ VIEW_CLASS_REPORTS = "view_class_reports"
 MANAGE_CLASS_STUDENTS = "manage_class_students"
 MANAGE_CLASS_ATTENDANCE = "manage_class_attendance"
 MANAGE_CLASS_HOMEWORK = "manage_class_homework"
+MANAGE_CLASS_SCHEDULE = "manage_class_schedule"
 SEND_CLASS_ANNOUNCEMENT = "send_class_announcement"
 MANAGE_CLASS_PARENTS = "manage_class_parents"  # optional: grant per user
 
@@ -230,6 +231,7 @@ _CATALOG_ROWS = [
     (MANAGE_CLASS_STUDENTS, "class_teacher", "O'z sinfi o'quvchilari ma'lumotlarini tahrirlash"),
     (MANAGE_CLASS_ATTENDANCE, "class_teacher", "O'z sinfi davomatini boshqarish"),
     (MANAGE_CLASS_HOMEWORK, "class_teacher", "O'z sinfi uy vazifalarini boshqarish"),
+    (MANAGE_CLASS_SCHEDULE, "class_teacher", "O'z sinfi dars jadvalini boshqarish"),
     (SEND_CLASS_ANNOUNCEMENT, "class_teacher", "O'z sinfiga e'lon yuborish"),
     (MANAGE_CLASS_PARENTS, "class_teacher", "O'z sinfi ota-ona bog'lanishlarini boshqarish"),
     # -- school-wide --
@@ -338,6 +340,7 @@ _CLASS_TEACHER = {
     MANAGE_CLASS_STUDENTS,
     MANAGE_CLASS_ATTENDANCE,
     MANAGE_CLASS_HOMEWORK,
+    MANAGE_CLASS_SCHEDULE,
     SEND_CLASS_ANNOUNCEMENT,
     TRANSFER_STUDENTS,
 }

@@ -31,8 +31,10 @@ from .rbac import (
     MANAGE_CLASS_ATTENDANCE,
     MANAGE_CLASS_HOMEWORK,
     MANAGE_CLASS_PARENTS,
+    MANAGE_CLASS_SCHEDULE,
     MANAGE_ACADEMIC_RECORDS,
     MANAGE_CLASS_STUDENTS,
+    MANAGE_SCHEDULE,
     MANAGE_STUDENTS,
     TRANSFER_STUDENTS,
     UPDATE_ATTENDANCE,
@@ -507,6 +509,21 @@ def can_grade(user, student, subject) -> bool:
     if rbac.has_perm(user, MANAGE_ACADEMIC_RECORDS):
         return same_school(user, student.school_id)
     return assigned_to_class(user, student.class_room) and teaches_subject(user, subject)
+
+
+def can_manage_schedule(user, class_room) -> bool:
+    """A lesson may be scheduled for a class the user curates (class teacher, own class
+    only) or, with the school-wide ``manage_schedule`` permission, any class in their
+    own school (SUPERADMIN: any school)."""
+    if class_room is None:
+        return False
+    if rbac.has_perm(user, MANAGE_CLASS_SCHEDULE) and curates(user, class_room):
+        return True
+    if rbac.has_perm(user, MANAGE_SCHEDULE):
+        if rbac.is_global(user):
+            return True
+        return same_school(user, class_room.school_id)
+    return False
 
 
 def can_mark_attendance(user, class_room) -> bool:
