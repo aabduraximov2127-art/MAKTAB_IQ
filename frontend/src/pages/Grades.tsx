@@ -95,6 +95,7 @@ interface AnnualSubjectResult {
 }
 
 function StudentGradeDetail({ studentId }: { studentId: number }) {
+  const [tab, setTab] = useState<"daily" | "quarters">("daily")
   const { data: years } = useFetch<Paginated<AcademicYear>>("/classes/academic-years/?page_size=1&is_active=true")
   const activeYear = years?.results[0]
 
@@ -121,65 +122,76 @@ function StudentGradeDetail({ studentId }: { studentId: number }) {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("Choraklik baholar")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {annualLoading ? (
-            <Skeleton className="h-56 w-full" />
-          ) : !annual || annual.results.length === 0 ? (
-            <EmptyState icon={GraduationCap} title={t("Hali baho yo'q")} />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px] border-separate border-spacing-1.5 text-sm">
-                <thead>
-                  <tr>
-                    <th className="px-2 pb-1 text-left text-xs font-semibold uppercase tracking-wide text-ink-400">{t("Fan")}</th>
-                    {[1, 2, 3, 4].map((q) => (
-                      <th key={q} className="pb-1 text-center text-xs font-semibold uppercase tracking-wide text-ink-400">
-                        {t("{q}-chorak", { q })}
-                      </th>
-                    ))}
-                    <th className="pb-1 text-center text-xs font-semibold uppercase tracking-wide text-brand-500">{t("Natija")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {annual.results.map((row) => (
-                    <tr key={row.subject}>
-                      <td className="px-2 py-1 text-sm font-medium text-ink-800 dark:text-ink-100">{row.subject_name}</td>
-                      {[1, 2, 3, 4].map((q) => {
-                        const value = row.quarter_averages[String(q)] ?? null
-                        return (
-                          <td key={q} className="p-0 text-center">
-                            <div className={`mx-auto flex h-10 w-10 items-center justify-center rounded-lg font-display text-sm font-bold ${gradeCellClasses(value)}`}>
-                              {value ?? "–"}
-                            </div>
-                          </td>
-                        )
-                      })}
-                      <td className="p-0 text-center">
-                        <div className={`mx-auto flex h-10 w-12 items-center justify-center rounded-lg font-display text-sm font-bold ring-2 ring-brand-400/40 ${gradeCellClasses(row.annual_average)}`}>
-                          {row.annual_average}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <Tabs
+        tabs={[
+          { key: "daily", label: t("Kunlik baholar") },
+          { key: "quarters", label: t("Choraklar") },
+        ]}
+        active={tab}
+        onChange={(k) => setTab(k as "daily" | "quarters")}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("So'nggi baholar")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable columns={columns} rows={recent?.results ?? []} keyField={(r) => r.id} loading={recentLoading} emptyTitle={t("Baho yo'q")} />
-        </CardContent>
-      </Card>
+      {tab === "quarters" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("Choraklik baholar")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {annualLoading ? (
+              <Skeleton className="h-56 w-full" />
+            ) : !annual || annual.results.length === 0 ? (
+              <EmptyState icon={GraduationCap} title={t("Hali baho yo'q")} />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px] border-separate border-spacing-1.5 text-sm">
+                  <thead>
+                    <tr>
+                      <th className="px-2 pb-1 text-left text-xs font-semibold uppercase tracking-wide text-ink-400">{t("Fan")}</th>
+                      {[1, 2, 3, 4].map((q) => (
+                        <th key={q} className="pb-1 text-center text-xs font-semibold uppercase tracking-wide text-ink-400">
+                          {t("{q}-chorak", { q })}
+                        </th>
+                      ))}
+                      <th className="pb-1 text-center text-xs font-semibold uppercase tracking-wide text-brand-500">{t("Natija")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {annual.results.map((row) => (
+                      <tr key={row.subject}>
+                        <td className="px-2 py-1 text-sm font-medium text-ink-800 dark:text-ink-100">{row.subject_name}</td>
+                        {[1, 2, 3, 4].map((q) => {
+                          const value = row.quarter_averages[String(q)] ?? null
+                          return (
+                            <td key={q} className="p-0 text-center">
+                              <div className={`mx-auto flex h-10 w-10 items-center justify-center rounded-lg font-display text-sm font-bold ${gradeCellClasses(value)}`}>
+                                {value ?? "–"}
+                              </div>
+                            </td>
+                          )
+                        })}
+                        <td className="p-0 text-center">
+                          <div className={`mx-auto flex h-10 w-12 items-center justify-center rounded-lg font-display text-sm font-bold ring-2 ring-brand-400/40 ${gradeCellClasses(row.annual_average)}`}>
+                            {row.annual_average}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("Kunlik baholar")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DataTable columns={columns} rows={recent?.results ?? []} keyField={(r) => r.id} loading={recentLoading} emptyTitle={t("Baho yo'q")} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
