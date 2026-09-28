@@ -14,6 +14,8 @@ Ishga tushirish: `python -m bot.bot` (loyiha ildizidan, .env'da TELEGRAM_BOT_TOK
 """
 
 import os
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import django
 
@@ -149,9 +151,29 @@ async def _configure_menu_button(application: Application):
         logger.info("TELEGRAM_WEBAPP_URL sozlanmagan, menu button standart holatda qoldi")
 
 
+class _HealthHandler(BaseHTTPRequestHandler):
+    """Render's free Web Service plan requires an open HTTP port to route to and
+    health-check; the bot itself only polls Telegram, so this just answers 200."""
+
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"ok")
+
+    def log_message(self, format, *args):  # noqa: A002
+        pass
+
+
+def _start_health_server():
+    port = int(os.environ.get("PORT", 8000))
+    HTTPServer(("0.0.0.0", port), _HealthHandler).serve_forever()
+
+
 def main():
     if not settings.TELEGRAM_BOT_TOKEN:
         raise RuntimeError("TELEGRAM_BOT_TOKEN sozlanmagan (.env)")
+
+    threading.Thread(target=_start_health_server, daemon=True).start()
 
     application = Application.builder().token(settings.TELEGRAM_BOT_TOKEN).post_init(_configure_menu_button).build()
     application.add_handler(CommandHandler("start", start))
